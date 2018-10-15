@@ -71,16 +71,21 @@ If you need a custom ripple effect color, you can customize the ripple effect us
 ```
 
 ### `fillTransition, splashTransition, fadeTransition`
-Ripple effect highly depend on transition. Different time selection/transition will provide you different ripple effect too. `fillTransition` is an input of ripple fill in effect. `splashTransition` is a ripple splash effect input. And the `fadeTransition` is for ripple both fadeout and fadein transition. The value of each transition can contain both `transition-duration` and `transition-timing-function` in a single transition value. This website `http://cubic-bezier.com/` is a great tool to visualize and make experiments of `transition-timing-function`. Example:
+Ripple effect highly depend on transition. Different time selection/transition will provide you different ripple effect too.<br><br>
+<b>`fillTransition`</b> is an input of ripple fill in effect which consist of a `transition-duration` value.<br><br>
+<b>`splashTransition`</b> is a ripple splash effect input.The value have to contains both `transition-duration` and `transition-timing-function` sequentially.<br><br>
+<b>`fadeTransition`</b> is for ripple both fadeout and fadein transition in a `transition-duration` value.<br>
+<br>
+ Example:
 ```html
   <button ripple light fixed-centered
-      fillTransition="1000ms cubic-bezier(0.4, 0.0, 1, 1)"
+      fillTransition="1000ms"
         splashTransition="70ms cubic-bezier(0.4, 0.0, 0.2, 1)"
         fadeTransition="250ms">
         ...
     </button>
 ```
-
+This website `http://cubic-bezier.com/` is a great tool to visualize and make experiments of `transition-timing-function`.<br>
 ### `clickEmitDelay`
 For mouse click event, by default will trigger an `rclick` event after `250ms`. You can use `clickEmitDelay` to customize your desired click delay event.
 ```html
@@ -100,20 +105,21 @@ Ripple effect of mouse click event can be customized by using this input.
     </button>
 ```
 
+### `tapLimit`
+This input is used in determining limit of `rtap` event. Touch event that more than this limit will be considered as `rpress`
+
 ## Available Events (`rtap`, `rpress`, `rpressup`, `rclick`)
 This module provides you custom events that will emitted after your ripple effect animation completed. Of course you still can use default events ( eg. `tap` and `press` for Ionic Apps or `click` for mouse device). The events have `r` prefix to distinguish from default event.
 
 ## Custom Event Returned Object `($event)`
-Every event provides by this module will returned a custom event object. The returned value is an `RippleEvent` object as shown by RippleEvent interface below:
+Every event provides by this module will returned a custom event object. The returned value is an `RippleEvent` object as shown below:
 ```ts
-interface RippleEvent {
-  target: HTMLElement;      // your host element
-    type: string;         // rtap | rpress | rpressup | rclick
-    timestamp: number;      // timestamp when the event emitted
-    clientX: number;      // center coordinate X of your host element
-    clientY: number;      // center coordinate Y of your host element
-    clientRect: ClientRect;   // host element ClientRect detail data
-}
+target: HTMLElement;      // your host element
+type: string;         // rtap | rpress | rpressup | rclick
+timestamp: number;      // timestamp when the event emitted
+clientX: number;      // center coordinate X of your host element
+clientY: number;      // center coordinate Y of your host element
+clientRect: ClientRect;   // host element ClientRect detail data
 ```
 <br>
 Thank You. <br>
