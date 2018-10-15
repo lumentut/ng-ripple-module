@@ -55,19 +55,19 @@ This attribute is used to make your ripple effect start from the center of your 
 For some reason, you need a fixed ripple effect, let's say for a list item element. In this case, `fixed-ripple` attributes will help you a lot.
 ```html
   <ul ...>
-      <li ripple fixed-ripple ...> ... </li>
-        ...
-    </ul>
+    <li ripple fixed-ripple ...> ... </li>
+    ...
+  </ul>
 ```
 
 ### `rippleBgColor & activeBgColor`
 If you need a custom ripple effect color, you can customize the ripple effect using `rippleBgColor` and/or `activeBgColor`.
 ```html
   <button ... ripple 
-      rippleBgColor={{_rippleBgColor}}
-        activeBgColor={{_activeBgColor}}>
-        ...
-    </button>
+    rippleBgColor={{_rippleBgColor}}
+    activeBgColor={{_activeBgColor}}>
+    ...
+  </button>
 ```
 
 ### `fillTransition, splashTransition, fadeTransition`
@@ -79,30 +79,30 @@ Ripple effect highly depend on transition. Different time selection/transition w
  Example:
 ```html
   <button ripple light fixed-centered
-      fillTransition="1000ms"
-        splashTransition="70ms cubic-bezier(0.4, 0.0, 0.2, 1)"
-        fadeTransition="250ms">
-        ...
-    </button>
+    fillTransition="1000ms"
+    splashTransition="70ms cubic-bezier(0.4, 0.0, 0.2, 1)"
+    fadeTransition="250ms">
+    ...
+  </button>
 ```
 This website `http://cubic-bezier.com/` is a great tool to visualize and make experiments of `transition-timing-function`.<br>
 ### `clickEmitDelay`
 For mouse click event, by default will trigger an `rclick` event after `250ms`. You can use `clickEmitDelay` to customize your desired click delay event.
 ```html
   <button ripple light centered-ripple
-      (rclick)="onClick($event)"
-      clickEmitDelay="0ms">
+    (rclick)="onClick($event)"
+    clickEmitDelay="0ms">
         ...
-    </button>
+  </button>
 ```
 ### `clickAndSplashTransition`
 Ripple effect of mouse click event can be customized by using this input.
 ```html
   <button ripple light centered-ripple
-      clickAndSplashTransition="250ms ease-out"
-      (rclick)="onClick($event)">
+    clickAndSplashTransition="250ms ease-out"
+    (rclick)="onClick($event)">
         ...
-    </button>
+  </button>
 ```
 
 ### `tapLimit`
@@ -123,4 +123,5 @@ clientRect: ClientRect;   // host element ClientRect detail data
 ```
 <br>
 Thank You. <br>
-INDNJC, Kota Wisata 2018.
+INDNJC,<br>
+Kota Wisata 2018.
