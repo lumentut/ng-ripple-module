@@ -121,6 +121,62 @@ clientX: number;      // center coordinate X of your host element
 clientY: number;      // center coordinate Y of your host element
 clientRect: ClientRect;   // host element ClientRect detail data
 ```
+## Examples
+Below are examples of ripple directive in Ionic (3) application.
+
+```html
+// styling at your app.scss
+ .circle {
+  width: 250px;
+    height: 250px;
+    border-radius: 50%; 
+ }
+ 
+ // at your template
+ <a href="#" ripple light centered-ripple 
+  class="circle button-md-primary">
+ </a>
+```
+
+Examples of  ripple at button tag without ionic button directive (utilization of ionic md styling class) 
+```html
+<button ripple light class="disable-hover button button-md button-default button-default-md button-large button-large-md button-md-primary">
+    Default
+</button>
+```
+
+```html
+<button ripple class="disable-hover button button-md button-default button-default-md button-block button-block-md button-md-light">
+  Default
+</button>
+```
+
+```html
+<button ripple light class="disable-hover button button-md button-large button-large-md button-round button-round-md button-md-secondary">
+  <span class="button-inner">
+    <ion-icon name="home" role="img" 
+          class="icon icon-md ion-md-home" 
+            aria-label="home">
+        </ion-icon>
+        Home
+  </span>
+</button>
+```
+
+```html
+<button color="light" ripple icon-start class="disable-hover button button-md button-default button-default-md button-md-light">
+  <span class="button-inner">
+    <ion-icon name="arrow-back" role="img" 
+          class="icon icon-md ion-md-arrow-back" aria-label="arrow back">
+        </ion-icon>
+        Back
+  </span><div class="button-effect"></div>
+</button>
+```
+
+It works!  :) God Bless You.
+
+
 <br>
 Thank You. <br>
 INDNJC,<br>

@@ -43,10 +43,14 @@ export enum BackgroundStates {
   ],
   styles: [
     `:host {
-      width: 100%;
-      height: 100%;
-      opacity: 0;
+      top: 0;
+      left: 0;
       display: block;
+      position: absolute;
+      width: inherit;
+      height: inherit;
+      border-radius: inherit;
+      opacity: 0;
     }`
   ],
   host: {'(@state.done)' : 'trigger($event)'}

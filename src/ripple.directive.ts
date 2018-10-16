@@ -78,8 +78,7 @@ export class RippleDirective {
   private _clickEmitDelay: string = RIPPLE_CLICK_EMIT_DELAY;
   private _tapLimit: number = RIPPLE_TAP_LIMIT;
 
-  @HostBinding('style.padding') padding: string = '0px';
-  @HostBinding('style.position') position: string = 'absolute';
+  @HostBinding('style.display') display: string = 'block';
   @HostBinding('style.overflow') overflow: string = 'hidden';
   @HostBinding('class.activated') activated: boolean
 
@@ -199,7 +198,8 @@ export class RippleDirective {
   }
 
   get recalculateStyle() {
-    enforceStyleRecalculation(this.ripple.element);
+    enforceStyleRecalculation(this.ripple.element)
+    enforceStyleRecalculation(this.background.element)
     return;
   }
 

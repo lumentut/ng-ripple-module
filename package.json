@@ -1,7 +1,7 @@
 {
   "name": "ng-ripple-module",
-  "version": "0.0.1",
-  "description": "N",
+  "version": "0.0.2",
+  "description": "An Agular Ripple Module",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
@@ -30,7 +30,6 @@
     "@angular/core": "6.1.10",
     "@angular/platform-browser": "6.1.10",
     "@angular/platform-browser-dynamic": "6.1.10",
-    "@types/jasmine": "^2.5.54",
     "rxjs": "~6.0.0",
     "ts-loader": "^2.3.7",
     "tslint": "^5.7.0",

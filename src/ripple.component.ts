@@ -24,7 +24,6 @@ import {
 } from '@angular/animations';
 
 import {
-  RIPPLE_TO_CENTER_TRANSFORM,
   RIPPLE_FILL_TRANSITION,
   RIPPLE_SPLASH_TRANSITION,
   RIPPLE_FADE_TRANSITION,
@@ -36,6 +35,11 @@ import {
   BackgroundComponent,
   BackgroundStates
 } from './ripple-bg.component';
+
+import {
+  RippleAnimation,
+  RippleTransition
+} from './ripple.animation';
 
 export interface RippleStyle {
   width?: number;
@@ -72,6 +76,7 @@ export function touch(event: TouchEvent): any {
       position: absolute;
       border-radius: 50%;
       opacity: 0;
+      will-change: transform, opacity;
     }`
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -112,6 +117,7 @@ export class RippleComponent {
   clickAndSplashTransition: string = RIPPLE_CLICK_FILL_AND_SPLASH
 
   private _parentRadiusSq: number
+  private _animation: RippleAnimation
 
   constructor(
     private elRef: ElementRef,
@@ -119,6 +125,22 @@ export class RippleComponent {
     private builder: AnimationBuilder
   ){
     this.element = this.elRef.nativeElement; 
+    this.animation.transition = this.transition;
+  }
+
+  get animation(): RippleAnimation {
+    if(this._animation) return this._animation;
+    this._animation = new RippleAnimation(this.builder, this.element);
+    return this._animation;
+  }
+
+  get transition(): RippleTransition {
+    return {
+      fill: this.fillTransition,
+      splash: this.splashTransition,
+      fade: this.fadeTransition,
+      clickAndSplash: this.clickAndSplashTransition
+    }
   }
 
   get diameter(): number {
@@ -184,25 +206,31 @@ export class RippleComponent {
     return this.touchEventStillInRectangleArea(event);
   }
 
+  get parentRadius(): number {
+    return this.parentRect.width/2;
+  }
+
   get parentRadiusSq(): number {
     if(this._parentRadiusSq) return this._parentRadiusSq;
-    const radius = this.parentRect.width/2;
-    this._parentRadiusSq = radius*radius;
+    this._parentRadiusSq = this.parentRadius*this.parentRadius;
     return this._parentRadiusSq;
   }
 
-  private touchEventStillInCircleArea(event: TouchEvent): boolean {
+  touchEventStillInCircleArea(event: TouchEvent): boolean {
     const dx = touch(event).clientX - this.center.x,
           dy = touch(event).clientY - this.center.y,
           touchRadiusSq = dx*dx + dy*dy;
     return touchRadiusSq < this.parentRadiusSq;
   }
 
-  private touchEventStillInRectangleArea(event: TouchEvent): boolean {
+  touchEventStillInRectangleArea(event: TouchEvent): boolean {
     const rect = this.parentRect,
           touchX = touch(event).clientX, touchY = touch(event).clientY,
-          isInRangeX = rect.left < touchX && touchX < rect.right,
-          isInRangeY = rect.top < touchY && touchY < rect.bottom;
+          halfW = rect.width/2, halfH = rect.height/2,
+          minX = this.center.x - halfW, maxX = this.center.x + halfW,
+          minY = this.center.y - halfH, maxY = this.center.y + halfH,
+          isInRangeX = minX < touchX && touchX < maxX,
+          isInRangeY = minY < touchY && touchY < maxY;
     return isInRangeX && isInRangeY;
   }
 
@@ -210,10 +238,15 @@ export class RippleComponent {
     const rippleRect = this.element.getBoundingClientRect(),
           dx = touch(event).clientX - this.center.x,
           dy = touch(event).clientY - this.center.y,
-          touchRadiusSq = dx*dx + dy*dy,
-          maxRadius = 0.5*this.parentRect.width - 0.5*rippleRect.width,
+          touchRadiusSq = dx*dx + dy*dy,          
+          maxRadius = this.parentRadius - 0.5*rippleRect.width,
           maxRadiusSq = maxRadius*maxRadius;
     return touchRadiusSq < maxRadiusSq;
+  }
+
+  private get currentScale(): number {
+    const rect = this.element.getBoundingClientRect();
+    return rect.width/this.diameter;
   }
 
   translate(event: TouchEvent) {
@@ -221,16 +254,17 @@ export class RippleComponent {
     if(this.centered) return;
     if(this.fixed) return this.splash();
 
-    this.animationPlayer = this.translateAnimation(
+    this.animationPlayer = this.animation.translate(
       touch(event).clientX - this.center.x,
-      touch(event).clientY - this.center.y
+      touch(event).clientY - this.center.y,
+      this.currentScale
     );
   
     this.animationPlayer.play();
   }
 
   splash() {
-    this.animationPlayer = this.splashAnimation;
+    this.animationPlayer = this.animation.splash;
     this.animationPlayer.play();
     this.background.state = BackgroundStates.FADEOUT;
     this.dragable = false;
@@ -238,9 +272,12 @@ export class RippleComponent {
 
   fill(event: TouchEvent) {
 
-    this.animationPlayer = this.fillAnimation(
-      touch(event).clientX - this.center.x,
-      touch(event).clientY - this.center.y
+    const tx = touch(event).clientX - this.center.x;
+    const ty = touch(event).clientY - this.center.y;
+
+    this.animationPlayer = this.animation.fill(
+      this.centered ? 0 : tx, 
+      this.centered ? 0 : ty
     );
 
     this.animationPlayer.play();
@@ -249,106 +286,10 @@ export class RippleComponent {
   }
 
   fillAndSplash(event: MouseEvent) {
-    this.animationPlayer = this.fillAndSplashAnimation(
+    this.animationPlayer = this.animation.fillAndSplash(
       event.clientX - this.center.x,
       event.clientY - this.center.y
     );
     this.animationPlayer.play();
-  }
-
-  private animationPlayerFactory(animation: any[]) {
-    return this.builder.build(animation).create(this.element);
-  }
-
-  private fillAndSplashAnimation(tx: number, ty:number): AnimationPlayer {
-
-    const showInTouchCoordinate = style({
-      opacity: 1,
-      transform: `translate3d(${tx}px, ${ty}px, 0) scale(0)`
-    });
-
-    const splashToCenter = animate(
-      this.clickAndSplashTransition,
-      style({
-        willChange: `transform`,
-        transform: RIPPLE_TO_CENTER_TRANSFORM
-      })
-    );
-
-    const fade = animate(
-      this.fadeTransition, 
-      style({ opacity: 0 })
-    );
-
-    const player = this.animationPlayerFactory([
-      showInTouchCoordinate,
-      splashToCenter,
-      fade
-    ]);
-
-    return player;
-  }
-
-  private fillAnimation(dx: number, dy: number): AnimationPlayer {
-
-    const tx = this.centered ? 0 : dx;
-    const ty = this.centered ? 0 : dy;
-
-    const showInTouchCoordinate = style({
-      opacity: 1,
-      transform: `translate3d(${tx}px, ${ty}px, 0) scale(0)`
-    });
-
-    const centering = style({
-      willChange: `transform`,
-      transform: RIPPLE_TO_CENTER_TRANSFORM,
-    })
-
-    const fillKeyframes = animate(
-      this.fillTransition,
-      keyframes([
-        showInTouchCoordinate,
-        centering
-      ])
-    );
-
-    const player = this.animationPlayerFactory([fillKeyframes]);
-
-    return player;
-  }
-
-  private get splashAnimation(): AnimationPlayer {
-
-    const splashToCenter = animate(this.splashTransition, style({
-      willChange: `transform`,
-      transform: RIPPLE_TO_CENTER_TRANSFORM
-    }));
-
-    const fade = animate( this.fadeTransition, style({ opacity: 0 }));
-    const player = this.animationPlayerFactory([splashToCenter, fade]);
-
-    return player;
-  }
-
-  private get currentScale(): number {
-    const rect = this.element.getBoundingClientRect();
-    return rect.width/this.diameter;
-  }
-
-  private translateAnimation(tx: number, ty: number): AnimationPlayer {
-
-    const translation = style({
-      willChange: 'off',
-      transition: '0ms linear',
-      transform: `translate3d(${tx}px, ${ty}px, 0) scale(${this.currentScale})`
-    });
-
-    const centering = animate(this.fillTransition, style({
-      transform: RIPPLE_TO_CENTER_TRANSFORM
-    }));
-
-    const player = this.animationPlayerFactory([translation, centering]);
-
-    return player;
   }
 }
