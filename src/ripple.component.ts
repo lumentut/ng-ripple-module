@@ -16,9 +16,6 @@ import {
 } from '@angular/core';
 
 import {
-  style,
-  animate,
-  keyframes,
   AnimationBuilder,
   AnimationPlayer
 } from '@angular/animations';
