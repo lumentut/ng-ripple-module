@@ -78,11 +78,13 @@ export class RippleAnimation {
 
     const showInTouchCoordinate = style({
       opacity: 1,
-      transform: `translate3d(${tx}px, ${ty}px, 0) scale(0)`
+      transform: `translate3d(${tx}px, ${ty}px, 0) scale(0)`,
+      offset: 0
     });
 
     const centering = style({
       transform: RIPPLE_TO_CENTER_TRANSFORM,
+      offset: 1
     });
 
     const fillKeyframes = animate(
@@ -113,7 +115,7 @@ export class RippleAnimation {
   translate(tx: number, ty: number, scale: number): AnimationPlayer {
 
     const translation = style({
-      transition: '0ms linear',
+      transition: '0s',
       transform: `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`
     });
 

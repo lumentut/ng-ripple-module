@@ -22,14 +22,14 @@ import {
   transition
 } from '@angular/animations';
 
-import {
-  RIPPLE_DARK_ACTIVE_BGCOLOR,
-} from './ripple.constants';
-
 export enum BackgroundStates {
   FADEIN = 'fadein',
   FADEOUT = 'fadeout'
 }
+
+import {
+  RIPPLE_DEFAULT_ACTIVE_BGCOLOR
+} from './ripple.constants'
 
 @Component({
   selector: 'background',
@@ -62,7 +62,7 @@ export class BackgroundComponent {
   @HostBinding('@state') state: string
   
   @HostBinding('style.background')
-  color: string = RIPPLE_DARK_ACTIVE_BGCOLOR
+  color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR
 
   @Output() eventTrigger: EventEmitter<any> = new EventEmitter();
 

@@ -27,8 +27,8 @@ import {
   RIPPLE_FILL_TRANSITION,
   RIPPLE_SPLASH_TRANSITION,
   RIPPLE_FADE_TRANSITION,
-  RIPPLE_DARK_BGCOLOR,
-  RIPPLE_CLICK_FILL_AND_SPLASH
+  RIPPLE_CLICK_FILL_AND_SPLASH,
+  RIPPLE_DEFAULT_BGCOLOR
 } from './ripple.constants';
 
 import { 
@@ -76,6 +76,7 @@ export function touch(event: TouchEvent): any {
       position: absolute;
       border-radius: 50%;
       opacity: 0;
+      -webkit-will-change: transform, opacity;
       will-change: transform, opacity;
     }`
   ],
@@ -96,7 +97,7 @@ export class RippleComponent {
   animationPlayer: AnimationPlayer
 
   @HostBinding('style.background')
-  color: string = RIPPLE_DARK_BGCOLOR
+  color: string = RIPPLE_DEFAULT_BGCOLOR
 
   @Input()
   centered: boolean = false
@@ -104,17 +105,10 @@ export class RippleComponent {
   @Input()
   fixed: boolean = false
 
-  @Input()
-  fillTransition: string = RIPPLE_FILL_TRANSITION
-
-  @Input()
-  splashTransition: string = RIPPLE_SPLASH_TRANSITION
-
-  @Input()
-  fadeTransition: string = RIPPLE_FADE_TRANSITION
-
-  @Input()
-  clickAndSplashTransition: string = RIPPLE_CLICK_FILL_AND_SPLASH
+  @Input() fillTransition: string
+  @Input() splashTransition: string
+  @Input() fadeTransition: string
+  @Input() clickAndSplashTransition: string
 
   private _parentRadiusSq: number
   private _animation: RippleAnimation
@@ -124,8 +118,7 @@ export class RippleComponent {
     private renderer: Renderer2,
     private builder: AnimationBuilder
   ){
-    this.element = this.elRef.nativeElement; 
-    this.animation.transition = this.transition;
+    this.element = this.elRef.nativeElement;
   }
 
   get animation(): RippleAnimation {
@@ -136,10 +129,10 @@ export class RippleComponent {
 
   get transition(): RippleTransition {
     return {
-      fill: this.fillTransition,
-      splash: this.splashTransition,
-      fade: this.fadeTransition,
-      clickAndSplash: this.clickAndSplashTransition
+      fill: this.fillTransition || RIPPLE_FILL_TRANSITION,
+      splash: this.splashTransition || RIPPLE_SPLASH_TRANSITION,
+      fade: this.fadeTransition || RIPPLE_FADE_TRANSITION,
+      clickAndSplash: this.clickAndSplashTransition || RIPPLE_CLICK_FILL_AND_SPLASH
     }
   }
 
@@ -170,6 +163,7 @@ export class RippleComponent {
   ngAfterViewInit() {
     this.parentElement = this.element.parentNode as HTMLElement;
     this.parentRect = this.parentElement.getBoundingClientRect();
+    this.animation.transition = this.transition;
     for(let key in this.properties) {
       this.renderer.setStyle(this.element, key, `${this.properties[key]}px`);
     }
