@@ -78,7 +78,7 @@ Ripple effect highly depend on transition. Different time selection/transition w
 <br>
  Example:
 ```html
-  <button ripple light fixed-centered
+  <button ripple light fixed-ripple
     fillTransition="1000ms"
     splashTransition="70ms cubic-bezier(0.4, 0.0, 0.2, 1)"
     fadeTransition="250ms">
@@ -115,30 +115,166 @@ This module provides you custom events that will emitted after your ripple effec
 Every event provides by this module will returned a custom event object. The returned value is an `RippleEvent` object as shown below:
 ```ts
 target: HTMLElement;      // your host element
-type: string;         // rtap | rpress | rpressup | rclick
-timestamp: number;      // timestamp when the event emitted
-clientX: number;      // center coordinate X of your host element
-clientY: number;      // center coordinate Y of your host element
+type: string;             // rtap | rpress | rpressup | rclick
+timestamp: number;        // timestamp when the event emitted
+clientX: number;          // center coordinate X of your host element
+clientY: number;          // center coordinate Y of your host element
 clientRect: ClientRect;   // host element ClientRect detail data
 ```
 ## Examples
-Below are examples of ripple directive in Ionic (3) application.
+Below are examples of ripple directive in Ionic (3) application. Dont't forget set the host style position property to `relative`;
 
-```html
-// styling at your app.scss
- .circle {
-  width: 250px;
-    height: 250px;
-    border-radius: 50%; 
- }
- 
- // at your template
- <a href="#" ripple light centered-ripple 
-  class="circle button-md-primary">
- </a>
+```ts
+
+...
+
+
+@Component({
+  selector: 'page-home',
+  styles: [
+    `:host .circle {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      position: relative;
+    }`
+  ],
+  template: `
+    <ion-header>
+      ...
+    </ion-header>
+    <ion-content padding>
+
+    ...
+
+    <h2>Centered Ripple</h2>
+      <p>
+        <a href="#" ripple light centered-ripple 
+          class="circle button-md-secondary"
+          (rtap)="onTap($event)"
+          (rpress)="onPress($event)"
+          (rpressup)="onPressup($event)">
+        </a>
+      </p>
+      <br>
+      <h2>Draggable ripple</h2>
+      <p>
+        <a href="#" ripple light 
+          class="circle button-md-primary"
+          (rtap)="onTap($event)"
+          (rpress)="onPress($event)"
+          (rpressup)="onPressup($event)">
+        </a>
+      </p>
+    
+    <br>
+    <h2>Ionic button</h2>
+    <p>It is better not to use ion-button directive directly. It is highly recomended to use its css class instead<p>
+    <p>
+      <button ion-button color="light" block ripple>Light</button>
+    </p>
+
+    <p>
+      <button ion-button block ripple light>Default</button>
+    </p>
+
+    <p>
+      <button ion-button color="secondary" block ripple light>Secondary</button>
+    </p>
+
+    <p>
+      <button ion-button color="danger" block ripple light>Danger</button>
+    </p>
+
+    <p>
+      <button ion-button color="dark" block ripple light>Dark</button>
+    </p>
+
+    <p>
+      <button ion-button color="light" clear ripple>Light</button>
+    </p>
+
+    <p>
+      <button ion-button clear ripple>Default</button>
+    </p>
+
+    <p>
+      <button ion-button color="secondary" clear ripple>Secondary</button>
+    </p>
+
+    <p>
+      <button ion-button color="danger" clear ripple>Danger</button>
+    </p>
+
+    <p>
+      <button ion-button color="dark" clear ripple>Dark</button>
+    </p>
+
+    <p>
+      <button ion-button color="light" outline ripple>Light</button>
+    </p>
+
+    <p>
+      <button ion-button outline ripple>Default</button>
+    </p>
+
+    <p>
+      <button ion-button color="secondary" outline ripple>Secondary</button>
+    </p>
+
+    <p>
+      <button ion-button color="danger" outline ripple>Danger</button>
+    </p>
+
+    <p>
+      <button ion-button color="dark" outline ripple>Dark</button>
+    </p>
+
+    <p>
+      <button ion-button color="light" small ripple>Light Small</button>
+    </p>
+    <p>
+      <button ion-button small ripple light>Default Small</button>
+    </p>
+    <p>
+      <button ion-button color="secondary" ripple light>Secondary Medium</button>
+    </p>
+
+    <p>
+      <button ion-button color="danger" medium ripple light>Danger Medium</button>
+    </p>
+    <p>
+      <button ion-button color="dark" large ripple light>Dark Large</button>
+    </p>
+
+    ...
+
+    </ion-content>
+
+  `
+})
+export class HomePage {
+
+  ...
+
+  onTap(event: any){
+    console.log(event.type)
+  }
+
+  onPress(event: any){
+    console.log(event.type)
+  }
+
+  onPressup(event: any){
+    console.log(event.type)
+  }
+
+  ...
+
+}
 ```
 
-Examples of  ripple at button tag without ionic button directive (utilization of ionic md styling class) 
+Examples of  ripple at button tag without ionic button directive (utilization of ionic md styling class).  
 ```html
 <button ripple light class="disable-hover button button-md button-default button-default-md button-large button-large-md button-md-primary">
     Default
