@@ -310,10 +310,9 @@ Examples of  ripple at button tag without ionic button directive (utilization of
 </button>
 ```
 <br>
-It works! Don't be pessimistic. God Bless You  :)
+It works! God Bless You  :)
 
 <br>
-<i>"The butter has melting. Take up your Angular shield, sharpen your Typescript sword. There will be a great battle ahead!" -- yohanes.o.L</i>
 
 
 <br>
