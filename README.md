@@ -8,7 +8,7 @@ An Angular ripple module as an alternative of available material design ripple.
 npm i ng-ripple-module
 ```
 
-2.Import `NgRippleModule` in your application's main `@NgModule` and `BrowserAnimationsModule` (if is not imported yet).
+2.Import `NgRippleModule` in your application's main `@NgModule` and `BrowserAnimationsModule` (if not imported yet).
 ```ts
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgRippleModule } from 'ng-ripple-module';
@@ -26,7 +26,7 @@ export class MyModule { ... }
 Now you're ready to use this module
 ## Directive 
 
-This module provides you a single `ripple` directive to easily attach ripple component with its ripple effects into your application `HTMLElement` tag. You can freely decorate the shape, color or the other style properties of your element by using your style sheet. <br>
+This module provides you a single `ripple` directive so you can attach ripple component and its ripple effects easily into your application `HTMLElement` tag. You can freely decorate the shape, the color or the other style properties of your element by using your style sheet. <br>
 The directive provides you a customizable `background` layer for your element active state and insert `activated` class at your host tag during `touch` or `click` event.
 <br>
 Example: <br>
@@ -40,7 +40,7 @@ Example: <br>
 
 ## Available Inputs and Attributes
 ### `light`
-Basically, the module is shipped out with `dark` ripple effect. If you need a light/white ripple effect, just use `light` attributes as follow:
+Basically, the module is shipped out with `dark` ripple effect. If you need a light/white ripple effect, just use `light` attributes.
 ```html
   <button ripple light ...>...</button>
 ```
@@ -61,7 +61,7 @@ For some reason, you need a fixed ripple effect, let's say for a list item eleme
 ```
 
 ### `rippleBgColor & activeBgColor`
-If you need a custom ripple effect color, you can customize the ripple effect using `rippleBgColor` and/or `activeBgColor`.
+If you need a custom ripple effect color, you can make a custom ripple effect using `rippleBgColor` and/or `activeBgColor`.
 ```html
   <button ... ripple 
     rippleBgColor={{_rippleBgColor}}
@@ -71,9 +71,9 @@ If you need a custom ripple effect color, you can customize the ripple effect us
 ```
 
 ### `fillTransition, splashTransition, fadeTransition`
-Ripple effect highly depend on transition. Different time selection/transition will provide you different ripple effect too.<br><br>
-<b>`fillTransition`</b> is an input of ripple fill in effect which consist of a `transition-duration` value.<br><br>
-<b>`splashTransition`</b> is a ripple splash effect input.The value have to contains both `transition-duration` and `transition-timing-function` sequentially.<br><br>
+Ripple effect highly depend on transition. Different time selection/transition will provide you different ripple effect too. This module provides you default transitions but you can make experiments as you like.<br><br>
+<b>`fillTransition`</b> is an input of ripple fill-in effect which consist of a `transition-duration` value.<br><br>
+<b>`splashTransition`</b> is a ripple splash effect input. The value have to contain of both `transition-duration` and `transition-timing-function` sequentially.<br><br>
 <b>`fadeTransition`</b> is for ripple both fadeout and fadein transition in a `transition-duration` value.<br>
 <br>
  Example:
@@ -109,10 +109,10 @@ Ripple effect of mouse click event can be customized by using this input.
 This input is used in determining limit of `rtap` event. Touch event that more than this limit will be considered as `rpress`
 
 ## Available Events (`rtap`, `rpress`, `rpressup`, `rclick`)
-This module provides you custom events that will emitted after your ripple effect animation completed. Of course you still can use default events ( eg. `tap` and `press` for Ionic Apps or `click` for mouse device). The events have `r` prefix to distinguish from default event.
+This module provides you custom events that will emitt after your ripple effect animation completed. Of course you still can use default events ( eg. `tap` and `press` for Ionic Apps or `click` for mouse device). The events have `r` prefix to distinguish from default event.
 
 ## Custom Event Returned Object `($event)`
-Every event provides by this module will returned a custom event object. The returned value is an `RippleEvent` object as shown below:
+Every event provides by this module will return a custom event object. The returned value is an `RippleEvent` object as shown below:
 ```ts
 target: HTMLElement;      // your host element
 type: string;             // rtap | rpress | rpressup | rclick
@@ -122,7 +122,7 @@ clientY: number;          // center coordinate Y of your host element
 clientRect: ClientRect;   // host element ClientRect detail data
 ```
 ## Examples
-Below are examples of ripple directive in Ionic (3) application. Dont't forget set the host style position property to `relative`;
+Below are examples of ripple directive in Ionic (3) application. Dont't forget to set the host element style position property into `relative`;
 
 ```ts
 
@@ -169,7 +169,7 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget s
     
     <br>
     <h2>Ionic button</h2>
-    <p>It is better not to use ion-button directive directly. It is highly recomended to use its css class instead<p>
+    <p>It is better not to use ion-button directive directly. It is highly recomended to use its css class instead. These are for example only.<p>
     <p>
       <button ion-button color="light" block ripple>Light</button>
     </p>
@@ -309,11 +309,14 @@ Examples of  ripple at button tag without ionic button directive (utilization of
   </span><div class="button-effect"></div>
 </button>
 ```
+<br>
+It works! Don't be pessimistic. God Bless You  :)
 
-It works!  :) God Bless You.
+<br>
+<i>"The butter has melting. Take up your Angular shield, sharpen your Typescript sword. There will be a great battle ahead!" -- yohanes.o.L</i>
 
 
 <br>
 Thank You. <br>
 INDNJC,<br>
-Kota Wisata 2018.
+Kota Wisata, October 2018.

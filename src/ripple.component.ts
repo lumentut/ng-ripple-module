@@ -11,8 +11,7 @@ import {
   ElementRef,
   Renderer2,
   Input,
-  HostBinding,
-  ChangeDetectionStrategy
+  HostBinding
 } from '@angular/core';
 
 import {
