@@ -29,8 +29,7 @@ import {
 } from './ripple.constants';
 
 import { 
-  BackgroundComponent,
-  BackgroundStates
+  BackgroundComponent
 } from './ripple-bg.component';
 
 import {
@@ -76,8 +75,7 @@ export function touch(event: TouchEvent): any {
       -webkit-will-change: transform, opacity;
       will-change: transform, opacity;
     }`
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class RippleComponent {
 
@@ -257,11 +255,13 @@ export class RippleComponent {
   splash() {
     this.animationPlayer = this.animation.splash;
     this.animationPlayer.play();
-    this.background.state = BackgroundStates.FADEOUT;
+    this.background.fadeout;
     this.dragable = false;
   }
 
   fill(event: TouchEvent) {
+
+    this.background.fadein;
 
     const tx = touch(event).clientX - this.center.x;
     const ty = touch(event).clientY - this.center.y;
@@ -272,7 +272,6 @@ export class RippleComponent {
     );
 
     this.animationPlayer.play();
-    this.background.state = BackgroundStates.FADEIN;
     this.dragable = true;
   }
 

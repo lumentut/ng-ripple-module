@@ -11,66 +11,99 @@ import {
   ElementRef,
   Output,
   HostBinding,
+  Renderer2,
   EventEmitter
 } from '@angular/core';
 
 import {
   style,
   animate,
-  trigger,
-  state,
-  transition
+  keyframes,
+  AnimationBuilder,
+  AnimationPlayer
 } from '@angular/animations';
-
-export enum BackgroundStates {
-  FADEIN = 'fadein',
-  FADEOUT = 'fadeout'
-}
 
 import {
   RIPPLE_DEFAULT_ACTIVE_BGCOLOR
-} from './ripple.constants'
+} from './ripple.constants';
 
 @Component({
   selector: 'background',
   template: `<ng-content></ng-content>`,
-  animations: [
-    trigger('state',[
-      state('fadein', style({ opacity: 1 })),
-      state('fadeout', style({ opacity: 0 })),
-      transition('fadein <=> fadeout', animate('350ms'))
-    ])
-  ],
   styles: [
     `:host {
       top: 0;
       left: 0;
       display: block;
       position: absolute;
-      width: inherit;
       height: inherit;
       border-radius: inherit;
       opacity: 0;
     }`
-  ],
-  host: {'(@state.done)' : 'trigger($event)'}
+  ]
 })
 export class BackgroundComponent {
 
   element: HTMLElement
+  parentElement: HTMLElement
 
-  @HostBinding('@state') state: string
+  duration: number = 350;
   
   @HostBinding('style.background')
   color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR
 
+  @HostBinding('style.width') width: string
+  @HostBinding('style.height') height: string
+
   @Output() eventTrigger: EventEmitter<any> = new EventEmitter();
 
-  constructor( private elRef: ElementRef ){
+  constructor(
+    private elRef: ElementRef,
+    private builder: AnimationBuilder
+  ){
     this.element = this.elRef.nativeElement;
   }
 
-  trigger(event: TouchEvent) {
-    if((<any>event).toState == 'fadeout') this.eventTrigger.emit(event);
+  ngOnInit() {
+    this.parentElement = this.element.parentNode as HTMLElement
+    this.updateDimensions
+  }
+
+  get updateDimensions(){
+    const parentRect = this.parentElement.getBoundingClientRect()
+    this.width = `${parentRect.width}px`;
+    this.height = `${parentRect.height}px`;
+    return;
+  }
+
+  private animationPlayerFactory(animation: any[]) {
+    return this.builder.build(animation).create(this.element);
+  }
+
+  private get fadeinPlayer(): AnimationPlayer {
+    return this.animationPlayerFactory([
+      animate(`${this.duration}ms ease-in-out`, keyframes([
+        style({ opacity: 0 }), style({ opacity: 1 })
+      ]))
+    ]);
+  }
+
+  private get fadeoutPlayer(): AnimationPlayer {
+    return this.animationPlayerFactory([
+      animate(`${this.duration}ms ease-in-out`, keyframes([
+        style({ opacity: 1 }), style({ opacity: 0 })
+      ]))
+    ]);
+  }
+
+  get fadein() {
+    this.fadeinPlayer.play();
+    return;
+  }
+
+  get fadeout() {
+    this.fadeoutPlayer.play();
+    setTimeout(() => this.eventTrigger.emit(), this.duration);
+    return;
   }
 }

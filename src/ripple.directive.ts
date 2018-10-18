@@ -8,6 +8,7 @@
 
 import { 
   Directive,
+  NgZone,
   HostBinding,
   ElementRef,
   ComponentFactoryResolver,
@@ -43,21 +44,20 @@ export enum Events {
   CLICK = 'rclick'
 }
 
+export enum Gestures {
+  TOUCHSTART = 'touchstart',
+  TOUCHMOVE = 'touchmove',
+  TOUCHEND = 'touchend',
+  CLICK = 'click',
+}
+
 export const BasicEvents = [Events.TAP, Events.PRESS];
 
 export function enforceStyleRecalculation(element: HTMLElement) {
   window.getComputedStyle(element).getPropertyValue('opacity');
 }
 
-@Directive({
-  selector: '[ripple]',
-  host: {
-    '(touchstart)': 'onTouchstart($event)',
-    '(touchmove)': 'onTouchmove($event)',
-    '(touchend)': 'onTouchend($event)',
-    '(click)': 'onClick($event)'
-  }
-})
+@Directive({ selector: '[ripple]' })
 export class RippleDirective {
 
   element: HTMLElement
@@ -75,6 +75,7 @@ export class RippleDirective {
 
   registeredEvents = new Map<string, any>();
 
+  private _gestures: Map<string, Function>
   private _clickEmitDelay: string = RIPPLE_CLICK_EMIT_DELAY;
   private _tapLimit: number = RIPPLE_TAP_LIMIT;
 
@@ -150,9 +151,11 @@ export class RippleDirective {
     private elRef: ElementRef,
     private cfr: ComponentFactoryResolver,
     private appRef: ApplicationRef,
-    private injector: Injector
+    private injector: Injector,
+    private ngZone: NgZone
   ){
     this.element = this.elRef.nativeElement;
+    this.registerGestures;
   }
 
   ngAfterViewInit() {
@@ -165,6 +168,22 @@ export class RippleDirective {
 
   ngOnDestroy() {
     this.background.eventTrigger.unsubscribe();
+    this.gestures.forEach((fn, type) => this.element.removeEventListener(type, fn));
+  }
+
+  get gestures(): any {
+    if(this._gestures) return this._gestures;
+    const _gestures = new Map<string, Function>();
+    for(let i in Gestures) _gestures.set(Gestures[i], this[`on${Gestures[i]}`])
+    return this._gestures = _gestures;
+  }
+
+  get registerGestures() {
+    return this.ngZone.runOutsideAngular(() => {
+      this.gestures.forEach((fn, type) => 
+        this.element.addEventListener(type, fn, false)
+      );
+    });
   }
 
   appendChildren(elements: any[]){
@@ -257,7 +276,7 @@ export class RippleDirective {
     return;
   }
 
-  onTouchstart(event: TouchEvent) {
+  private ontouchstart = (event: TouchEvent) => {
     event.preventDefault();
     this.touchstartTimeStamp = event.timeStamp;
     this.isPressing = true;
@@ -266,20 +285,25 @@ export class RippleDirective {
     this.activated = true;
   }
 
-  onTouchmove(event: TouchEvent) {
-    if(!this.ripple.dragable) return;
-    if(!this.ripple.touchEventIsInHostArea(event)) return this.ripple.splash();
-    if(this.ripple.outerPointStillInHostRadius(event)) this.ripple.translate(event);
-  }
-
-  onTouchend(event: TouchEvent) {
-    this.touchendTimeStamp = event.timeStamp;
+  private get rippleSplash(){
     this.isPressing = false;
-    this.ripple.splash();
     this.activated = false;
+    return this.ripple.splash();
   }
 
-  onClick(event: MouseEvent) {
+  private ontouchmove = (event: TouchEvent) => {
+    if(!this.ripple.dragable) return;
+    if(!this.ripple.touchEventIsInHostArea(event)) return this.rippleSplash;
+    if(this.ripple.outerPointStillInHostRadius(event)) return this.ripple.translate(event);
+  }
+
+  private ontouchend = (event: TouchEvent) => {
+    this.touchendTimeStamp = event.timeStamp;
+    if(!this.isPressing) return;
+    this.rippleSplash
+  }
+
+  private onclick = (event: MouseEvent) => {
     event.preventDefault();
     this.ripple.fillAndSplash(event);
     setTimeout(()=> this.emitClickEvent, this.clickEmitDelay)
