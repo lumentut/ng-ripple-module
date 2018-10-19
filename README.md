@@ -181,7 +181,7 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
     <h2>Ionic button</h2>
     <p>It is better not to use ion-button directive directly. <br>
        It is highly recomended to use its css class instead. These are for example only. <br>
-       If not you will get a double ripple effect. <br>
+       Otherwise, you will get a double ripple effect. <br>
        The origin of Ionic fipple effect will appear if you run in desktop browser.<p>
     <p>
       <button ion-button color="light" block ripple>Light</button>
