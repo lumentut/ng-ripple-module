@@ -65,7 +65,6 @@ export class RippleDirective {
   touchstartTimeStamp: number = 0
   touchendTimeStamp: number = 0
 
-  pressTimeout: any
   isPressing: boolean
 
   lastEvent: Events
@@ -76,10 +75,11 @@ export class RippleDirective {
   private _triggers: Map<string, Function>
   private _clickEmitDelay: string = RIPPLE_CLICK_EMIT_DELAY;
   private _tapLimit: number = RIPPLE_TAP_LIMIT;
+  private _children: any[]
 
   @HostBinding('style.display') display: string = 'block';
   @HostBinding('style.overflow') overflow: string = 'hidden';
-  @HostBinding('class.activated') activated: boolean
+  @HostBinding('class.activated') activated: boolean = false;
 
   @Input()
   set light(val: boolean) {
@@ -153,12 +153,12 @@ export class RippleDirective {
     private ngZone: NgZone
   ){
     this.element = this.elRef.nativeElement;
-    this.registerTriggers;
+    this.listenToTriggers;
   }
 
   ngAfterViewInit() {
     this.appendChildren([this.background.element,this.ripple.element]);
-    this.background.eventTrigger.subscribe(() => this.triggerEvent);
+    this.background.eventTrigger.subscribe(() => this.emitCurrentEvent);
     this.ripple.background = this.background;
     this.recalculateStyle;
     this.registerEvents;
@@ -166,17 +166,17 @@ export class RippleDirective {
 
   get triggers(): any {
     if(this._triggers) return this._triggers;
-    const _triggers = new Map<string, Function>();
-    for(let i in Triggers) _triggers.set(Triggers[i], this[`on${Triggers[i]}`])
-    return this._triggers = _triggers;
+    this._triggers = new Map<string, Function>();
+    for(let i in Triggers) this._triggers.set(Triggers[i], this[`on${Triggers[i]}`])
+    return this._triggers;
   }
 
-  get registerTriggers() {
+  get listenToTriggers() {
     return this.ngZone.runOutsideAngular(() => {
       this.triggers.forEach((fn, type) => 
         this.element.addEventListener(type, fn, false)
       );
-    });
+    });;
   }
 
   ngOnDestroy() {
@@ -185,7 +185,8 @@ export class RippleDirective {
   }
 
   appendChildren(elements: any[]){
-    elements.forEach(element => this.element.appendChild(element))
+    this._children = elements;
+    this._children.forEach(element => this.element.appendChild(element))
   }
 
   get registerEvents() {
@@ -215,8 +216,7 @@ export class RippleDirective {
   }
 
   get recalculateStyle() {
-    enforceStyleRecalculation(this.ripple.element)
-    enforceStyleRecalculation(this.background.element)
+    this._children.forEach(element => enforceStyleRecalculation(element));
     return;
   }
 
@@ -241,7 +241,7 @@ export class RippleDirective {
     return this.currentEvent == this.lastEvent;
   }
 
-  get triggerEvent() {
+  get emitCurrentEvent() {
     if(this.isFastEvent && this.isRepeatingEvent) return;
     return this.emitEvent(this.currentEvent);
   }
@@ -268,24 +268,21 @@ export class RippleDirective {
   }
 
   get watchPressEvent() {
-    this.pressTimeout = setTimeout(() => {
+    return setTimeout(() => {
       if(this.isPressing) this.emitEvent(Events.PRESS);
     }, this.tapLimit);
-    return;
   }
 
   private ontouchstart = (event: TouchEvent) => {
     event.preventDefault();
     this.touchstartTimeStamp = event.timeStamp;
-    this.isPressing = true;
+    this.isPressing = this.activated = true;
     this.watchPressEvent;
-    this.ripple.fill(event);
-    this.activated = true;
+    return this.ripple.fill(event);
   }
 
   private get rippleSplash(){
-    this.isPressing = false;
-    this.activated = false;
+    this.isPressing = this.activated = false;
     return this.ripple.splash();
   }
 
