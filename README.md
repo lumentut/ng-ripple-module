@@ -38,6 +38,18 @@ Example: <br>
 ```
 <br>
 
+## Element Positioning
+To make this module works correctly, don't forget to set your nest element style position into a relatively positioned
+```html
+   your_nest_element {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      position: relative;
+   }
+```
+<br>
+
 ## Available Inputs and Attributes
 ### `light`
 Basically, the module is shipped out with `dark` ripple effect. If you need a light/white ripple effect, just use `light` attributes.
