@@ -11,7 +11,6 @@ import {
   ElementRef,
   Output,
   HostBinding,
-  Renderer2,
   EventEmitter
 } from '@angular/core';
 
@@ -36,7 +35,6 @@ import {
       left: 0;
       display: block;
       position: absolute;
-      height: inherit;
       border-radius: inherit;
       opacity: 0;
     }`

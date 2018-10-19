@@ -9,7 +9,6 @@
 import { NgModule } from '@angular/core';
 import { RippleDirective } from './ripple.directive';
 import { RippleComponent } from './ripple.component';
-import { RippleAnimation } from './ripple.animation';
 import { BackgroundComponent } from './ripple-bg.component';
 
 @NgModule({
