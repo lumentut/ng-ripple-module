@@ -42,10 +42,9 @@ Example: <br>
 To make this module works correctly, don't forget to set your nest element style position into a relatively positioned
 ```html
    your_nest_element {
-      width: 250px;
-      height: 250px;
-      border-radius: 50%;
+      ...
       position: relative;
+      ...
    }
 ```
 <br>
@@ -64,7 +63,7 @@ This attribute is used to make your ripple effect start from the center of your 
 ```
 
 ### `fixed-ripple`
-For some reason, you need a fixed ripple effect, let's say for a list item element. In this case, `fixed-ripple` attributes will help you a lot.
+For some reason, you need a fixed ripple effect, let's say for a long list item element. In this case, `fixed-ripple` attributes will help you a lot.
 ```html
   <ul ...>
     <li ripple fixed-ripple ...> ... </li>
@@ -76,14 +75,14 @@ For some reason, you need a fixed ripple effect, let's say for a list item eleme
 If you need a custom ripple effect color, you can make a custom ripple effect using `rippleBgColor` and/or `activeBgColor`.
 ```html
   <button ... ripple 
-    rippleBgColor={{_rippleBgColor}}
-    activeBgColor={{_activeBgColor}}>
+    rippleBgColor={{ your_desired_ripple_bg_color }}
+    activeBgColor={{ your_desired_active_bg_color }}>
     ...
   </button>
 ```
 
 ### `fillTransition, splashTransition, fadeTransition`
-Ripple effect highly depend on transition. Different time selection/transition will provide you different ripple effect too. This module provides you default transitions but you can make experiments as you like.<br><br>
+The Ripple effect is highly depend on transition/timing. Different time selection/transition will provide you different ripple effect too. This module provides you default transitions but you can make experiments as you like.<br><br>
 <b>`fillTransition`</b> is an input of ripple fill-in effect which consist of a `transition-duration` value.<br><br>
 <b>`splashTransition`</b> is a ripple splash effect input. The value have to contain of both `transition-duration` and `transition-timing-function` sequentially.<br><br>
 <b>`fadeTransition`</b> is for ripple both fadeout and fadein transition in a `transition-duration` value.<br>
@@ -140,7 +139,6 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
 
 ...
 
-
 @Component({
   selector: 'page-home',
   styles: [
@@ -181,7 +179,7 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
     
     <br>
     <h2>Ionic button</h2>
-    <p>It is better not to use ion-button directive directly. It is highly recomended to use its css class instead. These are for example only.<p>
+    <p>It is better not to use ion-button directive directly. It is highly recomended to use its css class instead. These are for example only. If not you will get a double ripple effect. The origin of Ionic fipple effect will appear if you run in desktop browser.<p>
     <p>
       <button ion-button color="light" block ripple>Light</button>
     </p>
@@ -286,7 +284,8 @@ export class HomePage {
 }
 ```
 
-Examples of  ripple at button tag without ionic button directive (utilization of ionic md styling class).  
+Examples of  ripple at button tag without ionic button directive (utilization of ionic md styling class).
+
 ```html
 <button ripple light class="disable-hover button button-md button-default button-default-md button-large button-large-md button-md-primary">
     Default
