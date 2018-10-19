@@ -51,7 +51,7 @@ To make this module works correctly, don't forget to set your nest element style
 
 ## Available Inputs and Attributes
 ### `light`
-Basically, the module is shipped out with `dark` ripple effect. If you need a light/white ripple effect, just use `light` attributes.
+Basically, the module is shipped out with `dark` ripple effect. If you need a light/white ripple effect, just use `light` attribute.
 ```html
   <button ripple light ...>...</button>
 ```
@@ -63,7 +63,7 @@ This attribute is used to make your ripple effect start from the center of your 
 ```
 
 ### `fixed-ripple`
-For some reason, you need a fixed ripple effect, let's say for a long list item element. In this case, `fixed-ripple` attributes will help you a lot.
+For some reason, you need a fixed ripple effect, let's say for a long list item element. In this case, `fixed-ripple` attribute will help you a lot.
 ```html
   <ul ...>
     <li ripple fixed-ripple ...> ... </li>
@@ -82,7 +82,7 @@ If you need a custom ripple effect color, you can make a custom ripple effect us
 ```
 
 ### `fillTransition, splashTransition, fadeTransition`
-The Ripple effect is highly depend on transition/timing. Different time selection/transition will provide you different ripple effect too. This module provides you default transitions but you can make experiments as you like.<br><br>
+The Ripple effect is highly depend on transition/timing. Different time selection/transition will provide you different ripple effect too. This module provides you default transitions/timing but you can make experiments as you like.<br><br>
 <b>`fillTransition`</b> is an input of ripple fill-in effect which consist of a `transition-duration` value.<br><br>
 <b>`splashTransition`</b> is a ripple splash effect input. The value have to contain of both `transition-duration` and `transition-timing-function` sequentially.<br><br>
 <b>`fadeTransition`</b> is for ripple both fadeout and fadein transition in a `transition-duration` value.<br>
@@ -117,7 +117,7 @@ Ripple effect of mouse click event can be customized by using this input.
 ```
 
 ### `tapLimit`
-This input is used in determining limit of `rtap` event. Touch event that more than this limit will be considered as `rpress`
+This input is used in determining limit of `rtap` event. Touch event that take place more than this limit will be emitted as `rpress` event.
 
 ## Available Events (`rtap`, `rpress`, `rpressup`, `rclick`)
 This module provides you custom events that will emitt after your ripple effect animation completed. Of course you still can use default events ( eg. `tap` and `press` for Ionic Apps or `click` for mouse device). The events have `r` prefix to distinguish from default event.
@@ -179,7 +179,10 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
     
     <br>
     <h2>Ionic button</h2>
-    <p>It is better not to use ion-button directive directly. It is highly recomended to use its css class instead. These are for example only. If not you will get a double ripple effect. The origin of Ionic fipple effect will appear if you run in desktop browser.<p>
+    <p>It is better not to use ion-button directive directly. <br>
+       It is highly recomended to use its css class instead. These are for example only. <br>
+       If not you will get a double ripple effect. <br>
+       The origin of Ionic fipple effect will appear if you run in desktop browser.<p>
     <p>
       <button ion-button color="light" block ripple>Light</button>
     </p>
