@@ -51,8 +51,6 @@ export enum Triggers {
   CLICK = 'click',
 }
 
-export const BasicEvents = [Events.TAP, Events.PRESS];
-
 export function enforceStyleRecalculation(element: HTMLElement) {
   window.getComputedStyle(element).getPropertyValue('opacity');
 }
