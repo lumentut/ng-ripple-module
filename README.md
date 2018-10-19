@@ -182,7 +182,7 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
     <p>It is better not to use ion-button directive directly. <br>
        It is highly recomended to use its css class instead. These are for example only. <br>
        Otherwise, you will get a double ripple effect. <br>
-       The origin of Ionic fipple effect will appear if you run in desktop browser.<p>
+       The original of Ionic ripple effect will appear while you run in desktop browser.<p>
     <p>
       <button ion-button color="light" block ripple>Light</button>
     </p>
@@ -287,22 +287,29 @@ export class HomePage {
 }
 ```
 
-Examples of  ripple at button tag without ionic button directive (utilization of ionic md styling class).
+Examples of  ripple at button tag without ionic button directive (utilization of ionic md styling class).<br>
+Or you can create your own reusable directive to write the `md classes` into your element for you. 
 
 ```html
-<button ripple light class="disable-hover button button-md button-default button-default-md button-large button-large-md button-md-primary">
-    Default
+<button ripple light 
+   class="disable-hover button button-md button-default 
+   button-default-md button-large button-large-md button-md-primary">
+   Default
 </button>
 ```
 
 ```html
-<button ripple class="disable-hover button button-md button-default button-default-md button-block button-block-md button-md-light">
+<button ripple 
+  class="disable-hover button button-md button-default
+  button-default-md button-block button-block-md button-md-light">
   Default
 </button>
 ```
 
 ```html
-<button ripple light class="disable-hover button button-md button-large button-large-md button-round button-round-md button-md-secondary">
+<button ripple light 
+  class="disable-hover button button-md button-large button-large-md
+  button-round button-round-md button-md-secondary">
   <span class="button-inner">
     <ion-icon name="home" role="img" 
           class="icon icon-md ion-md-home" 
@@ -314,7 +321,9 @@ Examples of  ripple at button tag without ionic button directive (utilization of
 ```
 
 ```html
-<button color="light" ripple icon-start class="disable-hover button button-md button-default button-default-md button-md-light">
+<button color="light" ripple icon-start
+  class="disable-hover button button-md button-default
+  button-default-md button-md-light">
   <span class="button-inner">
     <ion-icon name="arrow-back" role="img" 
           class="icon icon-md ion-md-arrow-back" aria-label="arrow back">
