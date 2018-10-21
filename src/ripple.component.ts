@@ -24,7 +24,9 @@ import {
   RIPPLE_SPLASH_TRANSITION,
   RIPPLE_FADE_TRANSITION,
   RIPPLE_CLICK_FILL_AND_SPLASH,
-  RIPPLE_DEFAULT_BGCOLOR
+  RIPPLE_DEFAULT_BGCOLOR,
+  RIPPLE_CLICK_EMIT_DELAY,
+  RIPPLE_TAP_LIMIT
 } from './ripple.constants';
 
 import { 
@@ -81,14 +83,14 @@ export class RippleComponent {
   element: HTMLElement
   parentElement: HTMLElement
 
-  rect: ClientRect
-  parentRect: ClientRect
-
   background: BackgroundComponent
 
   dragable: boolean
 
   animationPlayer: AnimationPlayer
+
+  clickEmitDelay: string = RIPPLE_CLICK_EMIT_DELAY
+  tapLimit: number = RIPPLE_TAP_LIMIT
 
   @HostBinding('style.background')
   color: string = RIPPLE_DEFAULT_BGCOLOR
@@ -156,15 +158,23 @@ export class RippleComponent {
 
   ngAfterViewInit() {
     this.parentElement = this.element.parentNode as HTMLElement;
-    this.parentRect = this.parentElement.getBoundingClientRect();
     this.animation.transition = this.transition;
+    this.updateDimensions
+  }
+
+  get updateDimensions() {
     for(let key in this.properties) {
       this.renderer.setStyle(this.element, key, `${this.properties[key]}px`);
     }
+    return;
   }
 
   ngOnDestroy() {
     if(this.animationPlayer) this.animationPlayer.destroy();
+  }
+
+  get parentRect(): ClientRect {
+    return this.parentElement.getBoundingClientRect();
   }
 
   get isInCircleArea(): boolean {
@@ -240,7 +250,6 @@ export class RippleComponent {
   translate(event: TouchEvent) {
 
     if(this.centered) return;
-    if(this.fixed) return this.splash();
 
     this.animationPlayer = this.animation.translate(
       touch(event).clientX - this.center.x,
@@ -252,14 +261,15 @@ export class RippleComponent {
   }
 
   splash() {
-    this.animationPlayer = this.animation.splash;
+    this.animationPlayer = this.animation.splash
     this.animationPlayer.play();
     this.background.fadeout;
     this.dragable = false;
   }
 
   fill(event: TouchEvent) {
-
+    
+    this.updateDimensions;
     this.background.fadein;
 
     const tx = touch(event).clientX - this.center.x;

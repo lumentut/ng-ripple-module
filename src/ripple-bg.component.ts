@@ -35,6 +35,8 @@ import {
       left: 0;
       display: block;
       position: absolute;
+      width: 100%;
+      height: 100%;
       border-radius: inherit;
       opacity: 0;
     }`
@@ -50,9 +52,6 @@ export class BackgroundComponent {
   @HostBinding('style.background')
   color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR
 
-  @HostBinding('style.width') width: string
-  @HostBinding('style.height') height: string
-
   @Output() eventTrigger: EventEmitter<any> = new EventEmitter();
 
   constructor(
@@ -64,14 +63,10 @@ export class BackgroundComponent {
 
   ngOnInit() {
     this.parentElement = this.element.parentNode as HTMLElement
-    this.updateDimensions
   }
 
-  get updateDimensions(){
-    const parentRect = this.parentElement.getBoundingClientRect()
-    this.width = `${parentRect.width}px`;
-    this.height = `${parentRect.height}px`;
-    return;
+  get parentRect(): ClientRect {
+    return this.parentElement.getBoundingClientRect();
   }
 
   private animationPlayerFactory(animation: any[]) {

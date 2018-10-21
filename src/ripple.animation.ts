@@ -46,6 +46,17 @@ export class RippleAnimation {
     return this.builder.build(animation).create(this.element);
   }
 
+  get fade(): any {
+    return animate(this.transition.fade, style({ opacity: 0 }));
+  }
+
+  splashToCenter(transition: string) {
+    return animate( transition, style({
+      opacity: 0.75, 
+      transform: RIPPLE_TO_CENTER_TRANSFORM 
+    }));
+  }
+
   fillAndSplash(tx: number, ty:number): AnimationPlayer {
 
     const showInTouchCoordinate = style({
@@ -53,22 +64,12 @@ export class RippleAnimation {
       transform: `translate3d(${tx}px, ${ty}px, 0) scale(0)`
     });
 
-    const splashToCenter = animate(
-      this.transition.clickAndSplash,
-      style({
-        transform: RIPPLE_TO_CENTER_TRANSFORM
-      })
-    );
-
-    const fade = animate(
-      this.transition.fade, 
-      style({ opacity: 0 })
-    );
+    const splashToCenter = this.splashToCenter(this.transition.clickAndSplash);
 
     const player = this.animationPlayerFactory([
       showInTouchCoordinate,
       splashToCenter,
-      fade
+      this.fade
     ]);
 
     return player;
@@ -101,16 +102,11 @@ export class RippleAnimation {
   }
 
   get splash(): AnimationPlayer {
-
-    const splashToCenter = animate(this.transition.splash, style({
-      transform: RIPPLE_TO_CENTER_TRANSFORM
-    }));
-
-    const fade = animate( this.transition.fade, style({ opacity: 0 }));
-    const player = this.animationPlayerFactory([splashToCenter, fade]);
-
+    const splashToCenter = this.splashToCenter(this.transition.splash);
+    const player = this.animationPlayerFactory([splashToCenter, this.fade]);
     return player;
   }
+
 
   translate(tx: number, ty: number, scale: number): AnimationPlayer {
 
