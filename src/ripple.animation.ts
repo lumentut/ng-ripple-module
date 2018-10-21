@@ -11,7 +11,8 @@ import {
   animate,
   keyframes,
   AnimationBuilder,
-  AnimationPlayer
+  AnimationPlayer,
+  AnimationAnimateMetadata
 } from '@angular/animations';
 
 import {
@@ -46,11 +47,11 @@ export class RippleAnimation {
     return this.builder.build(animation).create(this.element);
   }
 
-  get fade(): any {
+  get fade(): AnimationAnimateMetadata {
     return animate(this.transition.fade, style({ opacity: 0 }));
   }
 
-  splashToCenter(transition: string) {
+  splashToCenter(transition: string): AnimationAnimateMetadata {
     return animate( transition, style({
       opacity: 0.75, 
       transform: RIPPLE_TO_CENTER_TRANSFORM 
