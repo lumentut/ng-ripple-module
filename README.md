@@ -63,7 +63,7 @@ This attribute is used to make your ripple effect start from the center of your 
 ```
 
 ### `fixed-ripple`
-For some reason, you need a fixed ripple effect, let's say for a long list item element. In this case, `fixed-ripple` attribute will help you a lot.
+For some reason, you need a fixed ripple effect, let's say for a scrollable list item element. In this case, `fixed-ripple` attribute will help you a lot.
 ```html
   <ul ...>
     <li ripple fixed-ripple ...> ... </li>
@@ -147,6 +147,20 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
       height: 250px;
       border-radius: 50%;
       position: relative;
+    }`,
+    `:host .rectangle.card {
+      width: 100%;
+      height: 156px;
+      border-radius: 5px;
+      position: relative;
+      margin: 0;
+    }`,
+    `:host ul {
+      padding: 0;
+    }`,
+    `:host li {
+      height: 70px;
+      line-height: 70px;
     }`
   ],
   template: `
@@ -158,24 +172,101 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
     ...
 
     <h2>Centered Ripple</h2>
-      <p>
-        <a href="#" ripple light centered-ripple 
-          class="circle button-md-secondary"
-          (rtap)="onTap($event)"
-          (rpress)="onPress($event)"
-          (rpressup)="onPressup($event)">
-        </a>
-      </p>
-      <br>
-      <h2>Draggable ripple</h2>
-      <p>
-        <a href="#" ripple light 
-          class="circle button-md-primary"
-          (rtap)="onTap($event)"
-          (rpress)="onPress($event)"
-          (rpressup)="onPressup($event)">
-        </a>
-      </p>
+    <p>
+      <a href="#" ripple light centered-ripple
+        class="circle button-md-primary"
+        (rtap)="onTap($event)"
+        (rpress)="onPress($event)"
+        (rpressup)="onPressup($event)">
+      </a>
+    </p>
+    <br>
+
+    <h2>Draggable ripple</h2>
+    <p>
+      <a href="#" ripple light 
+        class="circle button-md-primary"
+        (rtap)="onTap($event)"
+        (rpress)="onPress($event)"
+        (rpressup)="onPressup($event)">
+      </a>
+    </p>
+    <br>
+
+    <h2>Fixed/Scrollable ripple</h2>
+    <p>
+      <a href="#" ripple light  fixed-ripple
+        class="circle button-md-primary"
+        (rtap)="onTap($event)"
+        (rpress)="onPress($event)"
+        (rpressup)="onPressup($event)">
+      </a>
+    </p>
+    <br>
+    <p>
+      <a href="#" ripple fixed-ripple
+        fillTransition="1000ms linear"
+        splashTransition="250ms linear"
+        class="rectangle card card-md"
+        (rtap)="onTap($event)"
+        (rpress)="onPress($event)"
+        (rpressup)="onPressup($event)">
+      </a>
+    </p>
+
+    <br>
+    <h2>List Item</h2>
+    <ul>
+      <li *ngFor="let item of [1,2,3,4,5,6,7]" (rtap)="itemTap($event)"
+        class="item item-block item-md"
+        ripple fixed-ripple
+        rippleBgColor="rgba(0,0,0,0.05)"
+        activeBgColor="rgba(0,0,0,0.035)"
+        fillTransition="1500ms linear"
+        splashTransition="180ms cubic-bezier(0.2,0.05,0.2,1)"
+        >
+        List Item {{item}}
+      </li>
+    </ul>
+
+    <br>
+    <h2>Fixed/ Un-scrollable Button</h2>
+    <button ripple light class="disable-hover button button-md button-default 
+      button-default-md button-large button-large-md button-md-primary">
+      Default
+    </button>
+
+    <br>
+    <button ripple light class="disable-hover button button-md button-default 
+      button-default-md button-large button-large-md button-md-dark">
+      Default
+    </button>
+
+    <br>
+    <button ripple class="disable-hover button button-md button-default 
+      button-default-md button-large button-large-md button-md-light">
+      Default
+    </button>
+
+    <br>
+    <button ripple class="disable-hover button button-md button-default 
+      button-default-md button-block button-block-md button-md-light">
+      Default
+    </button>
+
+    <br>
+    <button ripple light 
+      class="disable-hover button button-md button-large button-large-md 
+      button-round button-round-md button-md-secondary">
+      <span class="button-inner">
+        <ion-icon name="home" role="img" 
+              class="icon icon-md ion-md-home" 
+                aria-label="home">
+            </ion-icon>
+            Home
+      </span>
+    </button>
+    <br>
     
     <br>
     <h2>Ionic button</h2>
@@ -280,6 +371,10 @@ export class HomePage {
 
   onPressup(event: any){
     console.log(event.type)
+  }
+  
+  itemTap(event: any){
+    console.log(event)
   }
 
   ...
