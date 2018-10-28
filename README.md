@@ -97,15 +97,6 @@ The Ripple effect is highly depend on transition/timing. Different time selectio
   </button>
 ```
 This website `http://cubic-bezier.com/` is a great tool to visualize and make experiments of `transition-timing-function`.<br>
-### `clickEmitDelay`
-For mouse click event, by default will trigger an `rclick` event after `250ms`. You can use `clickEmitDelay` to customize your desired click delay event.
-```html
-  <button ripple light centered-ripple
-    (rclick)="onClick($event)"
-    clickEmitDelay="0ms">
-        ...
-  </button>
-```
 ### `clickAndSplashTransition`
 Ripple effect of mouse click event can be customized by using this input.
 ```html
@@ -206,7 +197,8 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
     <p>
       <a href="#" ripple fixed-ripple
         fillTransition="1000ms linear"
-        splashTransition="250ms linear"
+        rippleBgColor="rgba(0,0,0,0.05)"
+        activeBgColor="rgba(0,0,0,0.035)"
         class="rectangle card card-md"
         (rtap)="onTap($event)"
         (rpress)="onPress($event)"
