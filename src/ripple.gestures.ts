@@ -49,6 +49,7 @@ export class RippleGestures {
   touchstartTimeStamp: number = 0
   touchendTimeStamp: number = 0
 
+  _isMobile: boolean
   isPressing: boolean
   emptyEvent: boolean
 
@@ -70,6 +71,7 @@ export class RippleGestures {
   }
   
   get isMobile(): boolean {
+    if(this._isMobile) return this._isMobile;
     return typeof window.orientation !== 'undefined'
   }
 
@@ -177,15 +179,15 @@ export class RippleGestures {
     return this.rippleSplash;
   }
 
-  private onmousedown = (event: MouseEvent) => {
+  private onmousedown = (event: any) => {
     this.ontouchstart(event as TouchEvent)
   }
 
-  private onmouseup = (event: MouseEvent) => {
+  private onmouseup = (event: any) => {
     this.ontouchend(event as TouchEvent)
   }
 
-  private onmousemove = (event: MouseEvent) => {
+  private onmousemove = (event: any) => {
     if(this.isPressing) this.ontouchmove(event as TouchEvent)
   }
 
