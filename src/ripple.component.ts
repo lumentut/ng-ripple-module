@@ -15,7 +15,6 @@ import {
 } from '@angular/core';
 
 import {
-  AnimationBuilder,
   AnimationPlayer
 } from '@angular/animations';
 
@@ -59,7 +58,7 @@ export interface Margin {
 }
 
 export function touch(event: TouchEvent): any {
-  return event.changedTouches[0];
+  return event.changedTouches ? event.changedTouches[0] : event;
 }
 
 @Component({
@@ -76,7 +75,8 @@ export function touch(event: TouchEvent): any {
       -webkit-will-change: transform, opacity;
       will-change: transform, opacity;
     }`
-  ]
+  ],
+  providers: [RippleAnimation]
 })
 export class RippleComponent {
 
@@ -88,8 +88,10 @@ export class RippleComponent {
   dragable: boolean
 
   animationPlayer: AnimationPlayer
+  fillPlayer: AnimationPlayer
+  translatePlayer: AnimationPlayer
+  splashPlayer: AnimationPlayer
 
-  clickEmitDelay: string = RIPPLE_CLICK_EMIT_DELAY
   tapLimit: number = RIPPLE_TAP_LIMIT
 
   @HostBinding('style.background')
@@ -107,20 +109,14 @@ export class RippleComponent {
   @Input() clickAndSplashTransition: string
 
   private _parentRadiusSq: number
-  private _animation: RippleAnimation
 
   constructor(
     private elRef: ElementRef,
     private renderer: Renderer2,
-    private builder: AnimationBuilder
+    public animation: RippleAnimation
   ){
     this.element = this.elRef.nativeElement;
-  }
-
-  get animation(): RippleAnimation {
-    if(this._animation) return this._animation;
-    this._animation = new RippleAnimation(this.builder, this.element);
-    return this._animation;
+    this.animation.element = this.element;
   }
 
   get transition(): RippleTransition {
@@ -170,7 +166,9 @@ export class RippleComponent {
   }
 
   ngOnDestroy() {
-    if(this.animationPlayer) this.animationPlayer.destroy();
+    if(this.fillPlayer) this.fillPlayer.destroy();
+    if(this.translatePlayer) this.translatePlayer.destroy();
+    if(this.splashPlayer) this.splashPlayer.destroy();
   }
 
   get parentRect(): ClientRect {
@@ -242,7 +240,7 @@ export class RippleComponent {
     return touchRadiusSq < maxRadiusSq;
   }
 
-  private get currentScale(): number {
+  get currentScale(): number {
     const rect = this.element.getBoundingClientRect();
     return rect.width/this.diameter;
   }
@@ -251,18 +249,19 @@ export class RippleComponent {
 
     if(this.centered) return;
 
-    this.animationPlayer = this.animation.translate(
+    this.translatePlayer = this.animation.translate(
       touch(event).clientX - this.center.x,
       touch(event).clientY - this.center.y,
       this.currentScale
     );
-  
-    this.animationPlayer.play();
+
+    this.translatePlayer.play();
   }
 
   splash() {
-    this.animationPlayer = this.animation.splash
-    this.animationPlayer.play();
+    this.splashPlayer = this.animation.splash
+    this.splashPlayer.onStart(() => this.fillPlayer.destroy());
+    this.splashPlayer.play();
     this.background.fadeout;
     this.dragable = false;
   }
@@ -275,12 +274,12 @@ export class RippleComponent {
     const tx = touch(event).clientX - this.center.x;
     const ty = touch(event).clientY - this.center.y;
 
-    this.animationPlayer = this.animation.fill(
+    this.fillPlayer = this.animation.fill(
       this.centered ? 0 : tx, 
       this.centered ? 0 : ty
     );
 
-    this.animationPlayer.play();
+    this.fillPlayer.play();
     this.dragable = true;
   }
 

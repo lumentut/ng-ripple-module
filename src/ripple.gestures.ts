@@ -39,7 +39,9 @@ export enum MobileTriggers {
 }
 
 export enum DesktopTriggers {
-  CLICK = 'click',
+  MOUSEDOWN = 'mousedown',
+  MOUSEMOVE = 'mousemove',
+  MOUSEUP = 'mouseup'
 }
 
 export class RippleGestures {
@@ -55,7 +57,7 @@ export class RippleGestures {
 
   registeredEvents = new Map<string, any>();
 
-  private _triggers: Map<string, Function>
+  _triggers: Map<string, Function>
 
   constructor(
     private element: HTMLElement,
@@ -71,9 +73,9 @@ export class RippleGestures {
     return typeof window.orientation !== 'undefined'
   }
 
-  get supportedTriggers(): Map<string, Function> {
+  get supportedTriggers(): Map<string, any> {
     const supported = this.isMobile ? MobileTriggers : DesktopTriggers;
-    const triggers = new Map<string, Function>();
+    const triggers = new Map<string, any>();
     for(let i in supported) triggers.set(supported[i], this[`on${supported[i]}`])
     return triggers;
   }
@@ -106,8 +108,12 @@ export class RippleGestures {
     return this.touchendTimeStamp - this.touchstartTimeStamp;
   }
 
+  get tapOrClickEvent(): any {
+    return this.isMobile ? Events.TAP : Events.CLICK;
+  }
+
   get currentEvent(): any {
-    if(this.touchDuration <= this.ripple.tapLimit) return Events.TAP;
+    if(this.touchDuration <= this.ripple.tapLimit) return this.tapOrClickEvent;
     return Events.PRESSUP;
   }
 
@@ -143,12 +149,6 @@ export class RippleGestures {
     if(!this.emptyEvent) this.registeredEvents.get(eventName).emit(this.event);
   }
 
-  get emitClickEvent() {
-    this.lastEventName = Events.CLICK;
-    if(!this.emptyEvent) this.registeredEvents.get(Events.CLICK).emit(this.event);
-    return;
-  }
-
   get watchPressEvent() {
     this.emptyEvent = false;
     return setTimeout(() => {
@@ -167,13 +167,6 @@ export class RippleGestures {
     this.isPressing = false;
   }
 
-  private ontouchstart = (event: TouchEvent) => {
-    if(!this.ripple.fixed) event.preventDefault();
-    this.touchstartTimeStamp = event.timeStamp;
-    this.activate();
-    return this.ripple.fill(event);
-  }
-
   private get rippleSplash(){
     this.deactivate();
     return this.ripple.splash();
@@ -184,21 +177,39 @@ export class RippleGestures {
     return this.rippleSplash;
   }
 
-  private ontouchmove = (event: TouchEvent) => {
-    if(!this.ripple.dragable) return this.isPressing = false;
-    if(!this.ripple.touchEventIsInHostArea(event) || this.ripple.fixed) return this.rippleNoEventSplash;
-    if(this.ripple.outerPointStillInHostRadius(event)) return this.ripple.translate(event);
+  private onmousedown = (event: MouseEvent) => {
+    this.ontouchstart(event as TouchEvent)
   }
 
-  private ontouchend = (event: TouchEvent) => {
+  private onmouseup = (event: MouseEvent) => {
+    this.ontouchend(event as TouchEvent)
+  }
+
+  private onmousemove = (event: MouseEvent) => {
+    if(this.isPressing) this.ontouchmove(event as TouchEvent)
+  }
+
+  private ontouchstart = (event: any) => {
+    if(this.isPressing) return;
+    if(!this.ripple.fixed) event.preventDefault();
+    this.touchstartTimeStamp = event.timeStamp;
+    this.activate();
+    return this.ripple.fill(event);
+  }
+
+  private isValidEvent(event: TouchEvent): boolean {
+    return this.ripple.outerPointStillInHostRadius(event) && this.ripple.touchEventIsInHostArea(event)
+  }
+
+  private ontouchmove = (event: TouchEvent) => {
+    if(!this.ripple.dragable) return this.isPressing = false;
+    if(!this.isValidEvent(event) || this.ripple.fixed) return this.rippleNoEventSplash;
+    return this.ripple.translate(event);
+  }
+
+  private ontouchend = (event: any) => {
     this.touchendTimeStamp = event.timeStamp;
     if(!this.isPressing || this.emptyEvent) return;
     return this.rippleSplash
-  }
-
-  private onclick = (event: MouseEvent) => {
-    event.preventDefault();
-    setTimeout(()=> this.emitClickEvent, this.ripple.clickEmitDelay)
-    return this.ripple.fillAndSplash(event);
   }
 }

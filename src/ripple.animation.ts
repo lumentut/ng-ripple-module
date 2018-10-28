@@ -7,6 +7,10 @@
  */
 
 import {
+  Injectable
+} from '@angular/core';
+
+import {
   style,
   animate,
   keyframes,
@@ -26,13 +30,15 @@ export interface RippleTransition {
   clickAndSplash: string;
 }
 
+@Injectable()
 export class RippleAnimation {
+
+  element: HTMLElement
 
   private _transition: RippleTransition
 
   constructor(
-    private builder: AnimationBuilder,
-    private element: HTMLElement
+    private builder: AnimationBuilder
   ){}
 
   set transition(val: RippleTransition) {
@@ -43,7 +49,7 @@ export class RippleAnimation {
     return this._transition;
   } 
 
-  private animationPlayerFactory(animation: any[]) {
+  animationPlayerFactory(animation: any[]) {
     return this.builder.build(animation).create(this.element);
   }
 
@@ -107,7 +113,6 @@ export class RippleAnimation {
     const player = this.animationPlayerFactory([splashToCenter, this.fade]);
     return player;
   }
-
 
   translate(tx: number, ty: number, scale: number): AnimationPlayer {
 

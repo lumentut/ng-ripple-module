@@ -55,6 +55,7 @@ export class RippleDirective {
 
   @HostBinding('style.display') display: string = 'block';
   @HostBinding('style.overflow') overflow: string = 'hidden';
+  @HostBinding('style.cursor') cursor: string = 'pointer';
   @HostBinding('class.activated') activated: boolean = false;
   @HostBinding('style.width') width: string
 
@@ -99,11 +100,6 @@ export class RippleDirective {
     this.ripple.fadeTransition = value;
   }
 
-  @Input('clickEmitDelay')
-  set clickEmitDelay(value: string) {
-    this.ripple.clickEmitDelay = value;
-  }
-
   @Input('tapLimit')
   set tapLimit(value: number) {
     this.ripple.tapLimit = value;
@@ -116,7 +112,7 @@ export class RippleDirective {
 
   constructor(
     private elRef: ElementRef,
-    private cfr: ComponentFactoryResolver,
+    public cfr: ComponentFactoryResolver,
     private appRef: ApplicationRef,
     private injector: Injector,
     private ngZone: NgZone
@@ -134,7 +130,7 @@ export class RippleDirective {
 
   ngOnDestroy() {
     this.background.eventTrigger.unsubscribe();
-    this.gestures.triggers.forEach((fn, type) => this.element.removeEventListener(type, fn));
+    if(this.gestures) this.gestures.triggers.forEach((fn, type) => this.element.removeEventListener(type, fn));
   }
 
   appendChildren(elements: any[]){

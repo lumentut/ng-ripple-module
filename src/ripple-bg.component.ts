@@ -47,7 +47,7 @@ export class BackgroundComponent {
   element: HTMLElement
   parentElement: HTMLElement
 
-  duration: number = 350;
+  duration: number
   
   @HostBinding('style.background')
   color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR
@@ -63,6 +63,11 @@ export class BackgroundComponent {
 
   ngOnInit() {
     this.parentElement = this.element.parentNode as HTMLElement
+    this.duration = this.isMobile ? 350 : 200;
+  }
+
+  get isMobile(): boolean {
+    return typeof window.orientation !== 'undefined'
   }
 
   get parentRect(): ClientRect {
@@ -73,7 +78,7 @@ export class BackgroundComponent {
     return this.builder.build(animation).create(this.element);
   }
 
-  private get fadeinPlayer(): AnimationPlayer {
+  get fadeinPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
       animate(`${this.duration}ms ease-in-out`, keyframes([
         style({ opacity: 0 }), style({ opacity: 1 })
@@ -81,7 +86,7 @@ export class BackgroundComponent {
     ]);
   }
 
-  private get fadeoutPlayer(): AnimationPlayer {
+  get fadeoutPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
       animate(`${this.duration}ms ease-in-out`, keyframes([
         style({ opacity: 1 }), style({ opacity: 0 })
@@ -90,13 +95,11 @@ export class BackgroundComponent {
   }
 
   get fadein() {
-    this.fadeinPlayer.play();
-    return;
+    return this.fadeinPlayer.play();
   }
 
   get fadeout() {
-    this.fadeoutPlayer.play();
     setTimeout(() => this.eventTrigger.emit(), this.duration);
-    return;
+    return this.fadeoutPlayer.play();
   }
 }
