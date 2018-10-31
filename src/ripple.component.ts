@@ -71,8 +71,6 @@ export function touch(event: TouchEvent): any {
       position: absolute;
       border-radius: 50%;
       opacity: 0;
-      -webkit-will-change: transform, opacity;
-      will-change: transform, opacity;
     }`
   ],
   providers: [RippleAnimation]
