@@ -97,15 +97,6 @@ The Ripple effect is highly depend on transition/timing. Different time selectio
   </button>
 ```
 This website `http://cubic-bezier.com/` is a great tool to visualize and make experiments of `transition-timing-function`.<br>
-### `clickAndSplashTransition`
-Ripple effect of mouse click event can be customized by using this input.
-```html
-  <button ripple light centered-ripple
-    clickAndSplashTransition="250ms ease-out"
-    (rclick)="onClick($event)">
-        ...
-  </button>
-```
 
 ### `tapLimit`
 This input is used in determining limit of `rtap` event. Touch event that take place more than this limit will be emitted as `rpress` event.
