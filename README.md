@@ -23,7 +23,7 @@ import { NgRippleModule } from 'ng-ripple-module';
 })
 export class MyModule { ... }
 ```
-Now you're ready to use this module
+Now you're ready to spread the ripple easily in your angular app.
 ## Directive 
 
 This module provides you a single `ripple` directive so you can attach ripple component and its ripple effects easily into your application `HTMLElement` tag. You can freely decorate the shape, the color or the other style properties of your element by using your style sheet. <br>
@@ -97,15 +97,6 @@ The Ripple effect is highly depend on transition/timing. Different time selectio
   </button>
 ```
 This website `http://cubic-bezier.com/` is a great tool to visualize and make experiments of `transition-timing-function`.<br>
-### `clickAndSplashTransition`
-Ripple effect of mouse click event can be customized by using this input.
-```html
-  <button ripple light centered-ripple
-    clickAndSplashTransition="250ms ease-out"
-    (rclick)="onClick($event)">
-        ...
-  </button>
-```
 
 ### `tapLimit`
 This input is used in determining limit of `rtap` event. Touch event that take place more than this limit will be emitted as `rpress` event.
@@ -264,8 +255,8 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
     <h2>Ionic button</h2>
     <p>It is better not to use ion-button directive directly. <br>
        It is highly recomended to use its css class instead. These are for example only. <br>
-       Otherwise, you will get a double ripple effect. <br>
-       The original of Ionic ripple effect will appear while you run in desktop browser.<p>
+       :)
+    </p>
     <p>
       <button ion-button color="light" block ripple>Light</button>
     </p>
