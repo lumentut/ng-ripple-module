@@ -86,22 +86,18 @@ export class RippleComponent {
 
   dragable: boolean
 
-  animationPlayer: AnimationPlayer
   fillPlayer: AnimationPlayer
-  translatePlayer: AnimationPlayer
   splashPlayer: AnimationPlayer
+  fadeoutPlayer: AnimationPlayer
+  translatePlayers = []
 
   tapLimit: number = RIPPLE_TAP_LIMIT
 
   @HostBinding('style.background')
   color: string = RIPPLE_DEFAULT_BGCOLOR
 
-  @Input()
-  centered: boolean = false
-
-  @Input()
-  fixed: boolean = false
-
+  @Input() centered: boolean = false
+  @Input() fixed: boolean = false
   @Input() fillTransition: string
   @Input() splashTransition: string
   @Input() fadeTransition: string
@@ -157,17 +153,18 @@ export class RippleComponent {
     this.updateDimensions
   }
 
+  ngOnDestroy() {
+    this.fillPlayer=null;
+    this.splashPlayer =null;
+    this.fadeoutPlayer=null;
+    this.translatePlayers=null;
+  }
+
   get updateDimensions() {
     for(let key in this.properties) {
       this.renderer.setStyle(this.element, key, `${this.properties[key]}px`);
     }
     return;
-  }
-
-  ngOnDestroy() {
-    if(this.fillPlayer) this.fillPlayer.destroy();
-    if(this.translatePlayer) this.translatePlayer.destroy();
-    if(this.splashPlayer) this.splashPlayer.destroy();
   }
 
   get parentRect(): ClientRect {
@@ -248,25 +245,32 @@ export class RippleComponent {
 
     if(this.centered) return;
 
-    this.translatePlayer = this.animation.translate(
+    const translatePlayer = this.animation.translate(
       touch(event).clientX - this.center.x,
       touch(event).clientY - this.center.y,
       this.currentScale
     );
 
-    this.translatePlayer.play();
+    translatePlayer.onDone(() => translatePlayer.destroy());
+    this.translatePlayers.push(translatePlayer);
+    translatePlayer.play();
   }
 
   splash() {
-    this.splashPlayer = this.animation.splash
+    this.splashPlayer = this.animation.splash;
+
     this.splashPlayer.onStart(() => this.fillPlayer.destroy());
+    this.splashPlayer.onDone(() => {
+      this.splashPlayer.destroy();
+      this.translatePlayers.length = 0
+    });
+
     this.splashPlayer.play();
     this.background.fadeout;
     this.dragable = false;
   }
 
   fill(event: TouchEvent) {
-    
     this.updateDimensions;
     this.background.fadein;
 
@@ -280,13 +284,5 @@ export class RippleComponent {
 
     this.fillPlayer.play();
     this.dragable = true;
-  }
-
-  fillAndSplash(event: MouseEvent) {
-    this.animationPlayer = this.animation.fillAndSplash(
-      event.clientX - this.center.x,
-      event.clientY - this.center.y
-    );
-    this.animationPlayer.play();
   }
 }

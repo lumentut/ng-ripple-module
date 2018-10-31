@@ -13,7 +13,6 @@ import {
 import {
   style,
   animate,
-  keyframes,
   AnimationBuilder,
   AnimationPlayer,
   AnimationAnimateMetadata
@@ -59,51 +58,25 @@ export class RippleAnimation {
 
   splashToCenter(transition: string): AnimationAnimateMetadata {
     return animate( transition, style({
-      opacity: 0.75, 
+      opacity: 1, 
       transform: RIPPLE_TO_CENTER_TRANSFORM 
     }));
   }
 
-  fillAndSplash(tx: number, ty:number): AnimationPlayer {
-
-    const showInTouchCoordinate = style({
-      opacity: 1,
-      transform: `translate3d(${tx}px, ${ty}px, 0) scale(0)`
-    });
-
-    const splashToCenter = this.splashToCenter(this.transition.clickAndSplash);
-
-    const player = this.animationPlayerFactory([
-      showInTouchCoordinate,
-      splashToCenter,
-      this.fade
-    ]);
-
-    return player;
-  }
 
   fill(tx: number, ty: number): AnimationPlayer {
 
     const showInTouchCoordinate = style({
       opacity: 1,
       transform: `translate3d(${tx}px, ${ty}px, 0) scale(0)`,
-      offset: 0
     });
 
-    const centering = style({
-      transform: RIPPLE_TO_CENTER_TRANSFORM,
-      offset: 1
-    });
+    const centering = animate(this.transition.fill, style({
+      opacity: 1,
+      transform: RIPPLE_TO_CENTER_TRANSFORM
+    }));
 
-    const fillKeyframes = animate(
-      this.transition.fill,
-      keyframes([
-        showInTouchCoordinate,
-        centering
-      ])
-    );
-
-    const player = this.animationPlayerFactory([fillKeyframes]);
+    const player = this.animationPlayerFactory([showInTouchCoordinate, centering]);
 
     return player;
   }
@@ -128,5 +101,9 @@ export class RippleAnimation {
     const player = this.animationPlayerFactory([translation, centering]);
 
     return player;
+  }
+
+  get fadeout(): AnimationPlayer {
+    return this.animationPlayerFactory([this.fade]);
   }
 }

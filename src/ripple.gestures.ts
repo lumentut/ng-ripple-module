@@ -11,7 +11,7 @@ import {
   EventEmitter
 } from '@angular/core';
 
-import { RippleComponent } from './ripple.component';
+import { RippleComponent, touch } from './ripple.component';
 import { RippleEvent } from './ripple.event';
 
 import {
@@ -41,7 +41,8 @@ export enum MobileTriggers {
 export enum DesktopTriggers {
   MOUSEDOWN = 'mousedown',
   MOUSEMOVE = 'mousemove',
-  MOUSEUP = 'mouseup'
+  MOUSEUP = 'mouseup',
+  MOUSELEAVE = 'mouseleave'
 }
 
 export class RippleGestures {
@@ -55,10 +56,14 @@ export class RippleGestures {
 
   lastEvent: Events
   lastEventTimestamp: number
+  lastClientX: number = 0
+  lastClientY: number = 0
 
   registeredEvents = new Map<string, any>();
 
   _triggers: Map<string, Function>
+
+  logger: HTMLElement
 
   constructor(
     private element: HTMLElement,
@@ -114,7 +119,7 @@ export class RippleGestures {
     return this.isMobile ? Events.TAP : Events.CLICK;
   }
 
-  get currentEvent(): any {
+  get currentEvent(): Events {
     if(this.touchDuration <= this.ripple.tapLimit) return this.tapOrClickEvent;
     return Events.PRESSUP;
   }
@@ -137,8 +142,7 @@ export class RippleGestures {
   }
 
   set lastEventName(eventName: Events) {
-    const date = new Date;
-    this.lastEventTimestamp = date.getTime();
+    this.lastEventTimestamp = (new Date).getTime();
     this.lastEvent = eventName;
   }
 
@@ -169,12 +173,12 @@ export class RippleGestures {
     this.isPressing = false;
   }
 
-  private get rippleSplash(){
+  get rippleSplash(){
     this.deactivate();
     return this.ripple.splash();
   }
 
-  private get rippleNoEventSplash(){
+  get rippleNoEventSplash(){
     this.emptyEvent = true;
     return this.rippleSplash;
   }
@@ -188,30 +192,54 @@ export class RippleGestures {
   }
 
   private onmousemove = (event: any) => {
-    if(this.isPressing) this.ontouchmove(event as TouchEvent)
+    if(!this.isPressing) return;
+    this.ontouchmove(event as TouchEvent)
+  }
+
+  private onmouseleave = (event: any) => {
+    if(!this.isPressing) return;
+    this.rippleNoEventSplash;
   }
 
   private ontouchstart = (event: any) => {
     if(this.isPressing) return;
-    if(!this.ripple.fixed) event.preventDefault();
     this.touchstartTimeStamp = event.timeStamp;
     this.activate();
+    if(!this.ripple.fixed) event.preventDefault();
     return this.ripple.fill(event);
   }
 
-  private isValidEvent(event: TouchEvent): boolean {
-    return this.ripple.outerPointStillInHostRadius(event) && this.ripple.touchEventIsInHostArea(event)
+  set lastCoordinateEvent(event: TouchEvent){
+    const coordinate = { lastClientX: 'clientX', lastClientY: 'clientY' }
+    for(let k in coordinate) {
+      this[k] = Math.floor(touch(event)[coordinate[k]]);
+    }
+  }
+
+  private isRepeatingX(event: any){
+    return this.lastClientX === Math.floor(touch(event).clientX)
+  }
+
+  private isRepeatingY(event: any){
+    return this.lastClientY === Math.floor(touch(event).clientY)
+  } 
+
+  isRepeatingCoordinate(event: TouchEvent): boolean{
+    const isRepeating = this.isRepeatingX(event) && this.isRepeatingY(event);
+    this.lastCoordinateEvent = event;
+    return isRepeating;
   }
 
   private ontouchmove = (event: TouchEvent) => {
+    if(this.isRepeatingCoordinate(event)) return;
     if(!this.ripple.dragable) return this.isPressing = false;
-    if(!this.isValidEvent(event) || this.ripple.fixed) return this.rippleNoEventSplash;
-    return this.ripple.translate(event);
+    if(!this.ripple.touchEventIsInHostArea(event) || this.ripple.fixed) return this.rippleNoEventSplash;
+    if(this.ripple.outerPointStillInHostRadius(event)) this.ripple.translate(event);
   }
 
   private ontouchend = (event: any) => {
     this.touchendTimeStamp = event.timeStamp;
     if(!this.isPressing || this.emptyEvent) return;
-    return this.rippleSplash
+    return this.rippleSplash;
   }
 }

@@ -23,6 +23,8 @@ import {
 } from '@angular/animations';
 
 import {
+  RIPPLE_SPLASH_TRANSITION,
+  RIPPLE_BG_FADEIN_TRANSITION,
   RIPPLE_DEFAULT_ACTIVE_BGCOLOR
 } from './ripple.constants';
 
@@ -47,7 +49,8 @@ export class BackgroundComponent {
   element: HTMLElement
   parentElement: HTMLElement
 
-  duration: number
+  _fadeinPlayer: AnimationPlayer
+  _fadeoutPlayer: AnimationPlayer
   
   @HostBinding('style.background')
   color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR
@@ -62,8 +65,12 @@ export class BackgroundComponent {
   }
 
   ngOnInit() {
-    this.parentElement = this.element.parentNode as HTMLElement
-    this.duration = this.isMobile ? 350 : 200;
+    this.parentElement = this.element.parentNode as HTMLElement;
+  }
+
+  ngOnDestroy() {
+    if(this._fadeinPlayer) this._fadeinPlayer.destroy();
+    if(this._fadeoutPlayer) this._fadeoutPlayer.destroy();
   }
 
   get isMobile(): boolean {
@@ -80,7 +87,7 @@ export class BackgroundComponent {
 
   get fadeinPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
-      animate(`${this.duration}ms ease-in-out`, keyframes([
+      animate(RIPPLE_BG_FADEIN_TRANSITION, keyframes([
         style({ opacity: 0 }), style({ opacity: 1 })
       ]))
     ]);
@@ -88,18 +95,20 @@ export class BackgroundComponent {
 
   get fadeoutPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
-      animate(`${this.duration}ms ease-in-out`, keyframes([
+      animate(RIPPLE_SPLASH_TRANSITION, keyframes([
         style({ opacity: 1 }), style({ opacity: 0 })
       ]))
     ]);
   }
 
   get fadein() {
-    return this.fadeinPlayer.play();
+    this._fadeinPlayer = this.fadeinPlayer;
+    return this._fadeinPlayer.play();
   }
 
   get fadeout() {
-    setTimeout(() => this.eventTrigger.emit(), this.duration);
-    return this.fadeoutPlayer.play();
+    this._fadeoutPlayer = this.fadeoutPlayer;
+    this._fadeoutPlayer.onDone(() => this.eventTrigger.emit());
+    return this._fadeoutPlayer.play();
   }
 }

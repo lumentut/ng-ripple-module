@@ -129,7 +129,9 @@ export class RippleDirective {
   }
 
   ngOnDestroy() {
+    this.rippleCmpRef.destroy();
     this.background.eventTrigger.unsubscribe();
+    this.backgroundCmpRef.destroy();
     if(this.gestures) this.gestures.triggers.forEach((fn, type) => this.element.removeEventListener(type, fn));
   }
 

@@ -302,12 +302,10 @@ describe('Directive', () => {
   })
 
   it('has a correct background fadein animation', () => {
-    directiveInstance.background.duration = 350;
     expect(directiveInstance.background.fadeinPlayer).toBeTruthy();
   })
 
   it('has a correct background fadeout animation', () => {
-    directiveInstance.background.duration = 350;
     expect(directiveInstance.background.fadeoutPlayer).toBeTruthy();
   })
 
@@ -545,5 +543,42 @@ describe('Directive', () => {
     }
     event = { changedTouches: [touch] }
     expect(ripple.outerPointStillInHostRadius(event as TouchEvent)).toBeFalsy();
+  })
+
+  it('detect unwanted press touchmove', () => {
+    fixture.detectChanges();
+
+    let touch: any, event: any;
+    
+    touch = {
+      clientX: 20,
+      clientY: 20
+    }
+
+    event = { changedTouches: [touch] }
+
+    gestures.isRepeatingCoordinate(event)
+
+    fixture.detectChanges();
+
+    touch = {
+      clientX: 20,
+      clientY: 20.5
+    }
+
+    event = { changedTouches: [touch] }
+    expect(gestures.isRepeatingCoordinate(event)).toBeTruthy();
+    
+
+    fixture.detectChanges();
+
+    touch = {
+      clientX: 20,
+      clientY: 21
+    }
+
+    event = { changedTouches: [touch] }
+    expect(gestures.isRepeatingCoordinate(event)).toBeFalsy();
+
   })
 });
