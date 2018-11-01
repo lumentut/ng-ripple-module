@@ -86,7 +86,6 @@ export class RippleComponent {
 
   fillPlayer: AnimationPlayer
   splashPlayer: AnimationPlayer
-  fadeoutPlayer: AnimationPlayer
   translatePlayers = []
 
   tapLimit: number = RIPPLE_TAP_LIMIT
@@ -154,7 +153,6 @@ export class RippleComponent {
   ngOnDestroy() {
     this.fillPlayer=null;
     this.splashPlayer =null;
-    this.fadeoutPlayer=null;
     this.translatePlayers=null;
   }
 
