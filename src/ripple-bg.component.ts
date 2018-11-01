@@ -23,10 +23,15 @@ import {
 } from '@angular/animations';
 
 import {
+  RIPPLE_BG_FADE_TRANSITION,
   RIPPLE_SPLASH_TRANSITION,
-  RIPPLE_BG_FADEIN_TRANSITION,
   RIPPLE_DEFAULT_ACTIVE_BGCOLOR
 } from './ripple.constants';
+
+import {
+  Events,
+  RippleGestures
+} from './ripple.gestures';
 
 @Component({
   selector: 'background',
@@ -48,6 +53,8 @@ export class BackgroundComponent {
 
   element: HTMLElement
   parentElement: HTMLElement
+
+  gestures: RippleGestures
 
   _fadeinPlayer: AnimationPlayer
   _fadeoutPlayer: AnimationPlayer
@@ -87,7 +94,7 @@ export class BackgroundComponent {
 
   get fadeinPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
-      animate(RIPPLE_BG_FADEIN_TRANSITION, keyframes([
+      animate(RIPPLE_BG_FADE_TRANSITION, keyframes([
         style({ opacity: 0 }), style({ opacity: 1 })
       ]))
     ]);
@@ -95,20 +102,21 @@ export class BackgroundComponent {
 
   get fadeoutPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
-      animate(RIPPLE_SPLASH_TRANSITION, keyframes([
-        style({ opacity: 1 }), style({ opacity: 0 })
-      ]))
+      animate(RIPPLE_SPLASH_TRANSITION, style({ opacity: 0 }))
     ]);
   }
 
   get fadein() {
     this._fadeinPlayer = this.fadeinPlayer;
-    return this._fadeinPlayer.play();
+    this._fadeinPlayer.play();
+    return;
   }
 
   get fadeout() {
     this._fadeoutPlayer = this.fadeoutPlayer;
-    this._fadeoutPlayer.onDone(() => this.eventTrigger.emit());
-    return this._fadeoutPlayer.play();
+    if(this.gestures.currentEvent == Events.PRESSUP) this.eventTrigger.emit();
+    else this._fadeoutPlayer.onDone(() => this.eventTrigger.emit());
+    this._fadeoutPlayer.play();
+    return;
   }
 }

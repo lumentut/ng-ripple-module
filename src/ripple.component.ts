@@ -255,16 +255,17 @@ export class RippleComponent {
   }
 
   splash() {
+    
     this.splashPlayer = this.animation.splash;
-
     this.splashPlayer.onStart(() => this.fillPlayer.destroy());
+
     this.splashPlayer.onDone(() => {
       this.splashPlayer.destroy();
       this.translatePlayers.length = 0
+      this.background.fadeout;
     });
 
     this.splashPlayer.play();
-    this.background.fadeout;
     this.dragable = false;
   }
 

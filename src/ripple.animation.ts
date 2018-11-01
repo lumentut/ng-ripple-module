@@ -102,8 +102,4 @@ export class RippleAnimation {
 
     return player;
   }
-
-  get fadeout(): AnimationPlayer {
-    return this.animationPlayerFactory([this.fade]);
-  }
 }
