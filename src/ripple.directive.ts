@@ -171,16 +171,12 @@ export class RippleDirective {
   }
 
   get rippleGestures(): RippleGestures {
-
     if(this._rippleGestures) return this._rippleGestures;
-
-    this._rippleGestures = new RippleGestures(
+    return this._rippleGestures = new RippleGestures(
       this.element,
       this.ripple,
       this.emitters,
       this.ngZone
     );
-
-    return this._rippleGestures;
   }
 }

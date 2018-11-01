@@ -84,10 +84,10 @@ export class RippleComponent {
 
   dragable: boolean
 
-  animation: RippleAnimation
 
   fillPlayer: AnimationPlayer
   splashPlayer: AnimationPlayer
+  fadeoutPlayer: AnimationPlayer
   translatePlayers = []
 
   tapLimit: number = RIPPLE_TAP_LIMIT
@@ -103,6 +103,7 @@ export class RippleComponent {
   @Input() clickAndSplashTransition: string
 
   private _parentRadiusSq: number
+  private _animation: RippleAnimation
 
   constructor(
     private elRef: ElementRef,
@@ -110,8 +111,14 @@ export class RippleComponent {
     public builder: AnimationBuilder
   ){
     this.element = this.elRef.nativeElement;
-    this.animation = new RippleAnimation(this.builder);
-    this.animation.element = this.element;
+  }
+
+  get animation(): RippleAnimation {
+    if(this._animation) return this._animation;
+    return this._animation = new RippleAnimation(
+      this.element,
+      this.builder
+    );
   }
 
   get transition(): RippleTransition {
@@ -256,13 +263,12 @@ export class RippleComponent {
   }
 
   splash() {
-    
     this.splashPlayer = this.animation.splash;
     this.splashPlayer.onStart(() => this.fillPlayer.destroy());
 
     this.splashPlayer.onDone(() => {
       this.splashPlayer.destroy();
-      this.translatePlayers.length = 0
+      this.translatePlayers.length = 0;
       this.background.fadeout;
     });
 
@@ -284,5 +290,19 @@ export class RippleComponent {
 
     this.fillPlayer.play();
     this.dragable = true;
+  }
+
+  fadeout() {
+    this.fadeoutPlayer = this.animation.fadeout;
+    this.fadeoutPlayer.onStart(() => this.fillPlayer.destroy());
+    
+    this.fadeoutPlayer.onDone(() => {
+      this.fadeoutPlayer.destroy();
+      this.translatePlayers.length = 0;
+      this.background.fadeout;
+    });
+
+    this.fadeoutPlayer.play();
+    this.dragable = false;
   }
 }

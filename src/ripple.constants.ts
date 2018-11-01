@@ -8,7 +8,7 @@
 
 const RIPPLE_TO_CENTER_TRANSFORM = 'translate3d(0px, 0px, 0) scale(1)';
 const RIPPLE_LIGHT_BGCOLOR = 'rgba(255,255,255, 0.35)';
-const RIPPLE_LIGHT_ACTIVE_BGCOLOR = 'rgba(255,255,255,0.15)';
+const RIPPLE_LIGHT_ACTIVE_BGCOLOR = 'rgba(255,255,255,0.25)';
 const RIPPLE_DEFAULT_BGCOLOR = 'rgba(0,0,0,0.1)';
 const RIPPLE_DEFAULT_ACTIVE_BGCOLOR =  'rgba(0,0,0,0.05)';
 const RIPPLE_FILL_TRANSITION = '750ms linear';

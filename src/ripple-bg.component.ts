@@ -29,7 +29,6 @@ import {
 } from './ripple.constants';
 
 import {
-  Events,
   RippleGestures
 } from './ripple.gestures';
 
@@ -114,9 +113,8 @@ export class BackgroundComponent {
 
   get fadeout() {
     this._fadeoutPlayer = this.fadeoutPlayer;
-    if(this.gestures.currentEvent == Events.PRESSUP) this.eventTrigger.emit();
-    else this._fadeoutPlayer.onDone(() => this.eventTrigger.emit());
     this._fadeoutPlayer.play();
+    this.eventTrigger.emit();
     return;
   }
 }

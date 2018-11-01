@@ -27,11 +27,10 @@ export interface RippleTransition {
 
 export class RippleAnimation {
 
-  element: HTMLElement
-
   private _transition: RippleTransition
 
   constructor(
+    private element: HTMLElement,
     private builder: AnimationBuilder
   ){}
 
@@ -76,12 +75,6 @@ export class RippleAnimation {
     return player;
   }
 
-  get splash(): AnimationPlayer {
-    const splashToCenter = this.splashToCenter(this.transition.splash);
-    const player = this.animationPlayerFactory([splashToCenter, this.fade]);
-    return player;
-  }
-
   translate(tx: number, ty: number, scale: number): AnimationPlayer {
 
     const translation = style({
@@ -95,6 +88,17 @@ export class RippleAnimation {
 
     const player = this.animationPlayerFactory([translation, centering]);
 
+    return player;
+  }
+
+  get splash(): AnimationPlayer {
+    const splashToCenter = this.splashToCenter(this.transition.splash);
+    const player = this.animationPlayerFactory([splashToCenter, this.fade]);
+    return player;
+  }
+
+  get fadeout(): AnimationPlayer {
+    const player = this.animationPlayerFactory([this.fade]);
     return player;
   }
 }

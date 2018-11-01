@@ -173,14 +173,19 @@ export class RippleGestures {
     this.isPressing = false;
   }
 
-  get rippleSplash(){
+  get rippleSplash() {
     this.deactivate();
     return this.ripple.splash();
   }
 
-  get rippleNoEventSplash(){
+  get rippleNoEventSplash() {
     this.emptyEvent = true;
     return this.rippleSplash;
+  }
+
+  get rippleFadeout() {
+    this.deactivate();
+    return this.ripple.fadeout();
   }
 
   private onmousedown = (event: any) => {
@@ -240,6 +245,7 @@ export class RippleGestures {
   private ontouchend = (event: any) => {
     this.touchendTimeStamp = event.timeStamp;
     if(!this.isPressing || this.emptyEvent) return;
+    if(this.currentEvent === Events.PRESSUP) return this.rippleFadeout;
     return this.rippleSplash;
   }
 }
