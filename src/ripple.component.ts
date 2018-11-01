@@ -15,7 +15,8 @@ import {
 } from '@angular/core';
 
 import {
-  AnimationPlayer
+  AnimationPlayer,
+  AnimationBuilder
 } from '@angular/animations';
 
 import {
@@ -72,8 +73,7 @@ export function touch(event: TouchEvent): any {
       border-radius: 50%;
       opacity: 0;
     }`
-  ],
-  providers: [RippleAnimation]
+  ]
 })
 export class RippleComponent {
 
@@ -83,6 +83,8 @@ export class RippleComponent {
   background: BackgroundComponent
 
   dragable: boolean
+
+  animation: RippleAnimation
 
   fillPlayer: AnimationPlayer
   splashPlayer: AnimationPlayer
@@ -105,9 +107,10 @@ export class RippleComponent {
   constructor(
     private elRef: ElementRef,
     private renderer: Renderer2,
-    public animation: RippleAnimation
+    public builder: AnimationBuilder
   ){
     this.element = this.elRef.nativeElement;
+    this.animation = new RippleAnimation(this.builder);
     this.animation.element = this.element;
   }
 

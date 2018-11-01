@@ -7,10 +7,6 @@
  */
 
 import {
-  Injectable
-} from '@angular/core';
-
-import {
   style,
   animate,
   AnimationBuilder,
@@ -29,7 +25,6 @@ export interface RippleTransition {
   clickAndSplash: string;
 }
 
-@Injectable()
 export class RippleAnimation {
 
   element: HTMLElement
