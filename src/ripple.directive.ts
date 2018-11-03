@@ -123,9 +123,8 @@ export class RippleDirective {
   ngAfterViewInit() {
     this.appendChildren([this.background.element,this.ripple.element]);
     this.background.eventTrigger.subscribe(() => this.gestures.emitCurrentEvent);
-    this.background.gestures = this.rippleGestures;
+    this.background.gestures = this.gestures = this.rippleGestures;
     this.ripple.background = this.background;
-    this.gestures = this.rippleGestures;
     this.recalculateStyle;
   }
 
@@ -173,9 +172,9 @@ export class RippleDirective {
   get rippleGestures(): RippleGestures {
     if(this._rippleGestures) return this._rippleGestures;
     return this._rippleGestures = new RippleGestures(
-      this.element,
-      this.ripple,
-      this.emitters,
+      this.element, 
+      this.ripple, 
+      this.emitters, 
       this.ngZone
     );
   }

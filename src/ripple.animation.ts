@@ -22,7 +22,6 @@ export interface RippleTransition {
   fill: string;
   splash: string;
   fade: string;
-  clickAndSplash: string;
 }
 
 export class RippleAnimation {

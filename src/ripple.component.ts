@@ -100,7 +100,6 @@ export class RippleComponent {
   @Input() fillTransition: string
   @Input() splashTransition: string
   @Input() fadeTransition: string
-  @Input() clickAndSplashTransition: string
 
   private _parentRadiusSq: number
   private _animation: RippleAnimation
@@ -115,18 +114,14 @@ export class RippleComponent {
 
   get animation(): RippleAnimation {
     if(this._animation) return this._animation;
-    return this._animation = new RippleAnimation(
-      this.element,
-      this.builder
-    );
+    return this._animation = new RippleAnimation(this.element, this.builder);
   }
 
   get transition(): RippleTransition {
     return {
       fill: this.fillTransition || RIPPLE_FILL_TRANSITION,
       splash: this.splashTransition || RIPPLE_SPLASH_TRANSITION,
-      fade: this.fadeTransition || RIPPLE_FADE_TRANSITION,
-      clickAndSplash: this.clickAndSplashTransition || RIPPLE_CLICK_FILL_AND_SPLASH
+      fade: this.fadeTransition || RIPPLE_FADE_TRANSITION
     }
   }
 
@@ -164,6 +159,7 @@ export class RippleComponent {
     this.fillPlayer=null;
     this.splashPlayer =null;
     this.translatePlayers=null;
+    this.fadeoutPlayer=null;
   }
 
   get updateDimensions() {
@@ -259,50 +255,54 @@ export class RippleComponent {
 
     translatePlayer.onDone(() => translatePlayer.destroy());
     this.translatePlayers.push(translatePlayer);
+    
     translatePlayer.play();
-  }
-
-  splash() {
-    this.splashPlayer = this.animation.splash;
-    this.splashPlayer.onStart(() => this.fillPlayer.destroy());
-
-    this.splashPlayer.onDone(() => {
-      this.splashPlayer.destroy();
-      this.translatePlayers.length = 0;
-      this.background.fadeout;
-    });
-
-    this.splashPlayer.play();
-    this.dragable = false;
   }
 
   fill(event: TouchEvent) {
     this.updateDimensions;
     this.background.fadein;
-
-    const tx = touch(event).clientX - this.center.x;
-    const ty = touch(event).clientY - this.center.y;
-
-    this.fillPlayer = this.animation.fill(
-      this.centered ? 0 : tx, 
-      this.centered ? 0 : ty
-    );
-
-    this.fillPlayer.play();
     this.dragable = true;
+
+    let tx: number = 0, ty: number = 0;
+    if(!this.centered){
+      tx = touch(event).clientX - this.center.x;
+      ty = touch(event).clientY - this.center.y;
+    }
+
+    this.fillPlayer = this.animation.fill(tx, ty);
+    this.fillPlayer.play();
+  }
+
+  get cleanTranslatePlayerThenFadeout(){
+    this.translatePlayers.length = 0;
+    this.background.fadeout;
+    return;
+  }
+
+  splash() {
+    this.dragable = false;
+    this.splashPlayer = this.animation.splash;
+    this.splashPlayer.onStart(() => this.fillPlayer.destroy());
+
+    this.splashPlayer.onDone(() => {
+      this.splashPlayer.destroy();
+      this.cleanTranslatePlayerAndFadeout;
+    });
+
+    this.splashPlayer.play();
   }
 
   fadeout() {
+    this.dragable = false;
     this.fadeoutPlayer = this.animation.fadeout;
     this.fadeoutPlayer.onStart(() => this.fillPlayer.destroy());
     
     this.fadeoutPlayer.onDone(() => {
       this.fadeoutPlayer.destroy();
-      this.translatePlayers.length = 0;
-      this.background.fadeout;
+      this.cleanTranslatePlayerThenFadeout;
     });
 
     this.fadeoutPlayer.play();
-    this.dragable = false;
   }
 }
