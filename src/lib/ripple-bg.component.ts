@@ -6,8 +6,10 @@
  * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
  */
 
-import { 
+import {
   Component,
+  OnInit,
+  OnDestroy,
   ElementRef,
   Output,
   HostBinding,
@@ -29,11 +31,12 @@ import {
 } from './ripple.constants';
 
 import {
+  _isMobile,
   RippleGestures
 } from './ripple.gestures';
 
 @Component({
-  selector: 'background',
+  selector: 'ripple-bg',
   template: `<ng-content></ng-content>`,
   styles: [
     `:host {
@@ -48,25 +51,27 @@ import {
     }`
   ]
 })
-export class BackgroundComponent {
+export class BackgroundComponent implements OnInit, OnDestroy {
 
-  element: HTMLElement
-  parentElement: HTMLElement
+  element: HTMLElement;
+  parentElement: HTMLElement;
 
-  gestures: RippleGestures
+  gestures: RippleGestures;
 
-  _fadeinPlayer: AnimationPlayer
-  _fadeoutPlayer: AnimationPlayer
-  
+  _fadeinPlayer: AnimationPlayer;
+  _fadeoutPlayer: AnimationPlayer;
+
+  _isMobile: boolean;
+
   @HostBinding('style.background')
-  color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR
+  color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR;
 
   @Output() eventTrigger: EventEmitter<any> = new EventEmitter();
 
   constructor(
     private elRef: ElementRef,
     private builder: AnimationBuilder
-  ){
+  ) {
     this.element = this.elRef.nativeElement;
   }
 
@@ -80,7 +85,8 @@ export class BackgroundComponent {
   }
 
   get isMobile(): boolean {
-    return typeof window.orientation !== 'undefined'
+    if(this._isMobile) return this._isMobile;
+    return this._isMobile = _isMobile();
   }
 
   get parentRect(): ClientRect {
@@ -105,16 +111,14 @@ export class BackgroundComponent {
     ]);
   }
 
-  get fadein() {
+  fadein() {
     this._fadeinPlayer = this.fadeinPlayer;
     this._fadeinPlayer.play();
-    return;
   }
 
-  get fadeout() {
+  fadeout() {
     this._fadeoutPlayer = this.fadeoutPlayer;
     this._fadeoutPlayer.play();
     this.eventTrigger.emit();
-    return;
   }
 }

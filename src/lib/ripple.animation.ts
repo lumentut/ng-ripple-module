@@ -26,12 +26,12 @@ export interface RippleTransition {
 
 export class RippleAnimation {
 
-  private _transition: RippleTransition
+  private _transition: RippleTransition;
 
   constructor(
     private element: HTMLElement,
     private builder: AnimationBuilder
-  ){}
+  ) {}
 
   set transition(val: RippleTransition) {
     this._transition = val;
@@ -39,7 +39,7 @@ export class RippleAnimation {
 
   get transition(): RippleTransition {
     return this._transition;
-  } 
+  }
 
   animationPlayerFactory(animation: any[]) {
     return this.builder.build(animation).create(this.element);
@@ -51,8 +51,8 @@ export class RippleAnimation {
 
   splashToCenter(transition: string): AnimationAnimateMetadata {
     return animate( transition, style({
-      opacity: 1, 
-      transform: RIPPLE_TO_CENTER_TRANSFORM 
+      opacity: 1,
+      transform: RIPPLE_TO_CENTER_TRANSFORM
     }));
   }
 

@@ -6,8 +6,10 @@
  * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
  */
 
-import { 
+import {
   Component,
+  AfterViewInit,
+  OnDestroy,
   ElementRef,
   Renderer2,
   Input,
@@ -23,12 +25,11 @@ import {
   RIPPLE_FILL_TRANSITION,
   RIPPLE_SPLASH_TRANSITION,
   RIPPLE_FADE_TRANSITION,
-  RIPPLE_CLICK_FILL_AND_SPLASH,
   RIPPLE_DEFAULT_BGCOLOR,
   RIPPLE_TAP_LIMIT
 } from './ripple.constants';
 
-import { 
+import {
   BackgroundComponent
 } from './ripple-bg.component';
 
@@ -62,7 +63,7 @@ export function touch(event: TouchEvent): any {
 }
 
 @Component({
-  selector: 'ripple',
+  selector: 'ripple-core',
   template: `<ng-content></ng-content>`,
   styles: [
     `:host {
@@ -75,40 +76,39 @@ export function touch(event: TouchEvent): any {
     }`
   ]
 })
-export class RippleComponent {
+export class RippleComponent implements AfterViewInit, OnDestroy {
 
-  element: HTMLElement
-  parentElement: HTMLElement
+  element: HTMLElement;
+  parentElement: HTMLElement;
 
-  background: BackgroundComponent
+  background: BackgroundComponent;
 
-  dragable: boolean
+  dragable: boolean;
 
+  fillPlayer: AnimationPlayer;
+  splashPlayer: AnimationPlayer;
+  fadeoutPlayer: AnimationPlayer;
+  translatePlayers = [];
 
-  fillPlayer: AnimationPlayer
-  splashPlayer: AnimationPlayer
-  fadeoutPlayer: AnimationPlayer
-  translatePlayers = []
-
-  tapLimit: number = RIPPLE_TAP_LIMIT
+  tapLimit: number = RIPPLE_TAP_LIMIT;
 
   @HostBinding('style.background')
-  color: string = RIPPLE_DEFAULT_BGCOLOR
+  color: string = RIPPLE_DEFAULT_BGCOLOR;
 
-  @Input() centered: boolean = false
-  @Input() fixed: boolean = false
-  @Input() fillTransition: string
-  @Input() splashTransition: string
-  @Input() fadeTransition: string
+  @Input() centered: boolean;
+  @Input() fixed: boolean;
+  @Input() fillTransition: string;
+  @Input() splashTransition: string;
+  @Input() fadeTransition: string;
 
-  private _parentRadiusSq: number
-  private _animation: RippleAnimation
+  private _parentRadiusSq: number;
+  private _animation: RippleAnimation;
 
   constructor(
     private elRef: ElementRef,
     private renderer: Renderer2,
     public builder: AnimationBuilder
-  ){
+  ) {
     this.element = this.elRef.nativeElement;
   }
 
@@ -122,7 +122,7 @@ export class RippleComponent {
       fill: this.fillTransition || RIPPLE_FILL_TRANSITION,
       splash: this.splashTransition || RIPPLE_SPLASH_TRANSITION,
       fade: this.fadeTransition || RIPPLE_FADE_TRANSITION
-    }
+    };
   }
 
   get diameter(): number {
@@ -136,7 +136,7 @@ export class RippleComponent {
     return {
       top: (this.parentRect.height - this.diameter)/2,
       left: (this.parentRect.width - this.diameter)/2
-    }
+    };
   }
 
   get properties(): RippleStyle {
@@ -146,13 +146,13 @@ export class RippleComponent {
       marginLeft: this.margin.left,
       marginTop: this.margin.top,
       background: this.color
-    }
+    };
   }
 
   ngAfterViewInit() {
     this.parentElement = this.element.parentNode as HTMLElement;
     this.animation.transition = this.transition;
-    this.updateDimensions
+    this.updateDimensions();
   }
 
   ngOnDestroy() {
@@ -162,11 +162,12 @@ export class RippleComponent {
     this.fadeoutPlayer=null;
   }
 
-  get updateDimensions() {
-    for(let key in this.properties) {
-      this.renderer.setStyle(this.element, key, `${this.properties[key]}px`);
+  updateDimensions() {
+    for(const key in this.properties) {
+      if(this.properties[key]) {
+        this.renderer.setStyle(this.element, key, `${this.properties[key]}px`);
+      }
     }
-    return;
   }
 
   get parentRect(): ClientRect {
@@ -174,7 +175,7 @@ export class RippleComponent {
   }
 
   get isInCircleArea(): boolean {
-    const rect = this.parentRect, 
+    const rect = this.parentRect,
           style = getComputedStyle(this.parentElement);
     return (rect.width === rect.height && style.borderRadius === '50%');
   }
@@ -192,7 +193,7 @@ export class RippleComponent {
     return {
       x: rect.left + (rect.width/2),
       y: rect.top + (rect.height/2),
-    }
+    };
   }
 
   touchEventIsInHostArea(event: TouchEvent): boolean {
@@ -232,7 +233,7 @@ export class RippleComponent {
     const rippleRect = this.element.getBoundingClientRect(),
           dx = touch(event).clientX - this.center.x,
           dy = touch(event).clientY - this.center.y,
-          touchRadiusSq = dx*dx + dy*dy,          
+          touchRadiusSq = dx*dx + dy*dy,
           maxRadius = this.parentRadius - 0.5*rippleRect.width,
           maxRadiusSq = maxRadius*maxRadius;
     return touchRadiusSq < maxRadiusSq;
@@ -255,17 +256,16 @@ export class RippleComponent {
 
     translatePlayer.onDone(() => translatePlayer.destroy());
     this.translatePlayers.push(translatePlayer);
-    
     translatePlayer.play();
   }
 
   fill(event: TouchEvent) {
-    this.updateDimensions;
-    this.background.fadein;
+    this.updateDimensions();
+    this.background.fadein();
     this.dragable = true;
 
-    let tx: number = 0, ty: number = 0;
-    if(!this.centered){
+    let tx = 0, ty = 0;
+    if(!this.centered) {
       tx = touch(event).clientX - this.center.x;
       ty = touch(event).clientY - this.center.y;
     }
@@ -274,10 +274,9 @@ export class RippleComponent {
     this.fillPlayer.play();
   }
 
-  get cleanTranslatePlayerThenFadeout(){
+  cleanTranslatePlayerThenFadeout() {
     this.translatePlayers.length = 0;
-    this.background.fadeout;
-    return;
+    this.background.fadeout();
   }
 
   splash() {
@@ -287,7 +286,7 @@ export class RippleComponent {
 
     this.splashPlayer.onDone(() => {
       this.splashPlayer.destroy();
-      this.cleanTranslatePlayerAndFadeout;
+      this.cleanTranslatePlayerThenFadeout();
     });
 
     this.splashPlayer.play();
@@ -297,10 +296,10 @@ export class RippleComponent {
     this.dragable = false;
     this.fadeoutPlayer = this.animation.fadeout;
     this.fadeoutPlayer.onStart(() => this.fillPlayer.destroy());
-    
+
     this.fadeoutPlayer.onDone(() => {
       this.fadeoutPlayer.destroy();
-      this.cleanTranslatePlayerThenFadeout;
+      this.cleanTranslatePlayerThenFadeout();
     });
 
     this.fadeoutPlayer.play();

@@ -6,22 +6,22 @@
  * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
  */
 
-import { Coordinate } from './ripple.component'
+import { Coordinate } from './ripple.component';
 
 export class RippleEvent {
 
-  target: HTMLElement
-  type: string
-  timestamp: number
-  clientX: number
-  clientY: number
-  clientRect: ClientRect
+  target: HTMLElement;
+  type: string;
+  timestamp: number;
+  clientX: number;
+  clientY: number;
+  clientRect: ClientRect;
 
   constructor (
     element: HTMLElement,
     coordinate: Coordinate,
     eventType: string
-  ){
+  ) {
     this.target= element;
     this.type = eventType;
     this.timestamp = (new Date).getTime();

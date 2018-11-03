@@ -1,0 +1,27 @@
+{
+  "extends": "../../tslint.json",
+  "rules": {
+    "directive-selector": [
+      true,
+      "attribute",
+      "ripple",
+      "camelCase"
+    ],
+    "component-selector": [
+      true,
+      "element",
+      "ripple",
+      "kebab-case"
+    ],
+    "whitespace": [
+      false,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-type",
+      "check-typecast"
+    ],
+    "no-inferrable-types": false
+  }
+}

@@ -6,8 +6,10 @@
  * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
  */
 
-import { 
+import {
   Directive,
+  AfterViewInit,
+  OnDestroy,
   NgZone,
   HostBinding,
   ElementRef,
@@ -23,7 +25,7 @@ import {
 import { RippleComponent } from './ripple.component';
 import { BackgroundComponent } from './ripple-bg.component';
 
-import { 
+import {
   RippleGestures,
   RippleEmitters
 } from './ripple.gestures';
@@ -31,7 +33,7 @@ import {
 import {
   RIPPLE_LIGHT_BGCOLOR,
   RIPPLE_LIGHT_ACTIVE_BGCOLOR
-} from './ripple.constants'
+} from './ripple.constants';
 
 export enum RippleCmpRefs {
   RIPPLE = 'rippleCmpRef',
@@ -43,21 +45,21 @@ export function enforceStyleRecalculation(element: HTMLElement) {
 }
 
 @Directive({ selector: '[ripple]' })
-export class RippleDirective {
+export class RippleDirective implements AfterViewInit, OnDestroy {
 
-  element: HTMLElement
-  rippleCmpRef: ComponentRef<any>
-  backgroundCmpRef: ComponentRef<any>
-  gestures: RippleGestures
+  element: HTMLElement;
+  rippleCmpRef: ComponentRef<any>;
+  backgroundCmpRef: ComponentRef<any>;
+  gestures: RippleGestures;
 
-  private _children: any[]
-  private _rippleGestures: RippleGestures
+  private _children: any[];
+  private _rippleGestures: RippleGestures;
 
   @HostBinding('style.display') display: string = 'block';
   @HostBinding('style.overflow') overflow: string = 'hidden';
   @HostBinding('style.cursor') cursor: string = 'pointer';
   @HostBinding('class.activated') activated: boolean = false;
-  @HostBinding('style.width') width: string
+  @HostBinding('style.width') width: string;
 
   @Input()
   set light(val: boolean) {
@@ -107,7 +109,7 @@ export class RippleDirective {
 
   @Output() rtap: EventEmitter<any> = new EventEmitter();
   @Output() rpress: EventEmitter<any> = new EventEmitter();
-  @Output() rpressup: EventEmitter<any> = new EventEmitter(); 
+  @Output() rpressup: EventEmitter<any> = new EventEmitter();
   @Output() rclick: EventEmitter<any> = new EventEmitter();
 
   constructor(
@@ -116,7 +118,7 @@ export class RippleDirective {
     private appRef: ApplicationRef,
     private injector: Injector,
     private ngZone: NgZone
-  ){
+  ) {
     this.element = this.elRef.nativeElement;
   }
 
@@ -125,7 +127,7 @@ export class RippleDirective {
     this.background.eventTrigger.subscribe(() => this.gestures.emitCurrentEvent);
     this.background.gestures = this.gestures = this.rippleGestures;
     this.ripple.background = this.background;
-    this.recalculateStyle;
+    this.recalculateStyle();
   }
 
   ngOnDestroy() {
@@ -135,9 +137,9 @@ export class RippleDirective {
     if(this.gestures) this.gestures.triggers.forEach((fn, type) => this.element.removeEventListener(type, fn));
   }
 
-  appendChildren(elements: any[]){
+  appendChildren(elements: any[]) {
     this._children = elements;
-    this._children.forEach(element => this.element.appendChild(element))
+    this._children.forEach(element => this.element.appendChild(element));
   }
 
   get ripple(): RippleComponent {
@@ -155,9 +157,8 @@ export class RippleDirective {
     this.appRef.attachView(this[`${cmpRefName}`].hostView);
   }
 
-  get recalculateStyle() {
+  recalculateStyle() {
     this._children.forEach(element => enforceStyleRecalculation(element));
-    return;
   }
 
   get emitters(): RippleEmitters {
@@ -166,15 +167,15 @@ export class RippleDirective {
       rpress: this.rpress,
       rpressup: this.rpressup,
       rclick: this.rclick
-    }
+    };
   }
 
   get rippleGestures(): RippleGestures {
     if(this._rippleGestures) return this._rippleGestures;
     return this._rippleGestures = new RippleGestures(
-      this.element, 
-      this.ripple, 
-      this.emitters, 
+      this.element,
+      this.ripple,
+      this.emitters,
       this.ngZone
     );
   }
