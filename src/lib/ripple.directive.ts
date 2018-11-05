@@ -125,7 +125,8 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.appendChildren([this.background.element,this.ripple.element]);
     this.background.eventTrigger.subscribe(() => this.gestures.emitCurrentEvent);
-    this.background.gestures = this.gestures = this.rippleGestures;
+    this.background.gestures = this.rippleGestures;
+    this.gestures = this.rippleGestures;
     this.ripple.background = this.background;
     this.recalculateStyle();
   }
@@ -134,7 +135,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     this.rippleCmpRef.destroy();
     this.background.eventTrigger.unsubscribe();
     this.backgroundCmpRef.destroy();
-    if(this.gestures) this.gestures.triggers.forEach((fn, type) => this.element.removeEventListener(type, fn));
+    this.gestures.removeEventTrigger();
   }
 
   appendChildren(elements: any[]) {

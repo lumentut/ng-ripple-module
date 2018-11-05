@@ -52,8 +52,8 @@ import {
 
 import {
   RippleGestures,
-  MobileTriggers,
-  DesktopTriggers,
+  MobileListeners,
+  DesktopListeners,
   Events
 } from './ripple.gestures';
 
@@ -125,8 +125,9 @@ describe('Directive', () => {
     component = fixture.componentInstance;
     directiveEl = fixture.debugElement.query(By.directive(RippleDirective));
     directiveInstance = directiveEl.injector.get(RippleDirective);
+    directiveInstance.gestures = directiveInstance.rippleGestures;
 
-    gestures = directiveInstance.rippleGestures;
+    gestures = directiveInstance.gestures;
     animation = directiveInstance.ripple.animation;
     animation.transition = directiveInstance.ripple.transition;
     ripple = directiveInstance.ripple;
@@ -279,28 +280,28 @@ describe('Directive', () => {
     done();
   });
 
-  it('provide correct mobile triggers', () => {
-    const triggers = new Map<string, Function>();
-    for(const i in MobileTriggers) {
-      if(gestures[`on${MobileTriggers[i]}`]) {
-        triggers.set(MobileTriggers[i], gestures[`on${MobileTriggers[i]}`]);
+  it('provide correct mobile listners', () => {
+    const listeners = new Map<string, Function>();
+    for(const i in MobileListeners) {
+      if(gestures[`on${MobileListeners[i]}`]) {
+        listeners.set(MobileListeners[i], gestures[`on${MobileListeners[i]}`]);
       }
     }
     gestures._isMobile = true;
     fixture.detectChanges();
-    expect(gestures.supportedTriggers).toEqual(triggers);
+    expect(gestures.supportedListeners).toEqual(listeners);
   });
 
-  it('provide correct desktop triggers', () => {
-    const triggers = new Map<string, Function>();
-    for(const i in DesktopTriggers) {
-      if(gestures[`on${DesktopTriggers[i]}`]) {
-        triggers.set(DesktopTriggers[i], gestures[`on${DesktopTriggers[i]}`]);
+  it('provide correct desktop listeners', () => {
+    const listeners = new Map<string, Function>();
+    for(const i in DesktopListeners) {
+      if(gestures[`on${DesktopListeners[i]}`]) {
+        listeners.set(DesktopListeners[i], gestures[`on${DesktopListeners[i]}`]);
       }
     }
     gestures._isMobile = false;
     fixture.detectChanges();
-    expect(gestures.supportedTriggers).toEqual(triggers);
+    expect(gestures.supportedListeners).toEqual(listeners);
   });
 
   it('has a correct fill animation', () => {
@@ -340,23 +341,30 @@ describe('Directive', () => {
     ripple.parentElement = ripple.element.parentNode as HTMLElement;
 
     ripple.parentElement.style.borderRadius = '3px';
+    ripple.cachingParentRectAndStyles();
+    ripple.updateDimensions();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeFalsy();
 
     ripple.parentElement.style.height = '150px';
     ripple.parentElement.style.width = '250px';
+    ripple.cachingParentRectAndStyles();
+    ripple.updateDimensions();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeFalsy();
 
     ripple.parentElement.style.borderRadius = '50%';
     ripple.parentElement.style.height = '150px';
     ripple.parentElement.style.width = '250px';
+    ripple.cachingParentRectAndStyles();
+    ripple.updateDimensions();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeFalsy();
 
     ripple.parentElement.style.borderRadius = '50%';
-    ripple.parentElement.style.height = '150px';
     ripple.parentElement.style.width = '150px';
+    ripple.parentElement.style.height = '150px';
+    ripple.cachingParentRectAndStyles();
     ripple.updateDimensions();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeTruthy();

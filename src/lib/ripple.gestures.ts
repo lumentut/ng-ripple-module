@@ -32,17 +32,20 @@ export enum Events {
   CLICK = 'rclick'
 }
 
-export enum MobileTriggers {
-  TOUCHSTART = 'touchstart',
+export enum MobileListeners {
   TOUCHMOVE = 'touchmove',
   TOUCHEND = 'touchend'
 }
 
-export enum DesktopTriggers {
-  MOUSEDOWN = 'mousedown',
+export enum DesktopListeners {
   MOUSEMOVE = 'mousemove',
   MOUSEUP = 'mouseup',
   MOUSELEAVE = 'mouseleave'
+}
+
+export enum EventTrigger {
+  MOBILE = 'touchstart',
+  DESKTOP = 'mousedown'
 }
 
 export enum TouchClients {
@@ -52,8 +55,8 @@ export enum TouchClients {
 
 export const ACTIVATED_CLASS = 'activated';
 
+// https://stackoverflow.com/questions/3514784
 export function _isMobile() {
-  // https://stackoverflow.com/questions/3514784
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
@@ -73,7 +76,7 @@ export class RippleGestures {
 
   registeredEvents = new Map<string, any>();
 
-  _triggers: Map<string, Function>;
+  _listeners: Map<string, Function>;
 
   constructor(
     private element: HTMLElement,
@@ -81,8 +84,23 @@ export class RippleGestures {
     private emitters: RippleEmitters,
     private ngZone: NgZone
   ) {
-    this.listenToTriggers();
+    this.addEventTrigger();
     this.registerEvents();
+  }
+
+  get trigger(): EventTrigger {
+    return this.isMobile ? EventTrigger.MOBILE : EventTrigger.DESKTOP;
+  }
+
+  private addEventTrigger() {
+    this.ngZone.runOutsideAngular(() => {
+      const trigger = this.trigger;
+      this.element.addEventListener(trigger, this[`on${trigger}`], false);
+    });
+  }
+
+  removeEventTrigger() {
+    this.element.removeEventListener(this.trigger, this[`on${this.trigger}`]);
   }
 
   get isMobile(): boolean {
@@ -90,26 +108,30 @@ export class RippleGestures {
     return this._isMobile = _isMobile();
   }
 
-  get supportedTriggers(): Map<string, any> {
-    const supported = this.isMobile ? MobileTriggers : DesktopTriggers;
-    const triggers = new Map<string, any>();
-    for(const i in supported) {
-      if(this[`on${supported[i]}`]) {
-        triggers.set(supported[i], this[`on${supported[i]}`]);
+  get supportedListeners(): Map<string, any> {
+    const listeners = this.isMobile ? MobileListeners : DesktopListeners;
+    const supported = new Map<string, any>();
+    for(const i in listeners) {
+      if(this[`on${listeners[i]}`]) {
+        supported.set(listeners[i], this[`on${listeners[i]}`]);
       }
     }
-    return triggers;
+    return supported;
   }
 
-  get triggers(): any {
-    if(!this._triggers) this._triggers = this.supportedTriggers;
-    return this._triggers;
+  get listeners(): any {
+    if(!this._listeners) this._listeners = this.supportedListeners;
+    return this._listeners;
   }
 
-  private listenToTriggers() {
+  private addListeners() {
     this.ngZone.runOutsideAngular(() => {
-      this.triggers.forEach((fn, type) => this.element.addEventListener(type, fn, false));
+      this.listeners.forEach((fn, type) => this.element.addEventListener(type, fn, false));
     });
+  }
+
+  private removeListeners() {
+    this.listeners.forEach((fn, type) => this.element.removeEventListener(type, fn));
   }
 
   private registerEvents() {
@@ -163,11 +185,14 @@ export class RippleGestures {
 
   emitEvent(eventName: Events) {
     this.lastEventName = eventName;
-    if(!this.emptyEvent) this.registeredEvents.get(eventName).emit(this.event);
+    if(!this.emptyEvent) {
+      this.ngZone.runOutsideAngular(() => {
+        this.registeredEvents.get(eventName).emit(this.event);
+      });
+    }
   }
 
   watchPressEvent() {
-    this.emptyEvent = false;
     setTimeout(() => {
       if(this.isPressing) this.emitEvent(Events.PRESS);
     }, this.ripple.tapLimit);
@@ -175,8 +200,9 @@ export class RippleGestures {
 
   activate() {
     this.isPressing = true;
+    this.emptyEvent = false;
     this.element.classList.add(ACTIVATED_CLASS);
-    this.watchPressEvent();
+    this.ngZone.runOutsideAngular(() => this.watchPressEvent());
   }
 
   deactivate() {
@@ -224,18 +250,14 @@ export class RippleGestures {
   private ontouchstart = (event: any) => {
     if(this.isPressing) return;
     this.touchstartTimeStamp = event.timeStamp;
+    this.addListeners();
     this.activate();
     if(!this.ripple.fixed) event.preventDefault();
     return this.ripple.fill(event);
   }
 
   set lastCoordinateEvent(event: TouchEvent) {
-
-    const clients = {
-      lastClientX: TouchClients.CLIENT_X,
-      lastClientY: TouchClients.CLIENT_Y
-    };
-
+    const clients = { lastClientX: TouchClients.CLIENT_X, lastClientY: TouchClients.CLIENT_Y};
     for(const coordinate in clients) {
       if(touch(event)[clients[coordinate]]) {
         this[coordinate] = Math.floor(touch(event)[clients[coordinate]]);
@@ -265,6 +287,7 @@ export class RippleGestures {
   }
 
   private ontouchend = (event: any) => {
+    this.removeListeners();
     this.touchendTimeStamp = event.timeStamp;
     if(!this.isPressing || this.emptyEvent) return;
     if(this.isIdleRipple) return this.rippleFadeout();
