@@ -43,7 +43,7 @@ export enum DesktopListeners {
   MOUSELEAVE = 'mouseleave'
 }
 
-export enum EventTrigger {
+export enum InitialListener {
   MOBILE = 'touchstart',
   DESKTOP = 'mousedown'
 }
@@ -84,23 +84,26 @@ export class RippleGestures {
     private emitters: RippleEmitters,
     private ngZone: NgZone
   ) {
-    this.addEventTrigger();
+    this.initListener();
     this.registerEvents();
   }
 
-  get trigger(): EventTrigger {
-    return this.isMobile ? EventTrigger.MOBILE : EventTrigger.DESKTOP;
+  get initialListener(): InitialListener {
+    return this.isMobile ? InitialListener.MOBILE : InitialListener.DESKTOP;
   }
 
-  private addEventTrigger() {
+  private initListener() {
     this.ngZone.runOutsideAngular(() => {
-      const trigger = this.trigger;
-      this.element.addEventListener(trigger, this[`on${trigger}`], false);
+      const listener = this.initialListener;
+      this.element.addEventListener(listener, this[`on${listener}`], false);
     });
   }
 
-  removeEventTrigger() {
-    this.element.removeEventListener(this.trigger, this[`on${this.trigger}`]);
+  removeInitialListener() {
+    this.element.removeEventListener(
+      this.initialListener,
+      this[`on${this.initialListener}`]
+    );
   }
 
   get isMobile(): boolean {

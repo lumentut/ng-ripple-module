@@ -135,7 +135,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     this.rippleCmpRef.destroy();
     this.background.eventTrigger.unsubscribe();
     this.backgroundCmpRef.destroy();
-    this.gestures.removeEventTrigger();
+    this.gestures.removeInitialListener();
   }
 
   appendChildren(elements: any[]) {
