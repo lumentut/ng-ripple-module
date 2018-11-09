@@ -43,6 +43,7 @@ import { RippleComponent } from './ripple.component';
 import { BackgroundComponent } from './ripple-bg.component';
 import { RippleAnimation } from './ripple.animation';
 import { RippleDirective } from './ripple.directive';
+import { RippleMotionTracker } from './ripple.motion.tracker';
 import { NgRippleModule } from './ng-ripple.module';
 
 import {
@@ -51,11 +52,13 @@ import {
 } from './ripple.constants';
 
 import {
-  RippleGestures,
-  MobileListeners,
-  DesktopListeners,
+  RippleEventHandler,
+  MobileActionTypes,
+  DesktopActionTypes,
+  MobileEventHandlers,
+  DesktopEventHandlers,
   Events
-} from './ripple.gestures';
+} from './ripple.event.handler';
 
 @Component({
   template: `<a href="#" ripple
@@ -103,9 +106,10 @@ describe('Directive', () => {
   let fixture: ComponentFixture<RippleTestComponent>;
   let directiveEl: DebugElement;
   let directiveInstance: RippleDirective;
-  let gestures: RippleGestures;
+  let eventHandler: RippleEventHandler;
   let animation: RippleAnimation;
   let ripple: RippleComponent;
+  let motionTracker: RippleMotionTracker;
 
   beforeEach(async(() => {
 
@@ -125,9 +129,10 @@ describe('Directive', () => {
     component = fixture.componentInstance;
     directiveEl = fixture.debugElement.query(By.directive(RippleDirective));
     directiveInstance = directiveEl.injector.get(RippleDirective);
-    directiveInstance.gestures = directiveInstance.rippleGestures;
+    directiveInstance.eventHandler = directiveInstance.rippleEventHandler;
 
-    gestures = directiveInstance.gestures;
+    eventHandler = directiveInstance.eventHandler;
+    motionTracker = directiveInstance.motionTracker;
     animation = directiveInstance.ripple.animation;
     animation.transition = directiveInstance.ripple.transition;
     ripple = directiveInstance.ripple;
@@ -200,45 +205,67 @@ describe('Directive', () => {
   });
 
   it('listen to rtap event', (done) => {
-    gestures.touchstartTimeStamp = 0;
-    gestures.activate();
+    motionTracker.pointerDownTimeStamp = 0;
+    eventHandler.activate();
 
-    directiveInstance.gestures = directiveInstance.rippleGestures;
-    directiveInstance.gestures._isMobile = true;
+    directiveInstance.eventHandler = directiveInstance.rippleEventHandler;
+    directiveInstance.eventHandler._isMobileDevice = true;
     directiveInstance.background.eventTrigger.subscribe(() => {
-      expect(gestures.currentEvent).toEqual(Events.TAP);
+      expect(eventHandler.currentEvent).toEqual(Events.TAP);
     });
 
-    gestures.touchendTimeStamp = 350;
-    gestures.deactivate();
+    motionTracker.pointerUpTimeStamp = 350;
+    eventHandler.deactivate();
     directiveInstance.background.eventTrigger.emit();
     fixture.detectChanges();
     done();
   });
 
   it('listen to rclick event', (done) => {
-    gestures.touchstartTimeStamp = 0;
-    gestures.activate();
+    motionTracker.pointerDownTimeStamp = 0;
+    eventHandler.activate();
 
-    directiveInstance.gestures = directiveInstance.rippleGestures;
-    directiveInstance.gestures._isMobile = false;
+    directiveInstance.eventHandler = directiveInstance.rippleEventHandler;
+    directiveInstance.eventHandler._isMobileDevice = false;
     directiveInstance.background.eventTrigger.subscribe(() => {
-      expect(gestures.currentEvent).toEqual(Events.CLICK);
+      expect(eventHandler.currentEvent).toEqual(Events.CLICK);
     });
 
-    gestures.touchendTimeStamp = 350;
-    gestures.deactivate();
+    motionTracker.pointerUpTimeStamp = 350;
+    eventHandler.deactivate();
+
+    fixture.detectChanges();
+    ripple.parentElement = ripple.element.parentNode as HTMLElement;
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
+    fixture.detectChanges();
+    ripple.centerCoordinate(ripple.parentRect);
+
     directiveInstance.background.eventTrigger.emit();
     fixture.detectChanges();
     done();
   });
 
   it('listen to rpress event', (done) => {
-    gestures.touchstartTimeStamp = 0;
-    gestures.activate();
+    motionTracker.pointerDownTimeStamp = 0;
+    eventHandler.activate();
+
+    directiveInstance.eventHandler = directiveInstance.rippleEventHandler;
+    directiveInstance.eventHandler._isMobileDevice = true;
+
+
+    fixture.detectChanges();
+    ripple.parentElement = ripple.element.parentNode as HTMLElement;
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
+    fixture.detectChanges();
+    ripple.centerCoordinate(ripple.parentRect);
+
 
     directiveInstance.background.eventTrigger.subscribe(() => {
-      expect(gestures.currentEvent).toEqual(Events.PRESS);
+      expect(eventHandler.currentEvent).toEqual(Events.PRESS);
     });
 
     fixture.detectChanges();
@@ -246,62 +273,79 @@ describe('Directive', () => {
   });
 
   it('listen to rpressup event', (done) => {
-    gestures.touchstartTimeStamp = 0;
-    gestures.activate();
+    motionTracker.pointerDownTimeStamp = 0;
+    eventHandler.activate();
 
     directiveInstance.background.eventTrigger.subscribe(() => {
-      expect(gestures.currentEvent).toEqual(Events.PRESSUP);
+      expect(eventHandler.currentEvent).toEqual(Events.PRESSUP);
     });
 
-    gestures.touchendTimeStamp = 750;
-    gestures.deactivate();
+    motionTracker.pointerUpTimeStamp = 750;
+    eventHandler.deactivate();
+
+    fixture.detectChanges();
+    ripple.parentElement = ripple.element.parentNode as HTMLElement;
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
+    fixture.detectChanges();
+    ripple.centerCoordinate(ripple.parentRect);
+
     directiveInstance.background.eventTrigger.emit();
     fixture.detectChanges();
     done();
   });
 
   it('neglect fast repeating event', (done) => {
+    directiveInstance.eventHandler = directiveInstance.rippleEventHandler;
+    directiveInstance.eventHandler._isMobileDevice = true;
 
-    directiveInstance.gestures = directiveInstance.rippleGestures;
-    directiveInstance.gestures._isMobile = true;
-
-    gestures.touchstartTimeStamp = 0;
-    gestures.activate();
+    motionTracker.pointerDownTimeStamp = 0;
+    eventHandler.activate();
 
     directiveInstance.background.eventTrigger.subscribe(() => {
-      expect(gestures.emitCurrentEvent).toEqual(undefined);
+      expect(eventHandler.emitCurrentEvent).toEqual(undefined);
     });
 
-    gestures.touchendTimeStamp = 50;
-    gestures.lastEventName = Events.TAP;
-    gestures.deactivate();
+    motionTracker.pointerUpTimeStamp = 50;
+    eventHandler.lastEventName = Events.TAP;
+    eventHandler.deactivate();
+
+    fixture.detectChanges();
+    ripple.parentElement = ripple.element.parentNode as HTMLElement;
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
+    fixture.detectChanges();
+    ripple.centerCoordinate(ripple.parentRect);
+
     directiveInstance.background.eventTrigger.emit();
     fixture.detectChanges();
     done();
   });
 
-  it('provide correct mobile listners', () => {
+  it('provide correct mobile listeners', () => {
     const listeners = new Map<string, Function>();
-    for(const i in MobileListeners) {
-      if(gestures[`on${MobileListeners[i]}`]) {
-        listeners.set(MobileListeners[i], gestures[`on${MobileListeners[i]}`]);
+    for(const i in MobileActionTypes) {
+      if(MobileActionTypes[i]) {
+        listeners.set(MobileActionTypes[i], eventHandler[MobileEventHandlers[`on${MobileActionTypes[i]}`]]);
       }
     }
-    gestures._isMobile = true;
+    eventHandler._isMobileDevice = true;
     fixture.detectChanges();
-    expect(gestures.supportedListeners).toEqual(listeners);
+    expect(eventHandler.supportedActionTypes).toEqual(listeners);
   });
 
   it('provide correct desktop listeners', () => {
     const listeners = new Map<string, Function>();
-    for(const i in DesktopListeners) {
-      if(gestures[`on${DesktopListeners[i]}`]) {
-        listeners.set(DesktopListeners[i], gestures[`on${DesktopListeners[i]}`]);
+    for(const i in DesktopActionTypes) {
+      if(DesktopActionTypes[i]) {
+        listeners.set(DesktopActionTypes[i], eventHandler[DesktopEventHandlers[`on${DesktopActionTypes[i]}`]]);
       }
     }
-    gestures._isMobile = false;
+    eventHandler._isMobileDevice = false;
     fixture.detectChanges();
-    expect(gestures.supportedListeners).toEqual(listeners);
+    expect(eventHandler.supportedActionTypes).toEqual(listeners);
   });
 
   it('has a correct fill animation', () => {
@@ -316,8 +360,8 @@ describe('Directive', () => {
     expect(animation.splash).toBeTruthy();
   });
 
-  it('has a correct fade animation', () => {
-    expect(animation.fade).toBeTruthy();
+  it('has a correct fadeout animation', () => {
+    expect(animation.fadeout).toBeTruthy();
   });
 
   it('has a correct background fadein animation', () => {
@@ -331,7 +375,8 @@ describe('Directive', () => {
   it('get ripple current scale correctly', () => {
     ripple.parentElement = ripple.element.parentNode as HTMLElement;
     fixture.detectChanges();
-    directiveInstance.ripple.updateDimensions();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
     fixture.detectChanges();
     expect(ripple.currentScale).toEqual(1);
   });
@@ -339,41 +384,52 @@ describe('Directive', () => {
   it('detect nest shape correctly', () => {
     fixture.detectChanges();
     ripple.parentElement = ripple.element.parentNode as HTMLElement;
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
 
     ripple.parentElement.style.borderRadius = '3px';
-    ripple.cachingParentRectAndStyles();
-    ripple.updateDimensions();
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeFalsy();
 
     ripple.parentElement.style.height = '150px';
     ripple.parentElement.style.width = '250px';
-    ripple.cachingParentRectAndStyles();
-    ripple.updateDimensions();
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeFalsy();
 
     ripple.parentElement.style.borderRadius = '50%';
     ripple.parentElement.style.height = '150px';
     ripple.parentElement.style.width = '250px';
-    ripple.cachingParentRectAndStyles();
-    ripple.updateDimensions();
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeFalsy();
 
     ripple.parentElement.style.borderRadius = '50%';
     ripple.parentElement.style.width = '150px';
     ripple.parentElement.style.height = '150px';
-    ripple.cachingParentRectAndStyles();
-    ripple.updateDimensions();
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeTruthy();
   });
 
   it('detect center position correctly', () => {
-
-    fixture.detectChanges();
     ripple.parentElement = ripple.element.parentNode as HTMLElement;
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
+    fixture.detectChanges();
+    ripple.centerCoordinate(ripple.parentRect);
+
     const rect = ripple.parentRect;
 
     const center = {
@@ -388,12 +444,18 @@ describe('Directive', () => {
 
     fixture.detectChanges();
     ripple.parentElement = ripple.element.parentNode as HTMLElement;
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
+    fixture.detectChanges();
+    ripple.centerCoordinate(ripple.parentRect);
+
     const rect = ripple.parentRect;
 
     const angle = 45;
     const x = Math.cos(angle * Math.PI/180) * rect.width/2;
     const y = Math.sin(angle * Math.PI/180) * rect.width/2;
-    let touch: any, event: any;
+    let pointer: any, event: any;
 
     const center = {
       x: rect.left + rect.width/2,
@@ -401,83 +463,105 @@ describe('Directive', () => {
     };
 
     // Touch at Q1 (4.30)
-    touch = {
+    pointer = {
       clientX: center.x + x,
-      clientY: center.y + y
+      clientY: center.y + y,
+      timeStamp: 0,
+      type: 'touchmove'
     };
 
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event)).toBeTruthy();
 
-    touch = {
+    pointer = {
       clientX: center.x + x + 1,
-      clientY: center.y + y + 1
+      clientY: center.y + y + 1,
+      timeStamp: 0,
+      type: 'touchmove'
     };
 
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event)).toBeFalsy();
 
 
     // Touch at Q2 (7.30)
-    touch = {
+    pointer = {
       clientX: center.x - x,
-      clientY: center.y + y
+      clientY: center.y + y,
+      timeStamp: 0,
+      type: 'touchmove'
     };
 
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event)).toBeTruthy();
 
-    touch = {
+    pointer = {
       clientX: center.x - x - 1,
-      clientY: center.y + y + 1
+      clientY: center.y + y + 1,
+      timeStamp: 0,
+      type: 'touchmove'
     };
 
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event)).toBeFalsy();
 
 
     // Touch at Q3 (10.30)
-    touch = {
+    pointer = {
       clientX: center.x - x,
-      clientY: center.y - y + 0.5
+      clientY: center.y - y + 0.5,
+      timeStamp: 0,
+      type: 'touchmove'
     };
 
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event)).toBeTruthy();
 
-    touch = {
+    pointer = {
       clientX: center.x - x - 1,
-      clientY: center.y - y - 1
+      clientY: center.y - y - 1,
+      timeStamp: 0,
+      type: 'touchmove'
     };
 
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event)).toBeFalsy();
 
 
-    // // Touch at Q4 (1.30)
-    touch = {
+    // Touch at Q4 (1.30)
+    pointer = {
       clientX: center.x + x,
-      clientY: center.y - y + 0.5
+      clientY: center.y - y + 0.5,
+      timeStamp: 0,
+      type: 'touchmove'
     };
 
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event)).toBeTruthy();
 
-    touch = {
+    pointer = {
       clientX: center.x + x + 1,
-      clientY: center.y - y - 1
+      clientY: center.y - y - 1,
+      timeStamp: 0,
+      type: 'touchmove'
     };
 
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event)).toBeFalsy();
   });
 
-  it('detect touch outside rectangle correctly', () => {
+  it('detect pointer outside rectangle correctly', () => {
 
     fixture.detectChanges();
     ripple.parentElement = ripple.element.parentNode as HTMLElement;
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
+    fixture.detectChanges();
+    ripple.centerCoordinate(ripple.parentRect);
+
     const rect = ripple.parentRect;
-    let touch: any, event: any;
+    let pointer: any, event: any;
 
     const center = {
       x: rect.left + rect.width/2,
@@ -485,66 +569,66 @@ describe('Directive', () => {
     };
 
     // Top detection
-    touch = {
+    pointer = {
       clientX: center.x,
       clientY: rect.top + 1
     };
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
 
-    touch = {
+    pointer = {
       clientX: center.x,
       clientY: rect.top - 1
     };
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
 
 
     // Right detection
-    touch = {
+    pointer = {
       clientX: center.x + (rect.width/2) - 1,
       clientY: center.y
     };
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
 
-    touch = {
+    pointer = {
       clientX: center.x + (rect.width/2) + 1,
       clientY: center.y
     };
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
 
 
     // Bottom detection
-    touch = {
+    pointer = {
       clientX: center.x,
       clientY: rect.top + rect.height - 1
     };
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
 
-    touch = {
+    pointer = {
       clientX: center.x,
       clientY: rect.top + rect.height + 1
     };
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
 
     // Left detection
-    touch = {
+    pointer = {
       clientX: center.x - (rect.width/2) + 1,
       clientY: center.y
     };
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event as TouchEvent)).toBeTruthy();
 
-    touch = {
+    pointer = {
       clientX: center.x - (rect.width/2) - 1,
       clientY: center.y
     };
-    event = { changedTouches: [touch] };
-    expect(ripple.touchEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
+    event = { changedTouches: [pointer] };
+    expect(ripple.pointerEventStillInCircleArea(event as TouchEvent)).toBeFalsy();
   });
 
   it('detect outer point correctly', () => {
@@ -553,57 +637,157 @@ describe('Directive', () => {
 
     ripple.parentElement = ripple.element.parentNode as HTMLElement;
     ripple.element.style.transform = 'scale(0.5)';
-
+    fixture.detectChanges();
+    ripple.initialSetup();
+    ripple.cachingRectAndCenter();
+    fixture.detectChanges();
+    ripple.centerCoordinate(ripple.parentRect);
     fixture.detectChanges();
 
-    let touch = {
+    let pointer = {
       clientX: ripple.center.x - (ripple.parentRect.width/4) + 1,
       clientY: ripple.center.y
     };
-    let event: any = { changedTouches: [touch] };
+    let event: any = { changedTouches: [pointer] };
     expect(ripple.outerPointStillInHostRadius(event as TouchEvent)).toBeTruthy();
 
-    touch = {
+    pointer = {
       clientX: ripple.center.x - (ripple.parentRect.width/4),
       clientY: ripple.center.y
     };
-    event = { changedTouches: [touch] };
+    event = { changedTouches: [pointer] };
     expect(ripple.outerPointStillInHostRadius(event as TouchEvent)).toBeFalsy();
   });
 
-  it('detect unwanted press touchmove', () => {
-    fixture.detectChanges();
-
-    let touch: any, event: any;
-
-    touch = {
-      clientX: 20,
-      clientY: 20
+  it('motion tracker track TouchEvent correctly', () => {
+    let pointer: any, event: any;
+    pointer = { clientX: 100, clientY: 100 };
+    event = {
+      changedTouches: [pointer],
+      timeStamp: 0,
+      type: 'touchstart'
     };
 
-    event = { changedTouches: [touch] };
+    motionTracker.track(event);
+    expect(motionTracker.pointerDownClientX).toEqual(pointer.clientX);
+    expect(motionTracker.pointerDownClientY).toEqual(pointer.clientY);
+    expect(motionTracker.pointerDownType).toEqual(event.type);
 
-    gestures.isRepeatingCoordinate(event);
+    event = {
+      changedTouches: [pointer],
+      timeStamp: 0,
+      type: 'touchmove'
+    };
+
+    motionTracker.track(event);
+    expect(motionTracker.pointerMoveClientX).toEqual(pointer.clientX);
+    expect(motionTracker.pointerMoveClientY).toEqual(pointer.clientY);
+    expect(motionTracker.pointerMoveType).toEqual(event.type);
+
+    event = {
+      changedTouches: [pointer],
+      timeStamp: 0,
+      type: 'touchend'
+    };
+
+    motionTracker.track(event);
+    expect(motionTracker.pointerUpClientX).toEqual(pointer.clientX);
+    expect(motionTracker.pointerUpClientY).toEqual(pointer.clientY);
+    expect(motionTracker.pointerUpType).toEqual(event.type);
+  });
+
+  it('motion tracker track MouseEvent correctly', () => {
+    let event: any;
+    event = {
+      clientX: 100,
+      clientY: 100,
+      timeStamp: 0,
+      type: 'mousedown'
+    };
+
+    motionTracker.track(event);
+    expect(motionTracker.pointerDownClientX).toEqual(event.clientX);
+    expect(motionTracker.pointerDownClientY).toEqual(event.clientY);
+    expect(motionTracker.pointerDownType).toEqual(event.type);
+
+    event = {
+      clientX: 100,
+      clientY: 100,
+      timeStamp: 0,
+      type: 'mousemove'
+    };
+
+    motionTracker.track(event);
+    expect(motionTracker.pointerMoveClientX).toEqual(event.clientX);
+    expect(motionTracker.pointerMoveClientY).toEqual(event.clientY);
+    expect(motionTracker.pointerMoveType).toEqual(event.type);
+
+    event = {
+      clientX: 100,
+      clientY: 100,
+      timeStamp: 0,
+      type: 'mouseup'
+    };
+
+    motionTracker.track(event);
+    expect(motionTracker.pointerUpClientX).toEqual(event.clientX);
+    expect(motionTracker.pointerUpClientY).toEqual(event.clientY);
+    expect(motionTracker.pointerUpType).toEqual(event.type);
+
+    motionTracker.reset();
+    expect(motionTracker.pointerDownClientX).toEqual(undefined);
+    expect(motionTracker.pointerDownClientY).toEqual(undefined);
+    expect(motionTracker.pointerDownType).toEqual(undefined);
+    expect(motionTracker.pointerMoveClientX).toEqual(undefined);
+    expect(motionTracker.pointerMoveClientY).toEqual(undefined);
+    expect(motionTracker.pointerMoveType).toEqual(undefined);
+    expect(motionTracker.pointerUpClientX).toEqual(undefined);
+    expect(motionTracker.pointerUpClientY).toEqual(undefined);
+    expect(motionTracker.pointerUpType).toEqual(undefined);
+  });
+
+  it('motion tracker detect duration and velocity', () => {
+    let event: any;
+    event = {
+      clientX: 100,
+      clientY: 200,
+      timeStamp: 10,
+      type: 'mousedown'
+    };
+
+    motionTracker.track(event);
+
+    event = {
+      clientX: 200,
+      clientY: 330,
+      timeStamp: 100,
+      type: 'mousemove'
+    };
+
+    motionTracker.track(event);
+
+    event = {
+      clientX: 20,
+      clientY: 33,
+      timeStamp: 110,
+      type: 'mouseup'
+    };
+
+    motionTracker.track(event);
 
     fixture.detectChanges();
 
-    touch = {
-      clientX: 20,
-      clientY: 20.5
-    };
+    const deltaX = 200-100;
+    const deltaY = 330-200;
+    const deltaT = 100-10;
+    const velocityX = Math.abs((deltaX/deltaT)*100);
+    const velocityY = Math.abs((deltaY/deltaT)*100);
+    const avgVelocity = (velocityX+velocityY)/2;
+    const duration = 110-10;
 
-    event = { changedTouches: [touch] };
-    expect(gestures.isRepeatingCoordinate(event)).toBeTruthy();
-
-    fixture.detectChanges();
-
-    touch = {
-      clientX: 20,
-      clientY: 21
-    };
-
-    event = { changedTouches: [touch] };
-    expect(gestures.isRepeatingCoordinate(event)).toBeFalsy();
-
+    expect(motionTracker.velocityX).toEqual(velocityX);
+    expect(motionTracker.velocityY).toEqual(velocityY);
+    expect(motionTracker.velocity).toEqual(avgVelocity);
+    expect(motionTracker.duration).toEqual(duration);
   });
 });

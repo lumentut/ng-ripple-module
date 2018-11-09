@@ -174,6 +174,18 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
       </a>
     </p>
     <br>
+    <p>
+      <a href="#" ripple
+        fillTransition="1000ms linear"
+        rippleBgColor="rgba(0,0,0,0.05)"
+        activeBgColor="rgba(0,0,0,0.035)"
+        class="rectangle card card-md"
+        (rtap)="onTap($event)"
+        (rpress)="onPress($event)"
+        (rpressup)="onPressup($event)">
+      </a>
+    </p>
+    <br>
 
     <h2>Fixed/Scrollable ripple</h2>
     <p>

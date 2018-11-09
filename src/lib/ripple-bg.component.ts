@@ -30,11 +30,6 @@ import {
   RIPPLE_DEFAULT_ACTIVE_BGCOLOR
 } from './ripple.constants';
 
-import {
-  _isMobile,
-  RippleGestures
-} from './ripple.gestures';
-
 @Component({
   selector: 'ripple-bg',
   template: `<ng-content></ng-content>`,
@@ -56,12 +51,8 @@ export class BackgroundComponent implements OnInit, OnDestroy {
   element: HTMLElement;
   parentElement: HTMLElement;
 
-  gestures: RippleGestures;
-
   _fadeinPlayer: AnimationPlayer;
   _fadeoutPlayer: AnimationPlayer;
-
-  _isMobile: boolean;
 
   @HostBinding('style.background')
   color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR;
@@ -82,11 +73,6 @@ export class BackgroundComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if(this._fadeinPlayer) this._fadeinPlayer.destroy();
     if(this._fadeoutPlayer) this._fadeoutPlayer.destroy();
-  }
-
-  get isMobile(): boolean {
-    if(this._isMobile) return this._isMobile;
-    return this._isMobile = _isMobile();
   }
 
   get parentRect(): ClientRect {

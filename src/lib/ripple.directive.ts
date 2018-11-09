@@ -26,9 +26,13 @@ import { RippleComponent } from './ripple.component';
 import { BackgroundComponent } from './ripple-bg.component';
 
 import {
-  RippleGestures,
-  RippleEmitters
-} from './ripple.gestures';
+  RippleEmitters,
+  RippleEventHandler
+} from './ripple.event.handler';
+
+import {
+  RippleMotionTracker
+} from './ripple.motion.tracker';
 
 import {
   RIPPLE_LIGHT_BGCOLOR,
@@ -50,10 +54,11 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   element: HTMLElement;
   rippleCmpRef: ComponentRef<any>;
   backgroundCmpRef: ComponentRef<any>;
-  gestures: RippleGestures;
+  eventHandler: RippleEventHandler;
 
   private _children: any[];
-  private _rippleGestures: RippleGestures;
+  private _eventHandler: RippleEventHandler;
+  private _motionTracker: RippleMotionTracker;
 
   @HostBinding('style.display') display: string = 'block';
   @HostBinding('style.overflow') overflow: string = 'hidden';
@@ -124,9 +129,8 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.appendChildren([this.background.element,this.ripple.element]);
-    this.background.eventTrigger.subscribe(() => this.gestures.emitCurrentEvent);
-    this.background.gestures = this.rippleGestures;
-    this.gestures = this.rippleGestures;
+    this.background.eventTrigger.subscribe(() => this.eventHandler.emitCurrentEvent);
+    this.eventHandler = this.rippleEventHandler;
     this.ripple.background = this.background;
     this.recalculateStyle();
   }
@@ -135,10 +139,10 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     this.rippleCmpRef.destroy();
     this.background.eventTrigger.unsubscribe();
     this.backgroundCmpRef.destroy();
-    this.gestures.removeInitialListener();
+    this.eventHandler.removePointerDownListener();
   }
 
-  appendChildren(elements: any[]) {
+  private appendChildren(elements: any[]) {
     this._children = elements;
     this._children.forEach(element => this.element.appendChild(element));
   }
@@ -153,12 +157,12 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     return this.backgroundCmpRef.instance;
   }
 
-  createComponentRef(Component: any, cmpRefName: string) {
+  private createComponentRef(Component: any, cmpRefName: string) {
     this[`${cmpRefName}`] = this.cfr.resolveComponentFactory(Component).create(this.injector);
     this.appRef.attachView(this[`${cmpRefName}`].hostView);
   }
 
-  recalculateStyle() {
+  private recalculateStyle() {
     this._children.forEach(element => enforceStyleRecalculation(element));
   }
 
@@ -171,12 +175,18 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     };
   }
 
-  get rippleGestures(): RippleGestures {
-    if(this._rippleGestures) return this._rippleGestures;
-    return this._rippleGestures = new RippleGestures(
+  get motionTracker(): RippleMotionTracker {
+    if(this._motionTracker) return this._motionTracker;
+    return this._motionTracker = new RippleMotionTracker();
+  }
+
+  get rippleEventHandler(): RippleEventHandler {
+    if(this._eventHandler) return this._eventHandler;
+    return this._eventHandler = new RippleEventHandler(
       this.element,
       this.ripple,
       this.emitters,
+      this.motionTracker,
       this.ngZone
     );
   }
