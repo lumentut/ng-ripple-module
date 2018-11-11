@@ -77,7 +77,6 @@ export class RippleAnimation {
   translate(tx: number, ty: number, scale: number): AnimationPlayer {
 
     const translation = style({
-      transition: '0s',
       transform: `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`
     });
 

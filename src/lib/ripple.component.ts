@@ -309,7 +309,14 @@ export class RippleComponent implements AfterViewInit, OnDestroy {
     );
 
     this.translatePlayers.push(translatePlayer);
-    translatePlayer.onDone(() => translatePlayer.destroy());
+
+    const index = this.translatePlayers.indexOf(translatePlayer);
+
+    if(index > 0) {
+      this.translatePlayers[index-1].destroy();
+      this.translatePlayers.splice(index-1, 1);
+    };
+
     translatePlayer.play();
   }
 
