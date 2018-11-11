@@ -59,11 +59,6 @@ export enum PointerDownAction {
   DESKTOP = 'mousedown'
 }
 
-export enum TouchClients {
-  CLIENT_X = 'clientX',
-  CLIENT_Y = 'clientY'
-}
-
 export const ACTIVATED_CLASS = 'activated';
 
 export interface PointerEvent {
