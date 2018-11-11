@@ -125,10 +125,10 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     private ngZone: NgZone
   ) {
     this.element = this.elRef.nativeElement;
+    this.appendChildren([this.background.element,this.ripple.element]);
   }
 
   ngAfterViewInit() {
-    this.appendChildren([this.background.element,this.ripple.element]);
     this.background.eventTrigger.subscribe(() => this.eventHandler.emitCurrentEvent);
     this.eventHandler = this.rippleEventHandler;
     this.ripple.background = this.background;
