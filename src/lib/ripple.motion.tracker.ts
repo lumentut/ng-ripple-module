@@ -22,7 +22,7 @@ export const MOTION_TRACKER_COMMON_PROPS = [
   'ClientX',
   'ClientY',
   'Type'
-]
+];
 
 export class RippleMotionTracker {
 
