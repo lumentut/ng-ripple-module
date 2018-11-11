@@ -8,18 +8,24 @@ An Angular ripple module as an alternative of available material design ripple.
 npm i ng-ripple-module
 ```
 
-2.Import `NgRippleModule` in your application's main `@NgModule` and `BrowserAnimationsModule` (if not imported yet).
+2.Import `NgRippleModule` in your application's main `@NgModule` and `BrowserAnimationsModule` (if not imported yet) at your `project_root/src/app/app.modules.ts`. 
 ```ts
+...
+import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgRippleModule } from 'ng-ripple-module';
+...
 
 @NgModule({
    ...
    imports: [
       ...
+      BrowserModule,
       BrowserAnimationsModule,
       NgRippleModule
-   ]
+      ...
+   ],
+   ...
 })
 export class MyModule { ... }
 ```
