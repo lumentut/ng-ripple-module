@@ -1,7 +1,7 @@
 ## Ng-Ripple-Module
 
 An Angular ripple module as an alternative of available material design ripple. <br>
-The module utilize a `ripple` directive that will append a ripple element (`ripple-core`) and a background element (`ripple-bg`) into the nest element. Whenever there is a `touchstart` or a `mousedown` trigger, the event handler will work outside angular to avoid change detection (you know how much the cost is). Why not using CSS only whithout appending ripple and background? Because at dragging phase of the ripple we need to get the real time ripple dimension. Of course it is not a cheap prosess because of getBoundingClientRect() but there is no other way (for now). Please use the ripple wisely, since it use css `will-change` property that consume a lot of resources.<br>
+The module utilize a `ripple` directive that will append a ripple element (`ripple-core`) and a background element (`ripple-bg`) into the nest element. Whenever there is a `touchstart` or a `mousedown` trigger, the event handler will work outside angular to avoid change detection (you know how much the cost is). Why not using CSS only whithout appending ripple and background? Because at dragging phase of the ripple we need to get the real time ripple dimension. Of course it is not a cheap prosess because of `getBoundingClientRect()` but there is no other way (for now). Please use the ripple wisely, since it use css `will-change` property that consume a lot of resources.<br>
 Note: This is a work in proggres.
 
 ### Installation
@@ -47,7 +47,7 @@ Example: <br>
 <br>
 
 ## Element Positioning & Dimension
-The nest element is positioned using the `top`, and `left` properties. So you have to make sure that the nest element position method property is `relative` positioned to make this module works properly.
+Both `ripple-core` element and `ripple-bg` element are positioned using the `top`, and `left` properties. So you have to make sure that the nest element position method property is `relative` positioned to make the ripple and its background reside correctly in the nest.<br>
 As an alternative, you can use a reusable class and put at `your_project_root/src/style.scss` and then use it together with the `ripple` directive.
 
 ```html
