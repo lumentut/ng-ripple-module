@@ -44,15 +44,22 @@ Example: <br>
 ```
 <br>
 
-## Element Positioning
-To make this module works correctly, don't forget to set your nest element style position into a relatively positioned
+## Element Positioning & Dimension
+The nest element is positioned using the `top`, and `left` properties. So you have to make sure the the nest element position method property is `relative` positioned to make this module works properly.
+As an alternative, you can use a reusable class and put at `your_project_root/src/style.scss` and then use it together with the `ripple` directive.
+
 ```html
-   your_nest_element {
-      ...
-      position: relative;
-      ...
-   }
+// your_project_root/src/style.scss
+.relative {
+   position: relative;
+}
+
+// somewhere in your component template ... .html
+<button ripple class="relative">
+   ...
+</button>
 ```
+Since the ripple and it's background component get dimension from its nest parent, then you have to make sure that the nest element have a dimension that can be used by ripple component as a dimension reference.
 <br>
 
 ## Available Inputs and Attributes
