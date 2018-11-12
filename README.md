@@ -3,12 +3,12 @@
 An Angular ripple module as an alternative of available material design ripple.
 
 ### Installation
-1.Install this module by running the following command:
+1. Install this module by running the following command:
 ```shell
 npm i ng-ripple-module
 ```
 
-2.Import `NgRippleModule` in your application's main `@NgModule` and `BrowserAnimationsModule` (if not imported yet) at your `project_root/src/app/app.modules.ts`. 
+2. Import `NgRippleModule` in your application's main `@NgModule` and `BrowserAnimationsModule` (if not imported yet) at your `project_root/src/app/app.modules.ts`. 
 ```ts
 ...
 import { BrowserModule } from '@angular/platform-browser';
@@ -45,7 +45,7 @@ Example: <br>
 <br>
 
 ## Element Positioning & Dimension
-The nest element is positioned using the `top`, and `left` properties. So you have to make sure the the nest element position method property is `relative` positioned to make this module works properly.
+The nest element is positioned using the `top`, and `left` properties. So you have to make sure that the nest element position method property is `relative` positioned to make this module works properly.
 As an alternative, you can use a reusable class and put at `your_project_root/src/style.scss` and then use it together with the `ripple` directive.
 
 ```html
