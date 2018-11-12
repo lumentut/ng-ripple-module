@@ -1,10 +1,8 @@
 ## Ng-Ripple-Module
 
 An Angular ripple module as an alternative of available material design ripple. <br>
-The module utilize a `ripple` directive that will append a `ripple-core` element and a `ripple-bg` element into the nest element. Whenever there is a `touchstart` or a `mousedown` trigger, the event handler will listen to the trigger and work outside angular to avoid change detection (you know how much the cost is). If you wonder why not using CSS only - whithout appending ripple and background element, it is because at dragging phase of the ripple we need to get the real time ripple dimension. Of course it is not a cheap process because of `getBoundingClientRect()` but there is no other way (for now). 
-Note: 
-1. This is a work in proggres but we will try to be consistent in every published version.
-2. Please use the ripple wisely especially if you target mobile device users, since the ripple use css `will-change` property that consume a lot of resources. e.g implement `ripple` inside a very long list item.<br>
+The module `ripple` directive will append a `ripple-core` element and a `ripple-bg` element into the nest element.
+Note:Please use the ripple wisely especially if you target mobile device users, since the ripple use css `will-change` property that consume a lot of resources. e.g implement `ripple` inside a very long list item.<br>
 
 ### Installation
 1. Install this module by running the following command:
