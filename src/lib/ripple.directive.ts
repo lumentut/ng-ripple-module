@@ -69,7 +69,9 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   @Input()
   set light(val: boolean) {
     this.ripple.color = RIPPLE_LIGHT_BGCOLOR;
+    this.rippleCmpRef.changeDetectorRef.detectChanges();
     this.background.color = RIPPLE_LIGHT_ACTIVE_BGCOLOR;
+    this.backgroundCmpRef.changeDetectorRef.detectChanges();
   }
 
   @Input('centered-ripple')
@@ -125,7 +127,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     private ngZone: NgZone
   ) {
     this.element = this.elRef.nativeElement;
-    this.appendChildren([this.background.element,this.ripple.element]);
+    this.appendChildren([this.background.element, this.ripple.element]);
   }
 
   ngAfterViewInit() {
@@ -137,6 +139,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.rippleCmpRef.destroy();
+    this.background.prepareToBeDestroyed();
     this.background.eventTrigger.unsubscribe();
     this.backgroundCmpRef.destroy();
     this.eventHandler.removePointerDownListener();

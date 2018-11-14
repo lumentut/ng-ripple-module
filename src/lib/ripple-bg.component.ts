@@ -54,6 +54,8 @@ export class BackgroundComponent implements OnInit, OnDestroy {
   _fadeinPlayer: AnimationPlayer;
   _fadeoutPlayer: AnimationPlayer;
 
+  _isDestroying: boolean;
+
   @HostBinding('style.background')
   color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR;
 
@@ -73,6 +75,10 @@ export class BackgroundComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if(this._fadeinPlayer) this._fadeinPlayer.destroy();
     if(this._fadeoutPlayer) this._fadeoutPlayer.destroy();
+  }
+
+  prepareToBeDestroyed() {
+    this._isDestroying = true;
   }
 
   get parentRect(): ClientRect {
@@ -103,6 +109,7 @@ export class BackgroundComponent implements OnInit, OnDestroy {
   }
 
   fadeout() {
+    if(this._isDestroying) return;
     this._fadeoutPlayer = this.fadeoutPlayer;
     this._fadeoutPlayer.play();
     this.eventTrigger.emit();

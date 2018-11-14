@@ -16,6 +16,7 @@ export class RippleEvent {
   clientX: number;
   clientY: number;
   clientRect: ClientRect;
+  navLink: string;
 
   constructor (
     element: HTMLElement,
@@ -28,5 +29,6 @@ export class RippleEvent {
     this.clientX = coordinate.x;
     this.clientY = coordinate.y;
     this.clientRect = element.getBoundingClientRect();
+    this.navLink = element.getAttribute('navlink');
   }
 }

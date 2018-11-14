@@ -178,10 +178,10 @@ export class RippleComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.fillPlayer=null;
-    this.splashPlayer =null;
-    this.translatePlayers=null;
-    this.fadeoutPlayer=null;
+    // this.fillPlayer=null;
+    // this.splashPlayer =null;
+    // this.translatePlayers=null;
+    // this.fadeoutPlayer=null;
   }
 
   updateDimensions() {
