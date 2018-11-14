@@ -1,8 +1,6 @@
 ## Ng-Ripple-Module
 
-An Angular ripple module as an alternative of available material design ripple. <br>
-The module `ripple` directive will append a `ripple-core` element and a `ripple-bg` element into the nest element.
-Note:Please use the ripple wisely especially if you target mobile device users, since the ripple use css `will-change` property that consume a lot of resources. e.g implement `ripple` inside a very long list item.<br>
+An Angular ripple module as an alternative of available material design ripple.
 
 ### Installation
 1. Install this module by running the following command:
@@ -42,11 +40,11 @@ Example: <br>
   <button ripple ....></button>
 ```
 ```html
-  <a href="..." ripple ....></a>
+  <a navlink="/home" ripple ....></a>
 ```
 <br>
 
-## Element Positioning & Dimension
+## Element Positioning
 Both `ripple-core` element and `ripple-bg` element are positioned using the `top`, and `left` properties. So you have to make sure that the nest element position method property is `relative` positioned to make the ripple and its background reside correctly in the nest.<br>
 As an alternative, you can use a reusable class and put at `your_project_root/src/style.scss` and then use it together with the `ripple` directive.
 
@@ -61,10 +59,38 @@ As an alternative, you can use a reusable class and put at `your_project_root/sr
    ...
 </button>
 ```
+## Element Dimension
 Since the ripple and it's background component get dimension from its nest parent, then you have to make sure that the nest element have a dimension that can be used by ripple component as a dimension reference.
 <br>
 
 ## Available Inputs and Attributes
+### `navlink`
+If you apply the ripple directive to a HTML `<a>` tag which is commonly used as a navigation link, you have to use `navlink` instead of `href`. It is in order to prevent default behavior of the `<a>` tag and emmit the event only after the `ripple-bg` fadeout completely. Then, call a method to process the event and navigate to the specified link page.
+```html
+   <a navlink="/home" ripple light
+      ...
+      (rclick)="goBack($event)"
+      (rtap)="goBack($event)">
+      Back
+   </a>
+```
+```ts
+   ...
+   import  { Router } from '@angular/router';
+   ...
+   export default SecondPage {
+      ...
+      constructor(private router: Router) { 
+         ... 
+      }
+      ...
+      goBack(event: any) {
+         this.router.navigateByUrl(event.navLink);
+      }
+      ...
+   }
+```
+
 ### `light`
 Basically, the module is shipped out with `dark` ripple effect. If you need a light/white ripple effect, just use `light` attribute.
 ```html
@@ -74,7 +100,7 @@ Basically, the module is shipped out with `dark` ripple effect. If you need a li
 ### `centered-ripple`
 This attribute is used to make your ripple effect start from the center of your touched/clicked element.
 ```html
-  <a href="..." ripple centered-ripple ...> ... </a>
+  <a navlink="/next-page" ripple centered-ripple ...> ... </a>
 ```
 
 ### `fixed-ripple`
@@ -128,6 +154,7 @@ timestamp: number;        // timestamp when the event emitted
 clientX: number;          // center coordinate X of your host element
 clientY: number;          // center coordinate Y of your host element
 clientRect: ClientRect;   // host element ClientRect detail data
+navLink: string           // host element navigation link
 ```
 ## Examples
 Below are examples of ripple directive in Ionic (3) application. Dont't forget to set the host element style position property into `relative`;
@@ -170,27 +197,27 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
 
     <h2>Centered Ripple</h2>
     <p>
-      <a href="#" ripple light centered-ripple
+      <button ripple light centered-ripple
         class="circle button-md-primary"
         (rtap)="onTap($event)"
         (rpress)="onPress($event)"
         (rpressup)="onPressup($event)">
-      </a>
+      </button>
     </p>
     <br>
 
     <h2>Draggable ripple</h2>
     <p>
-      <a href="#" ripple light 
+      <button ripple light 
         class="circle button-md-primary"
         (rtap)="onTap($event)"
         (rpress)="onPress($event)"
         (rpressup)="onPressup($event)">
-      </a>
+      </button>
     </p>
     <br>
     <p>
-      <a href="#" ripple
+      <button ripple
         fillTransition="1000ms linear"
         rippleBgColor="rgba(0,0,0,0.05)"
         activeBgColor="rgba(0,0,0,0.035)"
@@ -198,22 +225,22 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
         (rtap)="onTap($event)"
         (rpress)="onPress($event)"
         (rpressup)="onPressup($event)">
-      </a>
+      </button>
     </p>
     <br>
 
     <h2>Fixed/Scrollable ripple</h2>
     <p>
-      <a href="#" ripple light  fixed-ripple
+      <button ripple light  fixed-ripple
         class="circle button-md-primary"
         (rtap)="onTap($event)"
         (rpress)="onPress($event)"
         (rpressup)="onPressup($event)">
-      </a>
+      </button>
     </p>
     <br>
     <p>
-      <a href="#" ripple fixed-ripple
+      <button ripple fixed-ripple
         fillTransition="1000ms linear"
         rippleBgColor="rgba(0,0,0,0.05)"
         activeBgColor="rgba(0,0,0,0.035)"
@@ -221,7 +248,7 @@ Below are examples of ripple directive in Ionic (3) application. Dont't forget t
         (rtap)="onTap($event)"
         (rpress)="onPress($event)"
         (rpressup)="onPressup($event)">
-      </a>
+      </button>
     </p>
 
     <br>
