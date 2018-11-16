@@ -164,6 +164,68 @@ clientY: number;          // center coordinate Y of your host element
 clientRect: ClientRect;   // host element ClientRect detail data
 navLink: string           // host element navigation link
 ```
+
+## Custom Component
+As the other developer who don't like to write repetives code, we can utilize the `ripple` directive at a custom component.
+
+```ts
+...
+
+@Component({
+  selector: 'back-btn',
+  template: `
+    <button ripple light
+      fillTransition="{{ _fillTransition }}"
+      splashTransition="{{ _splashTransition }}"
+      (rtap)="back($event)"
+      (rpressup)="back($event)"
+      (rclick)="back($event)"
+      >
+      <ion-icon name="{{ _iconName }}"></ion-icon>
+    </button>`
+  ,
+  styles: [
+    `:host {
+      position: fixed;
+      display: block;
+      width: 70px;
+      height: 70px;
+      margin-top: -35px;
+      margin-left: -16px;
+    }`,
+    `:host button {
+      color: #fff;
+      padding: 0;
+      width: inherit;
+      height: inherit;
+      font-size: 2rem;
+      font-weight: bold;
+      border-radius: 50%;
+      background-color: transparent;
+      position: relative;
+      overflow: hidden;
+    }`
+  ]
+})
+export class BackBtnComponent {
+   ...
+   _fillTransition: string = ...
+   _splashTransition: string = ...
+   _iconName: string = ...
+   ...
+   back(event: RippleEvent) {
+    // back action code
+   }
+}
+
+```
+Then you can use it at somewhere in your html template.
+```html
+   ...
+   <back-btn></back-btn>
+   ...
+```
+
 ## Examples
 Below are examples of ripple directive in Ionic (3) application. Dont't forget to set the host element style position property into `relative`;
 
