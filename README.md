@@ -122,22 +122,30 @@ If you need a custom ripple effect color, you can make a custom ripple effect us
   </button>
 ```
 
-### `fillTransition, splashTransition, fadeTransition`
+### `fillTransition, splashTransition, fadeTransition, bgFadeTransition`,
 The Ripple effect is highly depend on transition/timing. Different time selection/transition will provide you different ripple effect too. This module provides you default transitions/timing but you can make experiments as you like.<br><br>
 <b>`fillTransition`</b> is an input of ripple fill-in effect which consist of a `transition-duration` value.<br><br>
 <b>`splashTransition`</b> is a ripple splash effect input. The value have to contain of both `transition-duration` and `transition-timing-function` sequentially.<br><br>
 <b>`fadeTransition`</b> is for ripple both fadeout and fadein transition in a `transition-duration` value.<br>
+<b>`bgFadeTransition`</b> is for baground both fadeout and fadein transition in a `transition-duration` value.<br><br>
+The action response time (pointer up to emit the event) is total of `splashTransition` || `fadeTransition` duration and `bgFadeTransition` duration. If the pointer up take place while the ripple still in fill phase (ripple scale < 1), the response time duration is `splashTransition` + `bgFadeTransition`. If the pointer up action is in idle phase (ripple scale = 1), the response time will be `fadeTransition` + `bgFadeTransition`.
 <br>
  Example:
 ```html
   <button ripple light fixed-ripple
     fillTransition="1000ms"
     splashTransition="70ms cubic-bezier(0.4, 0.0, 0.2, 1)"
-    fadeTransition="250ms">
+    fadeTransition="250ms"
+    bgFadeTransition="150ms">
     ...
   </button>
+
+  // Total response time of above customizations are:
+  // Response time at fill phase = 70ms + 150ms;
+  // Response time at idle phase = 250ms + 150ms;
+
 ```
-This website `http://cubic-bezier.com/` is a great tool to visualize and make experiments of `transition-timing-function`.<br>
+Note: This website `http://cubic-bezier.com/` is a great tool to visualize and make experiments of `transition-timing-function`.<br>
 
 ### `tapLimit`
 This input is used in determining limit of `rtap` event. Touch event that take place more than this limit will be emitted as `rpress` event.
