@@ -114,6 +114,6 @@ export class BackgroundComponent implements OnInit, OnDestroy {
     if(this._isDestroying) return;
     this._fadeoutPlayer = this.fadeoutPlayer;
     this._fadeoutPlayer.play();
-    this.eventTrigger.emit()
+    this.eventTrigger.emit();
   }
 }
