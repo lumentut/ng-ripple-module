@@ -227,7 +227,7 @@ Then you can use it at somewhere in your html template.
 ```
 
 ## Ionic 3 Colaboration
-Ionic lets web developers build, test, and deploy cross-platform hybrid mobile apps easier than ever. Below are examples of ripple directive in Ionic 3 application. Dont't forget to set the host element style position property into `relative`for custom class. 
+Ionic lets web developers build, test, and deploy cross-platform hybrid mobile apps easier than ever. Below are examples of ripple directive in Ionic 3 application. Dont't forget to set the host element style position property into `relative`on your custom class. 
 
 ```ts
 
