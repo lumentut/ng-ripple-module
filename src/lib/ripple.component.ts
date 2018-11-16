@@ -77,7 +77,7 @@ export interface Margin {
     }`
   ]
 })
-export class RippleComponent implements AfterViewInit, OnDestroy {
+export class RippleComponent implements AfterViewInit {
 
   element: HTMLElement;
   parentElement: HTMLElement;
@@ -175,13 +175,6 @@ export class RippleComponent implements AfterViewInit, OnDestroy {
     this.parentElement = this.element.parentNode as HTMLElement;
     this.animation.transition = this.transition;
     this.initialSetup();
-  }
-
-  ngOnDestroy() {
-    // this.fillPlayer=null;
-    // this.splashPlayer =null;
-    // this.translatePlayers=null;
-    // this.fadeoutPlayer=null;
   }
 
   updateDimensions() {

@@ -13,6 +13,7 @@ import {
   NgZone,
   HostBinding,
   ElementRef,
+  ChangeDetectorRef,
   ComponentFactoryResolver,
   ApplicationRef,
   ComponentRef,
@@ -69,9 +70,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   @Input()
   set light(val: boolean) {
     this.ripple.color = RIPPLE_LIGHT_BGCOLOR;
-    this.rippleCmpRef.changeDetectorRef.detectChanges();
     this.background.color = RIPPLE_LIGHT_ACTIVE_BGCOLOR;
-    this.backgroundCmpRef.changeDetectorRef.detectChanges();
   }
 
   @Input('centered-ripple')
@@ -109,6 +108,11 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     this.ripple.fadeTransition = value;
   }
 
+  @Input('bgFadeTransition')
+  set bgFadeTransition(value: string) {
+    this.background.fadeTransition = value;
+  }
+
   @Input('tapLimit')
   set tapLimit(value: number) {
     this.ripple.tapLimit = value;
@@ -122,15 +126,16 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   constructor(
     private elRef: ElementRef,
     public cfr: ComponentFactoryResolver,
+    private changeDetectorRef: ChangeDetectorRef,
     private appRef: ApplicationRef,
     private injector: Injector,
     private ngZone: NgZone
   ) {
     this.element = this.elRef.nativeElement;
-    this.appendChildren([this.background.element, this.ripple.element]);
   }
 
   ngAfterViewInit() {
+    this.appendChildren([this.background.element, this.ripple.element]);
     this.background.eventTrigger.subscribe(() => this.eventHandler.emitCurrentEvent);
     this.eventHandler = this.rippleEventHandler;
     this.ripple.background = this.background;
@@ -145,9 +150,16 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     this.eventHandler.removePointerDownListener();
   }
 
+  rerunChangesDetection() {
+    this.changeDetectorRef.detectChanges();
+    this.rippleCdRef.detectChanges();
+    this.backgroundCdRef.detectChanges();
+  }
+
   private appendChildren(elements: any[]) {
     this._children = elements;
     this._children.forEach(element => this.element.appendChild(element));
+    this.rerunChangesDetection();
   }
 
   get ripple(): RippleComponent {
@@ -155,9 +167,17 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     return this.rippleCmpRef.instance;
   }
 
+  get rippleCdRef(): ChangeDetectorRef {
+    return this.rippleCmpRef.changeDetectorRef;
+  }
+
   get background(): BackgroundComponent {
     if(!this.backgroundCmpRef) this.createComponentRef(BackgroundComponent, RippleCmpRefs.BACKGROUND);
     return this.backgroundCmpRef.instance;
+  }
+
+  get backgroundCdRef(): ChangeDetectorRef {
+    return this.backgroundCmpRef.changeDetectorRef;
   }
 
   private createComponentRef(Component: any, cmpRefName: string) {

@@ -12,6 +12,7 @@ import {
   OnDestroy,
   ElementRef,
   Output,
+  Input,
   HostBinding,
   EventEmitter
 } from '@angular/core';
@@ -26,7 +27,6 @@ import {
 
 import {
   RIPPLE_BG_FADE_TRANSITION,
-  RIPPLE_SPLASH_TRANSITION,
   RIPPLE_DEFAULT_ACTIVE_BGCOLOR
 } from './ripple.constants';
 
@@ -58,6 +58,8 @@ export class BackgroundComponent implements OnInit, OnDestroy {
 
   @HostBinding('style.background')
   color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR;
+
+  @Input() fadeTransition: string = RIPPLE_BG_FADE_TRANSITION;
 
   @Output() eventTrigger: EventEmitter<any> = new EventEmitter();
 
@@ -91,7 +93,7 @@ export class BackgroundComponent implements OnInit, OnDestroy {
 
   get fadeinPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
-      animate(RIPPLE_BG_FADE_TRANSITION, keyframes([
+      animate(this.fadeTransition, keyframes([
         style({ opacity: 0 }), style({ opacity: 1 })
       ]))
     ]);
@@ -99,7 +101,7 @@ export class BackgroundComponent implements OnInit, OnDestroy {
 
   get fadeoutPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
-      animate(RIPPLE_SPLASH_TRANSITION, style({ opacity: 0 }))
+      animate(this.fadeTransition, style({ opacity: 0 }))
     ]);
   }
 
@@ -112,6 +114,6 @@ export class BackgroundComponent implements OnInit, OnDestroy {
     if(this._isDestroying) return;
     this._fadeoutPlayer = this.fadeoutPlayer;
     this._fadeoutPlayer.play();
-    this.eventTrigger.emit();
+    this.eventTrigger.emit()
   }
 }

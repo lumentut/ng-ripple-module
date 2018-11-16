@@ -214,7 +214,11 @@ export class RippleEventHandler {
 
   emitEvent(eventName: Events) {
     this.lastEventName = eventName;
-    if(!this.emptyEvent) this.registeredEvents.get(eventName).emit(this.event);
+    if(!this.emptyEvent) {
+      this.ngZone.run(() => {
+        this.registeredEvents.get(eventName).emit(this.event);
+      });
+    }
   }
 
   watchPressEvent() {
