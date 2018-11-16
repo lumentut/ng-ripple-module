@@ -226,7 +226,7 @@ Then you can use it at somewhere in your html template.
    ...
 ```
 
-## Examples
+## Ionic 3 Colaboration
 Below are examples of ripple directive in Ionic (3) application. Dont't forget to set the host element style position property into `relative`;
 
 ```ts
