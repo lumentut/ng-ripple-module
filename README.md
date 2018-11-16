@@ -65,7 +65,7 @@ Since the ripple and it's background component get dimension from its nest paren
 
 ## Available Inputs and Attributes
 ### `navlink`
-If you apply the ripple directive to a HTML `<a>` tag which is commonly used as a navigation link, you have to use `navlink` instead of `href`. It is in order to prevent default behavior of the `<a>` tag and emmit the event only after the `ripple-bg` fadeout completely. Then, call a method to process the event and navigate to the specified link page.
+If you apply the ripple directive to a HTML `<a>` tag which is commonly used as a navigation link, you have to use `navlink` instead of `href`. It is in order to prevent default behavior of the `<a>` tag and emmit the event only after the `ripple-core` fadeout completely. Then, call a method to process the event and navigate to the specified link page.
 ```html
    <a navlink="/home" ripple light
       ...
@@ -124,25 +124,25 @@ If you need a custom ripple effect color, you can make a custom ripple effect us
 
 ### `fillTransition, splashTransition, fadeTransition, bgFadeTransition`,
 The Ripple effect is highly depend on transition/timing. Different time selection/transition will provide you different ripple effect too. This module provides you default transitions/timing but you can make experiments as you like.<br><br>
-<b>`fillTransition`</b> is an input of ripple fill-in effect which consist of a `transition-duration` value.<br><br>
-<b>`splashTransition`</b> is a ripple splash effect input. The value have to contain of both `transition-duration` and `transition-timing-function` sequentially.<br><br>
-<b>`fadeTransition`</b> is for ripple both fadeout and fadein transition in a `transition-duration` value.<br>
+<b>`fillTransition`</b> is an input of ripple fill-in effect which consist of a `transition-duration` value. It is highly recommended not to use `transition-timing-function` on a draggable ripple.<br><br>
+<b>`splashTransition`</b> is a ripple splash effect input. The value must contain of both `transition-duration` and `transition-timing-function` sequentially.<br><br>
+<b>`fadeTransition`</b> is for ripple both fadeout and fadein transition in a `transition-duration` value.<br><br>
 <b>`bgFadeTransition`</b> is for baground both fadeout and fadein transition in a `transition-duration` value.<br><br>
-The action response time (pointer up to emit the event) is total of `splashTransition` || `fadeTransition` duration and `bgFadeTransition` duration. If the pointer up take place while the ripple still in fill phase (ripple scale < 1), the response time duration is `splashTransition` + `bgFadeTransition`. If the pointer up action is in idle phase (ripple scale = 1), the response time will be `fadeTransition` + `bgFadeTransition`.
+The action response time (pointer up to emit the event) is depend on `splashTransition` or `fadeTransition` duration. If the pointer up action take place while the ripple still in fill phase (ripple scale < 1), the response time duration is `splashTransition` transition duration. If the pointer up action is in idle phase (ripple scale = 1), the response time will be `fadeTransition` transition duration.
 <br>
  Example:
 ```html
   <button ripple light fixed-ripple
     fillTransition="1000ms"
-    splashTransition="70ms cubic-bezier(0.4, 0.0, 0.2, 1)"
-    fadeTransition="250ms"
+    splashTransition="120ms cubic-bezier(0.4, 0.0, 0.2, 1)"
+    fadeTransition="90ms"
     bgFadeTransition="150ms">
     ...
   </button>
 
-  // Total response time of above customizations are:
-  // Response time at fill phase = 70ms + 150ms;
-  // Response time at idle phase = 250ms + 150ms;
+  // The pointer up action response time of above customizations are:
+  // response time fill phase = 120ms;
+  // response time idle phase = 90ms;
 
 ```
 Note: This website `http://cubic-bezier.com/` is a great tool to visualize and make experiments of `transition-timing-function`.<br>
@@ -151,7 +151,7 @@ Note: This website `http://cubic-bezier.com/` is a great tool to visualize and m
 This input is used in determining limit of `rtap` event. Touch event that take place more than this limit will be emitted as `rpress` event.
 
 ## Available Events (`rtap`, `rpress`, `rpressup`, `rclick`)
-This module provides you custom events that will emitt after your ripple effect animation completed. Of course you still can use default events ( eg. `tap` and `press` for Ionic Apps or `click` for mouse device). The events have `r` prefix to distinguish from default event.
+This module provides you custom events that will emited after your ripple effect animation completed (ripple splash or ripple fadeout). Of course you still can use default events ( eg. `tap` and `press` for Ionic Apps or `click` for mouse device). The events have `r` prefix to distinguish from default event.
 
 ## Custom Event Returned Object `($event)`
 Every event provides by this module will return a custom event object. The returned value is an `RippleEvent` object as shown below:
