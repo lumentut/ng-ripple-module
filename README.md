@@ -166,7 +166,7 @@ navLink: string           // host element navigation link
 ```
 
 ## Custom Component
-As the other developer who don't like to write repetives code, we can utilize the `ripple` directive at a custom component.
+As the other developer who don't like to write repetitive code, we can utilize the `ripple` directive at a custom component.
 
 ```ts
 ...
@@ -227,7 +227,7 @@ Then you can use it at somewhere in your html template.
 ```
 
 ## Ionic 3 Colaboration
-Below are examples of ripple directive in Ionic (3) application. Dont't forget to set the host element style position property into `relative`;
+Ionic lets web developers build, test, and deploy cross-platform hybrid mobile apps easier than ever. Below are examples of ripple directive in Ionic 3 application. Dont't forget to set the host element style position property into `relative`for custom class. 
 
 ```ts
 
@@ -576,7 +576,7 @@ Material Design Lite lets you add a Material Design look and feel to your websit
         Button
       </button>
    ```
-   What a yummy and perfect colaboration!
+   What a yummy and perfect colaboration. Isn't it? ;)
 
 
 <br>
