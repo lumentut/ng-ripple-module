@@ -60,13 +60,26 @@ import {
   Events
 } from './ripple.event.handler';
 
+import {
+  RippleConfigs,
+  RippleCoreConfigs,
+  RippleBgConfigs,
+  GLOBAL_RIPPLE_CONFIGS,
+  DEFAULT_RIPPLE_CONFIGS,
+  RIPPLE_CORE_CONFIGS,
+  RIPPLE_BG_CONFIGS
+} from './ripple.configs';
+
 @Component({
   template: `<a href="#" ripple
     fillTransition="150ms"
     splashTransition="50ms cubic-bezier(0.1,0.2,0.3,0.4)"
     fadeTransition="150ms"
+    bgFadeTransition="105ms"
     rippleBgColor="white"
     activeBgColor="grey"
+    splashOpacity=0.5
+    tapLimit=400
   ></a>`,
   styles: [
     `:host a {
@@ -85,7 +98,7 @@ class RippleTestComponent {
 }
 
 @Component({
-  template: `<a href="#" ripple light
+  template: `<a href="#" ripple light centered-ripple fixed-ripple
   ></a>`,
   styles: [
     `:host a {
@@ -100,12 +113,57 @@ class RippleLightTestComponent {
   constructor(public elRef:ElementRef) {}
 }
 
-describe('Directive', () => {
+describe('Directive: Light, Centered & Fixed Ripple Test', () => {
+
+  let component: RippleLightTestComponent;
+  let fixture: ComponentFixture<RippleLightTestComponent>;
+  let directiveEl: DebugElement;
+  let directiveInstance: RippleDirective;
+
+  beforeEach(async(() => {
+
+    TestBed.configureTestingModule({
+      declarations: [
+        RippleLightTestComponent
+      ],
+      imports: [
+        BrowserAnimationsModule,
+        NgRippleModule
+      ],
+      providers: []
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(RippleLightTestComponent);
+    component = fixture.componentInstance;
+    directiveEl = fixture.debugElement.query(By.directive(RippleDirective));
+    directiveInstance = directiveEl.injector.get(RippleDirective);
+
+    fixture.detectChanges();
+
+  }));
+
+  it('passing light ripple', () => {
+    expect(directiveInstance.ripple.color).toEqual(RIPPLE_LIGHT_BGCOLOR);
+    expect(directiveInstance.background.color).toEqual(RIPPLE_LIGHT_ACTIVE_BGCOLOR);
+  });
+
+  it('passing centered ripple', () => {
+    expect(directiveInstance.ripple.configs.centered).toBeTruthy();
+  });
+
+  it('passing fixed ripple', () => {
+    expect(directiveInstance.ripple.configs.fixed).toBeTruthy();
+  });
+
+});
+
+describe('Directive: Element, Transition, Color, Event, Animation, Shape, Positioning & Event Tracker Test', () => {
 
   let component: RippleTestComponent;
   let fixture: ComponentFixture<RippleTestComponent>;
   let directiveEl: DebugElement;
   let directiveInstance: RippleDirective;
+  let hostElement: HTMLElement;
   let eventHandler: RippleEventHandler;
   let animation: RippleAnimation;
   let ripple: RippleComponent;
@@ -115,8 +173,7 @@ describe('Directive', () => {
 
     TestBed.configureTestingModule({
       declarations: [
-        RippleTestComponent,
-        RippleLightTestComponent
+        RippleTestComponent
       ],
       imports: [
         BrowserAnimationsModule,
@@ -129,79 +186,67 @@ describe('Directive', () => {
     component = fixture.componentInstance;
     directiveEl = fixture.debugElement.query(By.directive(RippleDirective));
     directiveInstance = directiveEl.injector.get(RippleDirective);
-    directiveInstance.eventHandler = directiveInstance.rippleEventHandler;
 
+    hostElement = component.elRef.nativeElement.children[0];
+
+    fixture.detectChanges();
+
+    directiveInstance.eventHandler = directiveInstance.rippleEventHandler;
     eventHandler = directiveInstance.eventHandler;
     motionTracker = directiveInstance.motionTracker;
     animation = directiveInstance.ripple.animation;
-    animation.transition = directiveInstance.ripple.transition;
     ripple = directiveInstance.ripple;
+    ripple.cachingRectAndCenter();
+    fixture.detectChanges();
   }));
 
 
   it('create ripple and background element', () => {
-
-    fixture.detectChanges();
-
-    const hostElement = component.elRef.nativeElement.children[0];
     const children = hostElement.children;
     const expectedChildren = ['ripple-core', 'ripple-bg'];
-
     expect(expectedChildren).toContain(children[0].localName);
     expect(expectedChildren).toContain(children[1].localName);
-
   });
 
   it('passing data transition to ripple component', () => {
-
-    const hostElement = component.elRef.nativeElement.children[0];
-
     const transitions = {
       fillTransition: hostElement.getAttribute('fillTransition'),
       splashTransition: hostElement.getAttribute('splashTransition'),
       fadeTransition: hostElement.getAttribute('fadeTransition')
     };
 
-    fixture.detectChanges();
     for(const k in transitions) {
       if(transitions[k]) {
-        expect(directiveInstance.ripple[k]).toEqual(transitions[k]);
+        expect(directiveInstance.rippleCoreConfigs[k]).toEqual(transitions[k]);
       }
     }
   });
 
-  it('passing data color to ripple & background', () => {
-    const hostElement = component.elRef.nativeElement.children[0];
+  it('passing data transition to background', () => {
+    const bgFadeTransition = hostElement.getAttribute('bgFadeTransition');
+    expect(directiveInstance.background.configs.fadeTransition).toEqual(bgFadeTransition);
+  });
 
-    fixture.detectChanges();
+  it('passing data color to ripple & background', () => {
+
     const rippleBgColor = hostElement.getAttribute('rippleBgColor');
+    expect(directiveInstance.rippleCoreConfigs.rippleBgColor).toEqual(rippleBgColor);
     expect(directiveInstance.ripple.color).toEqual(rippleBgColor);
 
     const activeBgColor = hostElement.getAttribute('activeBgColor');
+    expect(directiveInstance.rippleBgConfigs.backgroundColor).toEqual(activeBgColor);
     expect(directiveInstance.background.color).toEqual(activeBgColor);
 
-    directiveInstance.light = true;
-    fixture.detectChanges();
-    expect(directiveInstance.ripple.color).toEqual(RIPPLE_LIGHT_BGCOLOR);
-    expect(directiveInstance.background.color).toEqual(RIPPLE_LIGHT_ACTIVE_BGCOLOR);
-  });
-
-  it('passing centered ripple', () => {
-    directiveInstance.centered = true;
-    fixture.detectChanges();
-    expect(directiveInstance.ripple.centered).toBeTruthy();
-  });
-
-  it('passing fixed ripple', () => {
-    directiveInstance.fixed = true;
-    fixture.detectChanges();
-    expect(directiveInstance.ripple.fixed).toBeTruthy();
   });
 
   it('passing tap limit', () => {
-    directiveInstance.tapLimit = 250;
-    fixture.detectChanges();
-    expect(directiveInstance.ripple.tapLimit).toEqual(250);
+    const tapLimit = hostElement.getAttribute('tapLimit');
+    expect(`${directiveInstance.ripple.tapLimit}`).toEqual(tapLimit);
+  });
+
+  it('passing splash opacity', () => {
+    const splashOpacity = hostElement.getAttribute('splashOpacity');
+    expect(`${directiveInstance.ripple.configs.splashOpacity}`).toEqual(splashOpacity);
   });
 
   it('listen to rtap event', (done) => {
@@ -385,21 +430,22 @@ describe('Directive', () => {
     fixture.detectChanges();
     ripple.parentElement = ripple.element.parentNode as HTMLElement;
     fixture.detectChanges();
-    ripple.initialSetup();
     ripple.cachingRectAndCenter();
+    ripple.initialSetup();
+    fixture.detectChanges();
 
     ripple.parentElement.style.borderRadius = '3px';
     fixture.detectChanges();
-    ripple.initialSetup();
     ripple.cachingRectAndCenter();
+    ripple.initialSetup();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeFalsy();
 
     ripple.parentElement.style.height = '150px';
     ripple.parentElement.style.width = '250px';
     fixture.detectChanges();
-    ripple.initialSetup();
     ripple.cachingRectAndCenter();
+    ripple.initialSetup();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeFalsy();
 
@@ -407,8 +453,8 @@ describe('Directive', () => {
     ripple.parentElement.style.height = '150px';
     ripple.parentElement.style.width = '250px';
     fixture.detectChanges();
-    ripple.initialSetup();
     ripple.cachingRectAndCenter();
+    ripple.initialSetup();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeFalsy();
 
@@ -416,8 +462,8 @@ describe('Directive', () => {
     ripple.parentElement.style.width = '150px';
     ripple.parentElement.style.height = '150px';
     fixture.detectChanges();
-    ripple.initialSetup();
     ripple.cachingRectAndCenter();
+    ripple.initialSetup();
     fixture.detectChanges();
     expect(ripple.isInCircleArea).toBeTruthy();
   });
@@ -789,5 +835,103 @@ describe('Directive', () => {
     expect(motionTracker.velocityY).toEqual(velocityY);
     expect(motionTracker.velocity).toEqual(avgVelocity);
     expect(motionTracker.duration).toEqual(duration);
+  });
+});
+
+const configs: RippleConfigs = {
+  fixed: true,
+  centered: true,
+  light: true,
+  rippleDefaultBgColor: 'grey',
+  activeDefaultBgColor: 'grey',
+  rippleLightBgColor: 'white',
+  activeLightBgColor: 'white',
+  fillTransition: '0ms',
+  splashTransition: '0ms',
+  fadeTransition: '0ms',
+  bgFadeTransition: '0ms',
+  splashOpacity: 0,
+  tapLimit: 100,
+};
+
+@Component({
+  template: `<a href="#" ripple light centered-ripple fixed-ripple
+  ></a>`,
+  styles: [
+    `:host a {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      position: relative;
+    }`
+  ]
+})
+class RippleCustomConfigsComponent {
+  constructor(public elRef:ElementRef) {}
+}
+
+describe('Directive: Custom Configs Test', () => {
+
+  let component: RippleCustomConfigsComponent;
+  let fixture: ComponentFixture<RippleCustomConfigsComponent>;
+  let directiveEl: DebugElement;
+  let directiveInstance: RippleDirective;
+  let ripple: RippleComponent;
+  let background: BackgroundComponent;
+
+  beforeEach(async(() => {
+
+    TestBed.configureTestingModule({
+      declarations: [
+        RippleCustomConfigsComponent
+      ],
+      imports: [
+        BrowserAnimationsModule,
+        NgRippleModule
+      ],
+      providers: [
+        {provide: GLOBAL_RIPPLE_CONFIGS, useValue: configs}
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(RippleCustomConfigsComponent);
+    component = fixture.componentInstance;
+    directiveEl = fixture.debugElement.query(By.directive(RippleDirective));
+    directiveInstance = directiveEl.injector.get(RippleDirective);
+    fixture.detectChanges();
+
+    ripple = directiveInstance.ripple;
+    background = directiveInstance.background;
+  }));
+
+  it('receive all custom configs properties', () => {
+    for(const key in configs) {
+      if(directiveInstance.configs[key]) {
+        expect(directiveInstance.configs[key]).toEqual(configs[key]);
+        expect(directiveInstance.configs[key] === DEFAULT_RIPPLE_CONFIGS[key]).toBeFalsy();
+      }
+    }
+  });
+
+  it('passing custom configs to ripple component', () => {
+    const cfg = directiveInstance.rippleCoreConfigs;
+    for(const key in cfg) {
+      if(key!=='rippleBgColor') {
+        expect(ripple.configs[key]).toEqual(cfg[key]);
+        expect(ripple.configs[key] === DEFAULT_RIPPLE_CONFIGS[key]).toBeFalsy();
+      }
+    }
+  });
+
+  it('passing custom configs to background component', () => {
+    expect(background.configs.fadeTransition).toEqual(configs.bgFadeTransition);
+    expect(background.configs.fadeTransition === DEFAULT_RIPPLE_CONFIGS.bgFadeTransition).toBeFalsy();
+  });
+
+  it('passing custom configs color correctly', () => {
+    expect(ripple.color).toEqual(configs.rippleLightBgColor);
+    expect(ripple.color === DEFAULT_RIPPLE_CONFIGS.rippleLightBgColor).toBeFalsy();
+    expect(background.color).toEqual(configs.activeLightBgColor);
+    expect(background.color === DEFAULT_RIPPLE_CONFIGS.activeLightBgColor).toBeFalsy();
   });
 });

@@ -14,4 +14,5 @@ export * from './lib/ripple.event.handler';
 export * from './lib/ripple.motion.tracker';
 export * from './lib/ripple.animation';
 export * from './lib/ripple.constants';
+export * from './lib/ripple.configs';
 export * from './lib/ng-ripple.module';

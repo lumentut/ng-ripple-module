@@ -18,6 +18,10 @@ import {
   RIPPLE_TO_CENTER_TRANSFORM
 } from './ripple.constants';
 
+import {
+  RippleCoreConfigs
+} from './ripple.configs';
+
 export interface RippleTransition {
   fill: string;
   splash: string;
@@ -26,36 +30,26 @@ export interface RippleTransition {
 
 export class RippleAnimation {
 
-  private _transition: RippleTransition;
-
   constructor(
     private element: HTMLElement,
-    private builder: AnimationBuilder
+    private builder: AnimationBuilder,
+    private configs: RippleCoreConfigs
   ) {}
-
-  set transition(val: RippleTransition) {
-    this._transition = val;
-  }
-
-  get transition(): RippleTransition {
-    return this._transition;
-  }
 
   animationPlayerFactory(animation: any[]) {
     return this.builder.build(animation).create(this.element);
   }
 
   get fade(): AnimationAnimateMetadata {
-    return animate(this.transition.fade, style({ opacity: 0 }));
+    return animate(this.configs.fadeTransition, style({ opacity: 0 }));
   }
 
   splashToCenter(transition: string): AnimationAnimateMetadata {
     return animate( transition, style({
-      opacity: 1,
+      opacity: this.configs.splashOpacity,
       transform: RIPPLE_TO_CENTER_TRANSFORM
     }));
   }
-
 
   fill(tx: number, ty: number): AnimationPlayer {
 
@@ -64,7 +58,7 @@ export class RippleAnimation {
       transform: `translate3d(${tx}px, ${ty}px, 0) scale(0)`,
     });
 
-    const centering = animate(this.transition.fill, style({
+    const centering = animate(this.configs.fillTransition, style({
       opacity: 1,
       transform: RIPPLE_TO_CENTER_TRANSFORM
     }));
@@ -80,7 +74,7 @@ export class RippleAnimation {
       transform: `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`
     });
 
-    const centering = animate(this.transition.fill, style({
+    const centering = animate(this.configs.fillTransition, style({
       transform: RIPPLE_TO_CENTER_TRANSFORM
     }));
 
@@ -90,7 +84,7 @@ export class RippleAnimation {
   }
 
   get splash(): AnimationPlayer {
-    const splashToCenter = this.splashToCenter(this.transition.splash);
+    const splashToCenter = this.splashToCenter(this.configs.splashTransition);
     const player = this.animationPlayerFactory([splashToCenter, this.fade]);
     return player;
   }

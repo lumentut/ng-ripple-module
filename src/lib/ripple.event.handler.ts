@@ -254,7 +254,7 @@ export class RippleEventHandler {
     this.ripple.fadeout();
   }
 
-  get isSmallVelocity(): boolean {
+  get isInsignificantMove(): boolean {
     return this.motionTracker.velocity < RIPPLE_VELOCITY_TRESHOLD;
   }
 
@@ -271,15 +271,15 @@ export class RippleEventHandler {
     this.activate();
     this.addListeners();
     this.motionTracker.reset().track(event);
-    if(!this.ripple.fixed) event.preventDefault();
+    if(!this.ripple.configs.fixed) event.preventDefault();
     return this.ripple.fill(event);
   }
 
   private onPointerMove = (event: TouchEvent | MouseEvent) => {
     this.motionTracker.track(event);
-    if(!this.ripple.fixed && this.isSmallVelocity) return;
+    if(!this.ripple.configs.fixed && this.isInsignificantMove) return;
     if(!this.ripple.dragable) return this.isPressing = false;
-    if(!this.ripple.pointerEventIsInHostArea(event) || this.ripple.fixed) return this.rippleNoEventSplash();
+    if(!this.ripple.pointerEventIsInHostArea(event) || this.ripple.configs.fixed) return this.rippleNoEventSplash();
     if(this.ripple.outerPointStillInHostRadius(event)) this.ripple.translate(event);
   }
 

@@ -10,6 +10,7 @@ import {
   Component,
   AfterViewInit,
   OnDestroy,
+  Inject,
   ElementRef,
   Renderer2,
   Input,
@@ -22,25 +23,28 @@ import {
 } from '@angular/animations';
 
 import {
-  RIPPLE_FILL_TRANSITION,
-  RIPPLE_SPLASH_TRANSITION,
-  RIPPLE_FADE_TRANSITION,
-  RIPPLE_DEFAULT_BGCOLOR,
-  RIPPLE_TAP_LIMIT
-} from './ripple.constants';
+  RIPPLE_CORE_CONFIGS,
+  RippleCoreConfigs
+} from './ripple.configs';
 
 import {
   BackgroundComponent
 } from './ripple-bg.component';
 
 import {
-  RippleAnimation,
-  RippleTransition
+  RippleAnimation
 } from './ripple.animation';
 
 import {
   pointer
 } from './ripple.event.handler';
+
+export interface RippleColor {
+  rippleDefaultColor?: string;
+  backgroundDefaultColor?: string;
+  rippleLightColor?: string;
+  backgroundLightColor?: string;
+}
 
 export interface RippleStyle {
   width?: number;
@@ -82,8 +86,6 @@ export class RippleComponent implements AfterViewInit {
   element: HTMLElement;
   parentElement: HTMLElement;
 
-  background: BackgroundComponent;
-
   dragable: boolean;
 
   fillPlayer: AnimationPlayer;
@@ -91,16 +93,14 @@ export class RippleComponent implements AfterViewInit {
   fadeoutPlayer: AnimationPlayer;
   translatePlayers = [];
 
-  tapLimit: number = RIPPLE_TAP_LIMIT;
+  tapLimit: number;
 
-  @HostBinding('style.background')
-  color: string = RIPPLE_DEFAULT_BGCOLOR;
+  diameter: number;
+  rect: ClientRect;
+  parentRect: ClientRect;
+  center: Coordinate;
 
-  @Input() centered: boolean;
-  @Input() fixed: boolean;
-  @Input() fillTransition: string;
-  @Input() splashTransition: string;
-  @Input() fadeTransition: string;
+  @HostBinding('style.background') color: string;
 
   private _isInCircleArea: boolean;
   private _center: Coordinate;
@@ -113,30 +113,18 @@ export class RippleComponent implements AfterViewInit {
   constructor(
     private elRef: ElementRef,
     private renderer: Renderer2,
-    public builder: AnimationBuilder
+    protected builder: AnimationBuilder,
+    private background: BackgroundComponent,
+    @Inject(RIPPLE_CORE_CONFIGS) public configs: RippleCoreConfigs
   ) {
     this.element = this.elRef.nativeElement;
+    this.color = this.configs.rippleBgColor;
+    this.tapLimit = this.configs.tapLimit;
   }
 
   get animation(): RippleAnimation {
     if(this._animation) return this._animation;
-    return this._animation = new RippleAnimation(this.element, this.builder);
-  }
-
-  get transition(): RippleTransition {
-    return {
-      fill: this.fillTransition || RIPPLE_FILL_TRANSITION,
-      splash: this.splashTransition || RIPPLE_SPLASH_TRANSITION,
-      fade: this.fadeTransition || RIPPLE_FADE_TRANSITION
-    };
-  }
-
-  set diameter(val: number) {
-    this._diameter = val;
-  }
-
-  get diameter(): number {
-    return this._diameter;
+    return this._animation = new RippleAnimation(this.element, this.builder, this.configs);
   }
 
   calculateDiameter(rect: ClientRect) {
@@ -159,22 +147,20 @@ export class RippleComponent implements AfterViewInit {
       width: diameter,
       height: diameter,
       marginLeft: margin.left,
-      marginTop: margin.top,
-      background: this.color
+      marginTop: margin.top
     };
-  }
-
-  initialSetup() {
-    this.parentRect = this.parentElement.getBoundingClientRect();
-    this.calculateDiameter(this.parentRect);
-    this.defineIsInCircleOrNot();
-    this.updateDimensions();
   }
 
   ngAfterViewInit() {
     this.parentElement = this.element.parentNode as HTMLElement;
-    this.animation.transition = this.transition;
+    this.parentRect = this.parentElement.getBoundingClientRect();
     this.initialSetup();
+  }
+
+  initialSetup() {
+    this.calculateDiameter(this.parentRect);
+    this.defineIsInCircleOrNot();
+    this.updateDimensions();
   }
 
   updateDimensions() {
@@ -191,20 +177,11 @@ export class RippleComponent implements AfterViewInit {
     this.center = this.centerCoordinate(this.parentRect);
   }
 
-  set rect(val: ClientRect) {
-    this._rect = val;
-  }
-
-  get rect(): ClientRect {
-    return this._rect;
-  }
-
-  set parentRect(val: ClientRect) {
-    this._parentRect = val;
-  }
-
-  get parentRect(): ClientRect {
-    return this._parentRect;
+  centerCoordinate(rect: ClientRect): Coordinate {
+    return {
+      x: rect.left + (rect.width/2),
+      y: rect.top + (rect.height/2),
+    };
   }
 
   get parentStyle(): CSSStyleDeclaration {
@@ -218,21 +195,6 @@ export class RippleComponent implements AfterViewInit {
   defineIsInCircleOrNot() {
     const rect = this.parentRect, style = this.parentStyle;
     this._isInCircleArea = (rect.width === rect.height && style.borderRadius === '50%');
-  }
-
-  get center(): Coordinate {
-    return this._center;
-  }
-
-  set center(val: Coordinate) {
-    this._center = val;
-  }
-
-  centerCoordinate(rect: ClientRect): Coordinate {
-    return {
-      x: rect.left + (rect.width/2),
-      y: rect.top + (rect.height/2),
-    };
   }
 
   pointerEventIsInHostArea(event: TouchEvent | MouseEvent): boolean {
@@ -255,20 +217,19 @@ export class RippleComponent implements AfterViewInit {
           pointerEvent = pointer(event),
           dx = pointerEvent.clientX - center.x,
           dy = pointerEvent.clientY - center.y,
-          touchRadiusSq = dx*dx + dy*dy;
-    return touchRadiusSq < this.parentRadiusSq;
+          eventRadiusSq = dx*dx + dy*dy;
+    return eventRadiusSq < this.parentRadiusSq;
   }
 
   pointerEventStillInRectangleArea(event: TouchEvent | MouseEvent): boolean {
     const center = this.center,
           rect = this.parentRect,
           pointerEvent = pointer(event),
-          touchX = pointerEvent.clientX, touchY = pointerEvent.clientY,
           halfW = rect.width/2, halfH = rect.height/2,
           minX = center.x - halfW, maxX = center.x + halfW,
           minY = center.y - halfH, maxY = center.y + halfH,
-          isInRangeX = minX < touchX && touchX < maxX,
-          isInRangeY = minY < touchY && touchY < maxY;
+          isInRangeX = minX < pointerEvent.clientX && pointerEvent.clientX < maxX,
+          isInRangeY = minY < pointerEvent.clientY && pointerEvent.clientY < maxY;
     return isInRangeX && isInRangeY;
   }
 
@@ -278,10 +239,31 @@ export class RippleComponent implements AfterViewInit {
           pointerEvent = pointer(event),
           dx = pointerEvent.clientX - center.x,
           dy = pointerEvent.clientY - center.y,
-          touchRadiusSq = dx*dx + dy*dy,
+          eventRadiusSq = dx*dx + dy*dy,
           maxRadius = this.parentRadius - 0.5*this.rect.width,
           maxRadiusSq = maxRadius*maxRadius;
-    return touchRadiusSq < maxRadiusSq;
+    return eventRadiusSq < maxRadiusSq;
+  }
+
+  fill(event: TouchEvent | MouseEvent) {
+
+    this.cachingRectAndCenter();
+    this.calculateDiameter(this.parentRect);
+    this.updateDimensions();
+    this.background.fadein();
+    this.dragable = true;
+
+    let tx = 0, ty = 0;
+
+    if(!this.configs.centered) {
+      const center = this.center;
+      const pointerEvent = pointer(event);
+      tx = pointerEvent.clientX - center.x;
+      ty = pointerEvent.clientY - center.y;
+    }
+
+    this.fillPlayer = this.animation.fill(tx, ty);
+    this.fillPlayer.play();
   }
 
   get currentScale(): number {
@@ -290,7 +272,7 @@ export class RippleComponent implements AfterViewInit {
 
   translate(event: TouchEvent | MouseEvent) {
 
-    if(this.centered) return;
+    if(this.configs.centered) return;
 
     const center = this.center;
     const pointerEvent = pointer(event);
@@ -313,55 +295,24 @@ export class RippleComponent implements AfterViewInit {
     translatePlayer.play();
   }
 
-  fill(event: TouchEvent | MouseEvent) {
+  splash = () => this.endFillBy('splash');
 
-    this.cachingRectAndCenter();
-    this.calculateDiameter(this.parentRect);
-    this.updateDimensions();
-    this.background.fadein();
-    this.dragable = true;
+  fadeout = () => this.endFillBy('fadeout');
 
-    let tx = 0, ty = 0;
+  private endFillBy(type: string) {
 
-    if(!this.centered) {
-      const center = this.center;
-      const pointerEvent = pointer(event);
-      tx = pointerEvent.clientX - center.x;
-      ty = pointerEvent.clientY - center.y;
-    }
+    const player = `${type}Player`;
 
-    this.fillPlayer = this.animation.fill(tx, ty);
-    this.fillPlayer.play();
-  }
-
-  private cleanTranslatePlayerThenFadeout() {
-    this.translatePlayers.length = 0;
-    this.background.fadeout();
-  }
-
-  splash() {
     this.dragable = false;
-    this.splashPlayer = this.animation.splash;
-    this.splashPlayer.onStart(() => this.fillPlayer.destroy());
+    this[player] = this.animation[type];
+    this[player].onStart(() => this.fillPlayer.destroy());
 
-    this.splashPlayer.onDone(() => {
-      this.splashPlayer.destroy();
-      this.cleanTranslatePlayerThenFadeout();
+    this[player].onDone(() => {
+      this[player].destroy();
+      this.translatePlayers.length = 0;
+      this.background.fadeout();
     });
 
-    this.splashPlayer.play();
-  }
-
-  fadeout() {
-    this.dragable = false;
-    this.fadeoutPlayer = this.animation.fadeout;
-    this.fadeoutPlayer.onStart(() => this.fillPlayer.destroy());
-
-    this.fadeoutPlayer.onDone(() => {
-      this.fadeoutPlayer.destroy();
-      this.cleanTranslatePlayerThenFadeout();
-    });
-
-    this.fadeoutPlayer.play();
+    this[player].play();
   }
 }

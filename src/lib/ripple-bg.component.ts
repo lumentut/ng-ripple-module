@@ -13,6 +13,7 @@ import {
   ElementRef,
   Output,
   Input,
+  Inject,
   HostBinding,
   EventEmitter
 } from '@angular/core';
@@ -26,9 +27,9 @@ import {
 } from '@angular/animations';
 
 import {
-  RIPPLE_BG_FADE_TRANSITION,
-  RIPPLE_DEFAULT_ACTIVE_BGCOLOR
-} from './ripple.constants';
+  RippleBgConfigs,
+  RIPPLE_BG_CONFIGS
+} from './ripple.configs';
 
 @Component({
   selector: 'ripple-bg',
@@ -46,7 +47,7 @@ import {
     }`
   ]
 })
-export class BackgroundComponent implements OnInit, OnDestroy {
+export class BackgroundComponent implements OnDestroy {
 
   element: HTMLElement;
   parentElement: HTMLElement;
@@ -56,22 +57,21 @@ export class BackgroundComponent implements OnInit, OnDestroy {
 
   _isDestroying: boolean;
 
-  @HostBinding('style.background')
-  color: string = RIPPLE_DEFAULT_ACTIVE_BGCOLOR;
+  @HostBinding('style.background') color: string;
 
-  @Input() fadeTransition: string = RIPPLE_BG_FADE_TRANSITION;
+  fadeTransition: string;
 
   @Output() eventTrigger: EventEmitter<any> = new EventEmitter();
 
   constructor(
     private elRef: ElementRef,
-    private builder: AnimationBuilder
+    private builder: AnimationBuilder,
+    @Inject(RIPPLE_BG_CONFIGS) public configs: RippleBgConfigs,
   ) {
     this.element = this.elRef.nativeElement;
-  }
-
-  ngOnInit() {
     this.parentElement = this.element.parentNode as HTMLElement;
+    this.color = this.configs.backgroundColor;
+    this.fadeTransition = this.configs.fadeTransition;
   }
 
   ngOnDestroy() {

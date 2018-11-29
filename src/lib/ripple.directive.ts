@@ -8,6 +8,7 @@
 
 import {
   Directive,
+  OnInit,
   AfterViewInit,
   OnDestroy,
   NgZone,
@@ -20,11 +21,30 @@ import {
   Injector,
   Input,
   Output,
+  Inject,
+  InjectionToken,
+  Optional,
   EventEmitter
 } from '@angular/core';
 
-import { RippleComponent } from './ripple.component';
-import { BackgroundComponent } from './ripple-bg.component';
+import {
+  RippleConfigs,
+  RippleCoreConfigs,
+  RippleBgConfigs,
+  GLOBAL_RIPPLE_CONFIGS,
+  DEFAULT_RIPPLE_CONFIGS,
+  RIPPLE_CORE_CONFIGS,
+  RIPPLE_BG_CONFIGS
+} from './ripple.configs';
+
+import {
+  RippleColor,
+  RippleComponent
+} from './ripple.component';
+
+import {
+  BackgroundComponent
+} from './ripple-bg.component';
 
 import {
   RippleEmitters,
@@ -36,9 +56,9 @@ import {
 } from './ripple.motion.tracker';
 
 import {
-  RIPPLE_LIGHT_BGCOLOR,
-  RIPPLE_LIGHT_ACTIVE_BGCOLOR
-} from './ripple.constants';
+  RippleTransition
+} from './ripple.animation';
+
 
 export enum RippleCmpRefs {
   RIPPLE = 'rippleCmpRef',
@@ -56,6 +76,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   rippleCmpRef: ComponentRef<any>;
   backgroundCmpRef: ComponentRef<any>;
   eventHandler: RippleEventHandler;
+  configs: RippleConfigs;
 
   private _children: any[];
   private _eventHandler: RippleEventHandler;
@@ -64,59 +85,51 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   @HostBinding('style.display') display: string = 'block';
   @HostBinding('style.overflow') overflow: string = 'hidden';
   @HostBinding('style.cursor') cursor: string = 'pointer';
-  @HostBinding('class.activated') activated: boolean = false;
+  @HostBinding('class.activated') activated: boolean;
   @HostBinding('style.width') width: string;
 
   @Input()
-  set light(val: boolean) {
-    this.ripple.color = RIPPLE_LIGHT_BGCOLOR;
-    this.background.color = RIPPLE_LIGHT_ACTIVE_BGCOLOR;
-  }
+  set light(val: boolean) { this.configs.light = true; }
 
   @Input('centered-ripple')
-  set centered(val: boolean) {
-    this.ripple.centered = true;
-  }
+  set centered(val: boolean) { this._centered = true; }
+  private _centered: boolean;
 
   @Input('fixed-ripple')
-  set fixed(val: boolean) {
-    this.ripple.fixed = true;
-  }
+  set fixed(val: boolean) { this._fixed = true; }
+  private _fixed: boolean;
 
   @Input('rippleBgColor')
-  set rippleColor(color: string) {
-    this.ripple.color = color;
-  }
+  set rippleColor(color: string) { this._rippleBgColor = color; }
+  private _rippleBgColor: string;
 
   @Input('activeBgColor')
-  set activeBgColor(color: string) {
-    this.background.color = color;
-  }
+  set activeBgColor(color: string) { this._activeBgColor = color; }
+  private _activeBgColor: string;
 
   @Input('fillTransition')
-  set fillTransition(value: string) {
-    this.ripple.fillTransition = value;
-  }
+  set fillTransition(value: string) { this._fillTransition = value; }
+  private _fillTransition: string;
 
   @Input('splashTransition')
-  set splashTransition(value: string) {
-    this.ripple.splashTransition = value;
-  }
+  set splashTransition(value: string) { this._splashTransition = value; }
+  private _splashTransition: string;
 
   @Input('fadeTransition')
-  set fadeTransition(value: string) {
-    this.ripple.fadeTransition = value;
-  }
+  set fadeTransition(value: string) { this._fadeTransition = value; }
+  private _fadeTransition: string;
 
   @Input('bgFadeTransition')
-  set bgFadeTransition(value: string) {
-    this.background.fadeTransition = value;
-  }
+  set bgFadeTransition(value: string) { this._bgFadeTransition = value; }
+  private _bgFadeTransition: string;
 
   @Input('tapLimit')
-  set tapLimit(value: number) {
-    this.ripple.tapLimit = value;
-  }
+  set tapLimit(value: number) { this._tapLimit = value; }
+  private _tapLimit: number;
+
+  @Input('splashOpacity')
+  set splashOpacity(value: number) { this._splashOpacity = value; }
+  private _splashOpacity: number;
 
   @Output() rtap: EventEmitter<any> = new EventEmitter();
   @Output() rpress: EventEmitter<any> = new EventEmitter();
@@ -126,19 +139,18 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   constructor(
     private elRef: ElementRef,
     public cfr: ComponentFactoryResolver,
-    private changeDetectorRef: ChangeDetectorRef,
     private appRef: ApplicationRef,
-    private injector: Injector,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    @Optional() @Inject(GLOBAL_RIPPLE_CONFIGS) customConfigs: RippleConfigs
   ) {
     this.element = this.elRef.nativeElement;
+    this.configs = { ...DEFAULT_RIPPLE_CONFIGS, ...customConfigs };
   }
 
   ngAfterViewInit() {
     this.appendChildren([this.background.element, this.ripple.element]);
     this.background.eventTrigger.subscribe(() => this.eventHandler.emitCurrentEvent);
     this.eventHandler = this.rippleEventHandler;
-    this.ripple.background = this.background;
     this.recalculateStyle();
   }
 
@@ -151,9 +163,8 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   }
 
   rerunChangesDetection() {
-    this.changeDetectorRef.detectChanges();
-    this.rippleCdRef.detectChanges();
-    this.backgroundCdRef.detectChanges();
+    this.rippleCmpRef.changeDetectorRef.detectChanges();
+    this.backgroundCmpRef.changeDetectorRef.detectChanges();
   }
 
   private appendChildren(elements: any[]) {
@@ -162,26 +173,61 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     this.rerunChangesDetection();
   }
 
+  get _rippleColor(): string {
+    return this.configs.light ? this.configs.rippleLightBgColor : this.configs.rippleDefaultBgColor;
+  }
+
+  get rippleCoreConfigs(): RippleCoreConfigs {
+    return {
+      centered: this._centered || this.configs.centered,
+      fixed: this._fixed || this.configs.fixed,
+      rippleBgColor: this._rippleBgColor || this._rippleColor,
+      fillTransition: this._fillTransition || this.configs.fillTransition,
+      splashTransition: this._splashTransition || this.configs.splashTransition,
+      fadeTransition: this._fadeTransition || this.configs.fadeTransition,
+      splashOpacity: this._splashOpacity || this.configs.splashOpacity,
+      tapLimit: this._tapLimit || this.configs.tapLimit
+    };
+  }
+
+  get rippleInjector(): Injector {
+    return Injector.create({ providers: [
+      { provide: RIPPLE_CORE_CONFIGS, useValue: this.rippleCoreConfigs },
+      { provide: BackgroundComponent, useValue: this.background }
+    ]});
+  }
+
   get ripple(): RippleComponent {
-    if(!this.rippleCmpRef) this.createComponentRef(RippleComponent, RippleCmpRefs.RIPPLE);
+    if(!this.rippleCmpRef) {
+      this.createComponentRef(this.rippleInjector, RippleComponent, RippleCmpRefs.RIPPLE);
+    }
     return this.rippleCmpRef.instance;
   }
 
-  get rippleCdRef(): ChangeDetectorRef {
-    return this.rippleCmpRef.changeDetectorRef;
+  get _backgroundColor(): string {
+    return this.configs.light ? this.configs.activeLightBgColor : this.configs.activeDefaultBgColor;
+  }
+
+  get rippleBgConfigs(): RippleBgConfigs {
+    return {
+      backgroundColor: this._activeBgColor || this._backgroundColor,
+      fadeTransition: this._bgFadeTransition || this.configs.bgFadeTransition
+    };
+  }
+
+  get backgroundInjector(): Injector {
+    return Injector.create({ providers: [{ provide: RIPPLE_BG_CONFIGS, useValue: this.rippleBgConfigs }] });
   }
 
   get background(): BackgroundComponent {
-    if(!this.backgroundCmpRef) this.createComponentRef(BackgroundComponent, RippleCmpRefs.BACKGROUND);
+    if(!this.backgroundCmpRef) {
+      this.createComponentRef(this.backgroundInjector, BackgroundComponent, RippleCmpRefs.BACKGROUND);
+    }
     return this.backgroundCmpRef.instance;
   }
 
-  get backgroundCdRef(): ChangeDetectorRef {
-    return this.backgroundCmpRef.changeDetectorRef;
-  }
-
-  private createComponentRef(Component: any, cmpRefName: string) {
-    this[`${cmpRefName}`] = this.cfr.resolveComponentFactory(Component).create(this.injector);
+  private createComponentRef(injector: Injector, Component: any, cmpRefName: string) {
+    this[`${cmpRefName}`] = this.cfr.resolveComponentFactory(Component).create(injector);
     this.appRef.attachView(this[`${cmpRefName}`].hostView);
   }
 
