@@ -166,7 +166,7 @@ navLink: string           // host element navigation link
 ```
 
 ## Custom Component
-As the other developer who don't like to write repetives code, we can utilize the `ripple` directive at a custom component.
+As the other developer who don't like to write repetitive code, we can utilize the `ripple` directive at a custom component.
 
 ```ts
 ...
@@ -226,8 +226,8 @@ Then you can use it at somewhere in your html template.
    ...
 ```
 
-## Examples
-Below are examples of ripple directive in Ionic (3) application. Dont't forget to set the host element style position property into `relative`;
+## Ionic 3 Colaboration
+Ionic lets web developers build, test, and deploy cross-platform hybrid mobile apps easier than ever. Below are examples of ripple directive in Ionic 3 application. Dont't forget to set the host element style position property into `relative`on your custom class. 
 
 ```ts
 
@@ -534,6 +534,51 @@ Or you can create your own reusable directive to write the `md classes` into you
   </span><div class="button-effect"></div>
 </button>
 ```
+## Material Design Lite Colaboration
+Material Design Lite lets you add a Material Design look and feel to your websites. You can integrate `NgRippleModule` with `@angular-mdl/core`.<br>
+
+### How to integrate:
+   1. Install angular material design lite.
+   ```ts
+      npm install @angular-mdl/core --save
+   ```
+   2. Import the styling `your_project_root/src/style.scss`
+   ```ts
+      ...
+      @import '~@angular-mdl/core/scss/material-design-lite';
+      ...
+   ```
+   3. Get desired styling classes at `https://getmdl.io/components/index.html` exclude `mdl-js-ripple-effect`.
+   ```html
+      <button class="mdl-button mdl-button--raised mdl-button--accent" ripple light>
+        Button
+      </button>
+
+      <!-- Raised button -->
+      <button class="mdl-button mdl-js-button mdl-button--raised" ripple>
+        Button
+      </button>
+
+      <!-- Colored raised button -->
+      <button class="mdl-button mdl-button--raised mdl-button--colored" ripple light>
+        Button
+      </button>
+      <!-- Accent-colored raised button -->
+      <button class="mdl-button mdl-button--raised mdl-button--accent" ripple light>
+        Button
+      </button>
+      <!-- Flat button -->
+      <button class="mdl-button mdl-js-button" ripple>
+        Button
+      </button>
+      <!-- Primary-colored flat button -->
+      <button class="mdl-button mdl-js-button mdl-button--primary" ripple>
+        Button
+      </button>
+   ```
+   What a yummy and perfect colaboration. Isn't it? ;)
+
+
 <br>
 It works! God Bless You  :)
 
