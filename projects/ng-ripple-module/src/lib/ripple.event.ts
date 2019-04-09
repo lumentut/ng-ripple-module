@@ -18,14 +18,14 @@ export class RippleEvent {
   clientRect: ClientRect;
   navLink: string;
 
-  constructor (
+  constructor(
     element: HTMLElement,
     coordinate: Coordinate,
     eventType: string
   ) {
     this.target= element;
     this.type = eventType;
-    this.timestamp = (new Date).getTime();
+    this.timestamp = (new Date()).getTime();
     this.clientX = coordinate.x;
     this.clientY = coordinate.y;
     this.clientRect = element.getBoundingClientRect();

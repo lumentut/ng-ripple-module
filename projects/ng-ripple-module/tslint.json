@@ -1,0 +1,34 @@
+{
+  "extends": "../../tslint.json",
+  "rules": {
+    "directive-selector": [
+      true,
+      "attribute",
+      "ripple",
+      "camelCase"
+    ],
+    "component-selector": [
+      true,
+      "element",
+      "ripple",
+      "kebab-case"
+    ],
+    "whitespace": [
+      false,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-type",
+      "check-typecast"
+    ],
+    "no-inferrable-types": false,
+    "one-variable-per-declaration": false,
+    "variable-name": [
+      true,
+      "allow-leading-underscore",
+      "allow-trailing-underscore",
+      "require-const-for-all-caps"
+    ]
+  }
+}

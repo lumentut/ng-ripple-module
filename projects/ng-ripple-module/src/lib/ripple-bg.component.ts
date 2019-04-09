@@ -8,11 +8,9 @@
 
 import {
   Component,
-  OnInit,
   OnDestroy,
   ElementRef,
   Output,
-  Input,
   Inject,
   HostBinding,
   EventEmitter

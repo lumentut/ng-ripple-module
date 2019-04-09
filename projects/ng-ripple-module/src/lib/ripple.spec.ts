@@ -18,25 +18,10 @@ import {
 } from '@angular/platform-browser/animations';
 
 import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting
-} from '@angular/platform-browser-dynamic/testing';
-
-import {
-  inject,
   async,
   TestBed ,
   ComponentFixture
 } from '@angular/core/testing';
-
-import {
-  style,
-  animate,
-  keyframes,
-  AnimationBuilder,
-  AnimationPlayer,
-  AnimationAnimateMetadata
-} from '@angular/animations';
 
 import { By } from '@angular/platform-browser';
 import { RippleComponent } from './ripple.component';
@@ -55,19 +40,15 @@ import {
   RippleEventHandler,
   MobileActionTypes,
   DesktopActionTypes,
-  MobileEventHandlers,
-  DesktopEventHandlers,
+  mobileEventHandlers,
+  desktopEventHandlers,
   Events
 } from './ripple.event.handler';
 
 import {
   RippleConfigs,
-  RippleCoreConfigs,
-  RippleBgConfigs,
   GLOBAL_RIPPLE_CONFIGS,
-  DEFAULT_RIPPLE_CONFIGS,
-  RIPPLE_CORE_CONFIGS,
-  RIPPLE_BG_CONFIGS
+  DEFAULT_RIPPLE_CONFIGS
 } from './ripple.configs';
 
 @Component({
@@ -92,7 +73,7 @@ import {
 })
 class RippleTestComponent {
   constructor(
-    public elRef:ElementRef,
+    public elRef: ElementRef,
     public viewport: ViewContainerRef
   ) {}
 }
@@ -110,7 +91,7 @@ class RippleTestComponent {
   ]
 })
 class RippleLightTestComponent {
-  constructor(public elRef:ElementRef) {}
+  constructor(public elRef: ElementRef) {}
 }
 
 describe('Directive: Light, Centered & Fixed Ripple Test', () => {
@@ -370,10 +351,10 @@ describe('Directive: Element, Transition, Color, Event, Animation, Shape, Positi
   });
 
   it('provide correct mobile listeners', () => {
-    const listeners = new Map<string, Function>();
+    const listeners = new Map<string, () => void>();
     for(const i in MobileActionTypes) {
       if(MobileActionTypes[i]) {
-        listeners.set(MobileActionTypes[i], eventHandler[MobileEventHandlers[`on${MobileActionTypes[i]}`]]);
+        listeners.set(MobileActionTypes[i], eventHandler[mobileEventHandlers[`on${MobileActionTypes[i]}`]]);
       }
     }
     eventHandler._isMobileDevice = true;
@@ -382,10 +363,10 @@ describe('Directive: Element, Transition, Color, Event, Animation, Shape, Positi
   });
 
   it('provide correct desktop listeners', () => {
-    const listeners = new Map<string, Function>();
+    const listeners = new Map<string, () => void>();
     for(const i in DesktopActionTypes) {
       if(DesktopActionTypes[i]) {
-        listeners.set(DesktopActionTypes[i], eventHandler[DesktopEventHandlers[`on${DesktopActionTypes[i]}`]]);
+        listeners.set(DesktopActionTypes[i], eventHandler[desktopEventHandlers[`on${DesktopActionTypes[i]}`]]);
       }
     }
     eventHandler._isMobileDevice = false;
@@ -867,7 +848,7 @@ const configs: RippleConfigs = {
   ]
 })
 class RippleCustomConfigsComponent {
-  constructor(public elRef:ElementRef) {}
+  constructor(public elRef: ElementRef) {}
 }
 
 describe('Directive: Custom Configs Test', () => {

@@ -9,11 +9,9 @@
 import {
   Component,
   AfterViewInit,
-  OnDestroy,
   Inject,
   ElementRef,
   Renderer2,
-  Input,
   HostBinding
 } from '@angular/core';
 

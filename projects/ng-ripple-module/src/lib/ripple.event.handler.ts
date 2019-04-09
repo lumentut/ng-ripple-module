@@ -86,12 +86,12 @@ export function capitalize(val: string): string {
   return val.charAt(0).toUpperCase() + val.slice(1);
 }
 
-export const MobileEventHandlers = {
+export const mobileEventHandlers = {
   ontouchmove: 'onPointerMove',
   ontouchend: 'onPointerUp'
 };
 
-export const DesktopEventHandlers = {
+export const desktopEventHandlers = {
   onmousemove: 'onPointerMove',
   onmouseup: 'onPointerUp',
   onmouseleave: 'onPointerLeave'
@@ -108,7 +108,7 @@ export class RippleEventHandler {
 
   registeredEvents = new Map<string, any>();
 
-  _actionTypes: Map<string, Function>;
+  _actionTypes: Map<string, () => void>;
 
   constructor(
     private element: HTMLElement,
@@ -142,7 +142,7 @@ export class RippleEventHandler {
 
   get supportedActionTypes(): Map<string, any> {
     const actionTypes = this.isMobileDevice ? MobileActionTypes : DesktopActionTypes,
-          handlers = this.isMobileDevice ? MobileEventHandlers : DesktopEventHandlers,
+          handlers = this.isMobileDevice ? mobileEventHandlers : desktopEventHandlers,
           supported = new Map<string, any>();
     for(const i in actionTypes) {
       if(actionTypes[i]) {
@@ -174,7 +174,7 @@ export class RippleEventHandler {
       [Events.PRESSUP, this.emitters.rpressup],
       [Events.CLICK, this.emitters.rclick]
     ];
-    events.forEach(event => this.registeredEvents.set(<string>event[0], <any>event[1]));
+    events.forEach(event => this.registeredEvents.set(event[0] as string, event[1] as any));
   }
 
   get tapOrClickEvent(): any {
@@ -187,7 +187,7 @@ export class RippleEventHandler {
   }
 
   get lastEventTimespan() {
-    return (new Date).getTime() - this.lastEventTimestamp;
+    return (new Date()).getTime() - this.lastEventTimestamp;
   }
 
   get isFastEvent(): boolean {
@@ -204,7 +204,7 @@ export class RippleEventHandler {
   }
 
   set lastEventName(eventName: Events) {
-    this.lastEventTimestamp = (new Date).getTime();
+    this.lastEventTimestamp = (new Date()).getTime();
     this.lastEvent = eventName;
   }
 

@@ -8,13 +8,11 @@
 
 import {
   Directive,
-  OnInit,
   AfterViewInit,
   OnDestroy,
   NgZone,
   HostBinding,
   ElementRef,
-  ChangeDetectorRef,
   ComponentFactoryResolver,
   ApplicationRef,
   ComponentRef,
@@ -22,7 +20,6 @@ import {
   Input,
   Output,
   Inject,
-  InjectionToken,
   Optional,
   EventEmitter
 } from '@angular/core';
@@ -38,7 +35,6 @@ import {
 } from './ripple.configs';
 
 import {
-  RippleColor,
   RippleComponent
 } from './ripple.component';
 
@@ -54,11 +50,6 @@ import {
 import {
   RippleMotionTracker
 } from './ripple.motion.tracker';
-
-import {
-  RippleTransition
-} from './ripple.animation';
-
 
 export enum RippleCmpRefs {
   RIPPLE = 'rippleCmpRef',
@@ -226,8 +217,8 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     return this.backgroundCmpRef.instance;
   }
 
-  private createComponentRef(injector: Injector, Component: any, cmpRefName: string) {
-    this[`${cmpRefName}`] = this.cfr.resolveComponentFactory(Component).create(injector);
+  private createComponentRef(injector: Injector, component: any, cmpRefName: string) {
+    this[`${cmpRefName}`] = this.cfr.resolveComponentFactory(component).create(injector);
     this.appRef.attachView(this[`${cmpRefName}`].hostView);
   }
 
