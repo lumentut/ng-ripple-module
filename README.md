@@ -29,6 +29,11 @@ import { NgRippleModule } from 'ng-ripple-module';
 })
 export class MyModule { ... }
 ```
+
+### Demo
+Please visit the demo page [here](https://yohaneslumentut.github.io/ng-ripple-module-demo/)
+
+### Wiki
 Now you're ready to spread the ripple easily in your angular app.<br>
 For more detail information, please read the [wiki](https://github.com/yohaneslumentut/ng-ripple-module/wiki). 
 
