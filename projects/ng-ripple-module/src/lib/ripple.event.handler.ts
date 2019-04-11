@@ -132,7 +132,9 @@ export class RippleEventHandler {
   }
 
   removePointerDownListener() {
-    this.element.removeEventListener(this.pointerDownAction, this[`on${this.pointerDownAction}`]);
+    this.ngZone.runOutsideAngular(() => {
+      this.element.removeEventListener(this.pointerDownAction, this.onPointerDown);
+    })
   }
 
   get isMobileDevice(): boolean {
