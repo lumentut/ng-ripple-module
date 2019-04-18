@@ -6,11 +6,6 @@
  * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
  */
 
-import {
-  pointer,
-  capitalize
-} from './ripple.event.handler';
-
 export enum PointerActionTypes {
   DOWN = 'Down',
   MOVE = 'Move',
@@ -25,6 +20,8 @@ export const MOTION_TRACKER_COMMON_PROPS = [
 ];
 
 export class RippleMotionTracker {
+
+  type: string;
 
   pointerDownTimeStamp: number;
   pointerDownClientX: number;
@@ -41,22 +38,33 @@ export class RippleMotionTracker {
   pointerUpClientY: number;
   pointerUpType: string;
 
-  constructor() {}
+  startTrack(event: PointerEvent) {
+    this.type = event.pointerType;
+    this.track(PointerActionTypes.DOWN, event);
+  }
 
-  track(event: TouchEvent | MouseEvent) {
+  trackMove(event: TouchEvent | MouseEvent) {
+    this.track(PointerActionTypes.MOVE, event);
+  }
 
-    const pointerEvent = pointer(event);
-    const type = pointerEvent.type;
+  trackUp(event: TouchEvent | MouseEvent) {
+    this.track(PointerActionTypes.UP, event);
+  }
 
-    let pointerType: string;
+  private track(action: PointerActionTypes, event: any) {
+    
+    const pointerEvent = event.changedTouches ? event.changedTouches[0] : event;
 
-    if(/start|down/i.test(type)) pointerType = PointerActionTypes.DOWN;
-    if(/move/i.test(type)) pointerType = PointerActionTypes.MOVE;
-    if(/end|up/i.test(type)) pointerType = PointerActionTypes.UP;
+    const eventDetails: any = {
+      ClientX: pointerEvent.clientX,
+      ClientY: pointerEvent.clientY,
+      TimeStamp: pointerEvent.timeStamp | event.timeStamp,
+      Type: pointerEvent.type | event.type | event.pointerType
+    };
 
-    for(const key of Object.keys(pointerEvent)) {
-      if(pointerEvent[key]) {
-        this[`pointer${pointerType}${capitalize(key)}`] = pointerEvent[key];
+    for(let key of Object.keys(eventDetails)) {
+      if(eventDetails[key]) {
+        this[`pointer${action}${key}`] = eventDetails[key];
       }
     }
   }
@@ -69,6 +77,10 @@ export class RippleMotionTracker {
       });
     });
     return this;
+  }
+
+  log(): string {
+    return `duration: ${this.duration}\nvelocity: ${this.avgMovementVelocity}\ntype: ${this.type}`;
   }
 
   get duration(): number {
@@ -87,7 +99,7 @@ export class RippleMotionTracker {
     return Math.abs((deltaY/deltaT)*100);
   }
 
-  get velocity(): number {
+  get avgMovementVelocity(): number {
     return (this.velocityX + this.velocityY)/2;
   }
 }

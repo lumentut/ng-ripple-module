@@ -11,8 +11,7 @@ import {
   AfterViewInit,
   Inject,
   ElementRef,
-  Renderer2,
-  HostBinding
+  Renderer2
 } from '@angular/core';
 
 import {
@@ -25,43 +24,17 @@ import {
   RippleCoreConfigs
 } from './ripple.configs';
 
-import {
-  BackgroundComponent
-} from './ripple-bg.component';
+import { BackgroundComponent } from './ripple-bg.component';
+import { RippleAnimation } from './ripple.animation';
+import { RippleHost } from './ripple.host';
 
-import {
-  RippleAnimation
-} from './ripple.animation';
-
-import {
-  pointer
-} from './ripple.event.handler';
+import { Coordinate, RippleStyle } from './ripple';
 
 export interface RippleColor {
   rippleDefaultColor?: string;
   backgroundDefaultColor?: string;
   rippleLightColor?: string;
   backgroundLightColor?: string;
-}
-
-export interface RippleStyle {
-  width?: number;
-  height?: number;
-  marginLeft?: number;
-  marginTop?: number;
-  background?: string;
-}
-
-export interface Coordinate {
-  x: number;
-  y: number;
-}
-
-export interface Margin {
-  top?: number;
-  left?: number;
-  right?: number;
-  bottom?: number;
 }
 
 @Component({
@@ -83,85 +56,50 @@ export class RippleComponent implements AfterViewInit {
 
   element: HTMLElement;
   parentElement: HTMLElement;
-
-  dragable: boolean;
-
   fillPlayer: AnimationPlayer;
   splashPlayer: AnimationPlayer;
   fadeoutPlayer: AnimationPlayer;
   translatePlayers = [];
-
-  tapLimit: number;
-
-  diameter: number;
-  rect: ClientRect;
   parentRect: ClientRect;
   center: Coordinate;
 
-  @HostBinding('style.background') color: string;
+  dragable: boolean;
+  tapLimit: number;
+  diameter: number;
 
-  private _isInCircleArea: boolean;
-  private _center: Coordinate;
-  private _diameter: number;
-  private _parentRadiusSq: number;
   private _animation: RippleAnimation;
-  private _parentRect: ClientRect;
-  private _rect: ClientRect;
 
   constructor(
     private elRef: ElementRef,
     private renderer: Renderer2,
     protected builder: AnimationBuilder,
     private background: BackgroundComponent,
+    private host: RippleHost,
     @Inject(RIPPLE_CORE_CONFIGS) public configs: RippleCoreConfigs
   ) {
     this.element = this.elRef.nativeElement;
-    this.color = this.configs.rippleBgColor;
+    this.renderer.setStyle(this.element, 'background', this.configs.rippleBgColor);
     this.tapLimit = this.configs.tapLimit;
   }
 
-  get animation(): RippleAnimation {
-    if(this._animation) return this._animation;
-    return this._animation = new RippleAnimation(this.element, this.builder, this.configs);
+  ngAfterViewInit() {
+    this.setCoreSize();
   }
 
-  calculateDiameter(rect: ClientRect) {
-    if(this.isInCircleArea) return this.diameter = rect.width;
-    this.diameter = Math.sqrt(rect.width*rect.width + rect.height*rect.height);
-  }
-
-  get margin(): Margin {
-    if(this.isInCircleArea) return {top: 0, left: 0};
-    const diameter = this.diameter;
-    return {
-      top: (this.parentRect.height - diameter)/2,
-      left: (this.parentRect.width - diameter)/2
-    };
+  get rect(): ClientRect {
+    return this.element.getBoundingClientRect();
   }
 
   get properties(): RippleStyle {
-    const diameter = this.diameter, margin = this.margin;
     return {
-      width: diameter,
-      height: diameter,
-      marginLeft: margin.left,
-      marginTop: margin.top
+      width: this.host.diameter,
+      height: this.host.diameter,
+      marginLeft: this.host.marginRef.left,
+      marginTop: this.host.marginRef.top
     };
   }
 
-  ngAfterViewInit() {
-    this.parentElement = this.element.parentNode as HTMLElement;
-    this.parentRect = this.parentElement.getBoundingClientRect();
-    this.initialSetup();
-  }
-
-  initialSetup() {
-    this.calculateDiameter(this.parentRect);
-    this.defineIsInCircleOrNot();
-    this.updateDimensions();
-  }
-
-  updateDimensions() {
+  private setCoreSize() {
     for(const key in this.properties) {
       if(this.properties[key]) {
         this.renderer.setStyle(this.element, key, `${this.properties[key]}px`);
@@ -169,60 +107,33 @@ export class RippleComponent implements AfterViewInit {
     }
   }
 
-  cachingRectAndCenter() {
-    this.rect = this.element.getBoundingClientRect();
-    this.parentRect = this.parentElement.getBoundingClientRect();
-    this.center = this.centerCoordinate(this.parentRect);
+  get animation(): RippleAnimation {
+    if(this._animation) return this._animation;
+    return this._animation = new RippleAnimation(this.element, this.builder, this.configs);
   }
 
-  centerCoordinate(rect: ClientRect): Coordinate {
-    return {
-      x: rect.left + (rect.width/2),
-      y: rect.top + (rect.height/2),
-    };
-  }
-
-  get parentStyle(): CSSStyleDeclaration {
-    return getComputedStyle(this.parentElement);
-  }
-
-  get isInCircleArea(): boolean {
-    return this._isInCircleArea;
-  }
-
-  defineIsInCircleOrNot() {
-    const rect = this.parentRect, style = this.parentStyle;
-    this._isInCircleArea = (rect.width === rect.height && style.borderRadius === '50%');
-  }
-
-  pointerEventIsInHostArea(event: TouchEvent | MouseEvent): boolean {
-    if(this.isInCircleArea) return this.pointerEventStillInCircleArea(event);
+  pointerEventCoordinateIsInHostArea(event: TouchEvent | MouseEvent): boolean {
+    if(this.host.isRound) return this.pointerEventStillInCircleArea(event);
     return this.pointerEventStillInRectangleArea(event);
   }
 
-  private get parentRadius(): number {
-    return this.parentRect.width/2;
-  }
-
-  private get parentRadiusSq(): number {
-    if(this._parentRadiusSq) return this._parentRadiusSq;
-    this._parentRadiusSq = this.parentRadius*this.parentRadius;
-    return this._parentRadiusSq;
+  private pointer(event: any) {
+    return event.changedTouches ? event.changedTouches[0] : event;
   }
 
   pointerEventStillInCircleArea(event: TouchEvent | MouseEvent): boolean {
-    const center = this.center,
-          pointerEvent = pointer(event),
+    const center = this.host.center,
+          pointerEvent = this.pointer(event),
           dx = pointerEvent.clientX - center.x,
           dy = pointerEvent.clientY - center.y,
           eventRadiusSq = dx*dx + dy*dy;
-    return eventRadiusSq < this.parentRadiusSq;
+    return eventRadiusSq < this.host.radiusSquare;
   }
 
   pointerEventStillInRectangleArea(event: TouchEvent | MouseEvent): boolean {
-    const center = this.center,
-          rect = this.parentRect,
-          pointerEvent = pointer(event),
+    const center = this.host.center,
+          rect = this.host.rect,
+          pointerEvent = this.pointer(event),
           halfW = rect.width/2, halfH = rect.height/2,
           minX = center.x - halfW, maxX = center.x + halfW,
           minY = center.y - halfH, maxY = center.y + halfH,
@@ -232,30 +143,26 @@ export class RippleComponent implements AfterViewInit {
   }
 
   outerPointStillInHostRadius(event: TouchEvent | MouseEvent): boolean {
-    this.rect = this.element.getBoundingClientRect();
-    const center = this.center,
-          pointerEvent = pointer(event),
+    const center = this.host.center,
+          pointerEvent = this.pointer(event),
           dx = pointerEvent.clientX - center.x,
           dy = pointerEvent.clientY - center.y,
           eventRadiusSq = dx*dx + dy*dy,
-          maxRadius = this.parentRadius - 0.5*this.rect.width,
+          maxRadius = this.host.radius - 0.5*this.rect.width,
           maxRadiusSq = maxRadius*maxRadius;
     return eventRadiusSq < maxRadiusSq;
   }
 
   fill(event: TouchEvent | MouseEvent) {
 
-    this.cachingRectAndCenter();
-    this.calculateDiameter(this.parentRect);
-    this.updateDimensions();
     this.background.fadein();
     this.dragable = true;
 
     let tx = 0, ty = 0;
 
     if(!this.configs.centered) {
-      const center = this.center;
-      const pointerEvent = pointer(event);
+      const center = this.host.center;
+      const pointerEvent = this.pointer(event);
       tx = pointerEvent.clientX - center.x;
       ty = pointerEvent.clientY - center.y;
     }
@@ -265,15 +172,14 @@ export class RippleComponent implements AfterViewInit {
   }
 
   get currentScale(): number {
-    return this.rect.width/this.diameter;
+    return this.rect.width/this.host.diameter;
   }
 
-  translate(event: TouchEvent | MouseEvent) {
-
+  translate(event: any) {
     if(this.configs.centered) return;
 
-    const center = this.center;
-    const pointerEvent = pointer(event);
+    const center = this.host.center;
+    const pointerEvent = event.changedTouches ? event.changedTouches[0] : event;;
 
     const translatePlayer = this.animation.translate(
       pointerEvent.clientX - center.x,

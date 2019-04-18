@@ -8,4 +8,15 @@ import { Component } from '@angular/core';
 export class AppComponent {
   title = 'ng-ripple-module';
   cardTitle = 'Angular';
+  onTap(event: any) {
+    console.log(event)
+  }
+
+  onPress(event: any) {
+    console.log(event)
+  }
+
+  onClick(event: any) {
+    console.log(event)
+  }
 }

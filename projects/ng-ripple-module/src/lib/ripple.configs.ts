@@ -19,7 +19,8 @@ import {
   RIPPLE_SPLASH_TRANSITION,
   RIPPLE_FADE_TRANSITION,
   RIPPLE_BG_FADE_TRANSITION,
-  RIPPLE_TAP_LIMIT
+  RIPPLE_TAP_LIMIT,
+  RIPPLE_ACTIVE_CLASS
 } from './ripple.constants';
 
 export interface RippleCoreConfigs {
@@ -31,6 +32,7 @@ export interface RippleCoreConfigs {
   fadeTransition: string;
   splashOpacity: number;
   tapLimit: number;
+  activeClass: string;
 }
 
 export const RIPPLE_CORE_CONFIGS = new InjectionToken<RippleCoreConfigs>('ripple-core-configs');
@@ -56,6 +58,7 @@ export interface RippleConfigs {
   bgFadeTransition?: string;
   splashOpacity?: number;
   tapLimit?: number;
+  activeClass?: string;
 }
 
 export const DEFAULT_RIPPLE_CONFIGS = {
@@ -71,7 +74,42 @@ export const DEFAULT_RIPPLE_CONFIGS = {
   fadeTransition: RIPPLE_FADE_TRANSITION,
   bgFadeTransition: RIPPLE_BG_FADE_TRANSITION,
   splashOpacity: 1,
-  tapLimit: RIPPLE_TAP_LIMIT
+  tapLimit: RIPPLE_TAP_LIMIT,
+  activeClass: RIPPLE_ACTIVE_CLASS
 };
 
 export const GLOBAL_RIPPLE_CONFIGS = new InjectionToken<RippleConfigs>('global-ripple-configs');
+
+export class RippleComponentConfigs {
+
+  constructor(public configs: any) {}
+
+  get coreColor(): string {
+    return this.configs.light ? this.configs.rippleLightBgColor : this.configs.rippleDefaultBgColor;
+  }
+
+  get rippleCore(): RippleCoreConfigs {
+    return {
+      centered: this.configs.centered,
+      fixed: this.configs.fixed,
+      rippleBgColor: this.coreColor,
+      fillTransition: this.configs.fillTransition,
+      splashTransition: this.configs.splashTransition,
+      fadeTransition: this.configs.fadeTransition,
+      splashOpacity: this.configs.splashOpacity,
+      tapLimit: this.configs.tapLimit,
+      activeClass: this.configs.activeClass
+    };
+  }
+
+  get backgroundColor(): string {
+    return this.configs.light ? this.configs.activeLightBgColor : this.configs.activeDefaultBgColor;
+  }
+
+  get rippleBackground(): RippleBgConfigs {
+    return {
+      backgroundColor: this.backgroundColor,
+      fadeTransition: this.configs.bgFadeTransition
+    };
+  }
+}

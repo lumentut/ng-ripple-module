@@ -6,28 +6,18 @@
  * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
  */
 
-import {
-  NgZone,
-  EventEmitter
-} from '@angular/core';
+import { NgZone, EventEmitter } from '@angular/core';
+import { Ripple } from './ripple';
+import { RippleMotionTracker } from './ripple.tracker';
+import { RippleEvent } from './ripple.event';
 
 import {
-  RippleComponent
-} from './ripple.component';
+  PointerStrategy,
+  MouseStrategy,
+  TouchStrategy
+} from './ripple.strategy';
 
-import {
-  RippleEvent
-} from './ripple.event';
-
-import {
-  RippleMotionTracker
-} from './ripple.motion.tracker';
-
-import {
-  RIPPLE_REPEATING_EVENT_LIMIT,
-  RIPPLE_VELOCITY_TRESHOLD,
-  RIPPLE_IDLE_SCALE
-} from './ripple.constants';
+import { RIPPLE_REPEATING_EVENT_LIMIT } from './ripple.constants';
 
 export interface RippleEmitters {
   rtap: EventEmitter<any>;
@@ -43,130 +33,36 @@ export enum Events {
   CLICK = 'rclick'
 }
 
-export enum MobileActionTypes {
-  TOUCHMOVE = 'touchmove',
-  TOUCHEND = 'touchend'
-}
-
-export enum DesktopActionTypes {
-  MOUSEMOVE = 'mousemove',
-  MOUSEUP = 'mouseup',
-  MOUSELEAVE = 'mouseleave'
-}
-
-export enum PointerDownAction {
-  MOBILE = 'touchstart',
-  DESKTOP = 'mousedown'
-}
-
-export const ACTIVATED_CLASS = 'activated';
-
-export interface PointerEvent {
+export interface RipplePointerEvent {
   clientX: number;
   clientY: number;
   timeStamp: number;
-  type: 'touchstart' | 'touchmove' | 'touchend' | 'mousedown' | 'mousemove' | 'mouseup' | 'mouseleave';
+  type: 'pointerdown' | 'touchmove' | 'touchend' | 'mousemove' | 'mouseup' | 'mouseleave';
 }
-
-export function pointer(event: any): PointerEvent {
-  const ev = event.changedTouches ? event.changedTouches[0] : event;
-  return {
-    clientX: ev.clientX,
-    clientY: ev.clientY,
-    timeStamp: event.timeStamp,
-    type: event.type
-  };
-}
-
-export function mobileDevice() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-export function capitalize(val: string): string {
-  return val.charAt(0).toUpperCase() + val.slice(1);
-}
-
-export const mobileEventHandlers = {
-  ontouchmove: 'onPointerMove',
-  ontouchend: 'onPointerUp'
-};
-
-export const desktopEventHandlers = {
-  onmousemove: 'onPointerMove',
-  onmouseup: 'onPointerUp',
-  onmouseleave: 'onPointerLeave'
-};
 
 export class RippleEventHandler {
 
-  _isMobileDevice: boolean;
+  pointer: string;
+  element: HTMLElement;
   isPressing: boolean;
   emptyEvent: boolean;
-
   lastEvent: Events;
   lastEventTimestamp: number;
-
   registeredEvents = new Map<string, any>();
-
   _actionTypes: Map<string, () => void>;
+  strategy: MouseStrategy | TouchStrategy;
+  tracker: RippleMotionTracker;
 
   constructor(
-    private element: HTMLElement,
-    private ripple: RippleComponent,
+    public ripple: Ripple,
     private emitters: RippleEmitters,
-    protected motionTracker: RippleMotionTracker,
     private ngZone: NgZone
   ) {
+    this.element = this.ripple.element;
+    this.tracker = new RippleMotionTracker();
     this.initPointerDownListener();
     this.registerEvents();
-  }
-
-  get pointerDownAction(): PointerDownAction {
-    return this.isMobileDevice ? PointerDownAction.MOBILE : PointerDownAction.DESKTOP;
-  }
-
-  initPointerDownListener() {
-    this.ngZone.runOutsideAngular(() => {
-      this.element.addEventListener(this.pointerDownAction, this.onPointerDown, false);
-    });
-  }
-
-  removePointerDownListener() {
-    this.ngZone.runOutsideAngular(() => {
-      this.element.removeEventListener(this.pointerDownAction, this.onPointerDown);
-    })
-  }
-
-  get isMobileDevice(): boolean {
-    if(this._isMobileDevice) return this._isMobileDevice;
-    return this._isMobileDevice = mobileDevice();
-  }
-
-  get supportedActionTypes(): Map<string, any> {
-    const actionTypes = this.isMobileDevice ? MobileActionTypes : DesktopActionTypes,
-          handlers = this.isMobileDevice ? mobileEventHandlers : desktopEventHandlers,
-          supported = new Map<string, any>();
-    for(const i in actionTypes) {
-      if(actionTypes[i]) {
-        supported.set(actionTypes[i], this[handlers[`on${actionTypes[i]}`]]);
-      }
-    }
-    return supported;
-  }
-
-  get actionTypes(): any {
-    if(!this._actionTypes) this._actionTypes = this.supportedActionTypes;
-    return this._actionTypes;
-  }
-
-  private addListeners() {
-    this.ngZone.runOutsideAngular(() => {
-      this.actionTypes.forEach((fn, type) => this.element.addEventListener(type, fn, false));
-    });
-  }
-
-  private removeListeners() {
-    this.actionTypes.forEach((fn, type) => this.element.removeEventListener(type, fn));
+    this.ripple.background.onAnimationEnd.subscribe(this.onAnimationEnd)
   }
 
   private registerEvents() {
@@ -179,30 +75,69 @@ export class RippleEventHandler {
     events.forEach(event => this.registeredEvents.set(event[0] as string, event[1] as any));
   }
 
-  get tapOrClickEvent(): any {
-    return this.isMobileDevice ? Events.TAP : Events.CLICK;
+  onDestroy() {
+    this.ripple.background.onAnimationEnd.unsubscribe(this.onAnimationEnd);
+    this.removePointerDownListener();
+  }
+
+  onAnimationEnd = () => {
+    this.ripple.dismountElement();
+    this.emitCurrentEvent();
+  }
+
+  initPointerDownListener() {
+    this.ngZone.runOutsideAngular(() => {
+      this.element.addEventListener('pointerdown', this.onPointerDown, false);
+    });
+  }
+
+  removePointerDownListener() {
+    this.ngZone.runOutsideAngular(() => {
+      this.element.removeEventListener('pointerdown', this.onPointerDown);
+    });
+  }
+
+  get pointerStrategy(): PointerStrategy {
+    return {
+      mouse: new MouseStrategy(this),
+      touch: new TouchStrategy(this)
+    };
+  }
+
+  onPointerDown = (event: PointerEvent) => {
+    this.pointer = event.pointerType;
+    this.tracker.startTrack(event);
+    this.ripple.mountElement();
+    this.strategy = this.pointerStrategy[event.pointerType];
+    this.strategy.attachListeners();
+    this.ripple.core.fill(event);
+    this.activate();
+  }
+
+  activate() {
+    this.isPressing = true;
+    this.emptyEvent = false;
+    this.element.classList.add(this.ripple.core.configs.activeClass);
+    this.ngZone.runOutsideAngular(() => this.watchPressEvent());
+  }
+
+  deactivate() {
+    this.element.classList.remove(this.ripple.core.configs.activeClass);
+    this.isPressing = false;
+  }
+
+  get pointerEvent(): any {
+    return {
+      touch: Events.TAP,
+      mouse: Events.CLICK
+    }
   }
 
   get currentEvent(): Events {
-    if(this.motionTracker.duration <= this.ripple.tapLimit) return this.tapOrClickEvent;
+    if(this.tracker.duration <= this.ripple.core.tapLimit) {
+      return this.pointerEvent[this.pointer];
+    }
     return Events.PRESSUP;
-  }
-
-  get lastEventTimespan() {
-    return (new Date()).getTime() - this.lastEventTimestamp;
-  }
-
-  get isFastEvent(): boolean {
-    return this.lastEventTimespan < RIPPLE_REPEATING_EVENT_LIMIT;
-  }
-
-  get isRepeatingEvent(): boolean {
-    return this.currentEvent === this.lastEvent;
-  }
-
-  get emitCurrentEvent() {
-    if(this.isFastEvent && this.isRepeatingEvent) return;
-    return this.emitEvent(this.currentEvent);
   }
 
   set lastEventName(eventName: Events) {
@@ -211,7 +146,7 @@ export class RippleEventHandler {
   }
 
   get event(): RippleEvent {
-    return new RippleEvent(this.element, this.ripple.center, this.lastEvent);
+    return new RippleEvent(this.element, this.ripple.host.center, this.lastEvent);
   }
 
   emitEvent(eventName: Events) {
@@ -226,75 +161,23 @@ export class RippleEventHandler {
   watchPressEvent() {
     setTimeout(() => {
       if(this.isPressing) this.emitEvent(Events.PRESS);
-    }, this.ripple.tapLimit);
+    }, this.ripple.core.tapLimit);
   }
 
-  activate() {
-    this.isPressing = true;
-    this.emptyEvent = false;
-    this.element.classList.add(ACTIVATED_CLASS);
-    this.ngZone.runOutsideAngular(() => this.watchPressEvent());
+  get lastEventTimespan() {
+    return (new Date()).getTime() - this.lastEventTimestamp;
   }
 
-  deactivate() {
-    this.element.classList.remove(ACTIVATED_CLASS);
-    this.isPressing = false;
+  get isFastEvent(): boolean {
+    return this.lastEventTimespan < RIPPLE_REPEATING_EVENT_LIMIT;
   }
 
-  rippleSplash() {
-    this.deactivate();
-    this.ripple.splash();
+  get isRepeatingEvent(): boolean {
+    return this.currentEvent === this.lastEvent;
   }
 
-  rippleNoEventSplash() {
-    this.emptyEvent = true;
-    this.rippleSplash();
-  }
-
-  rippleFadeout() {
-    this.deactivate();
-    this.ripple.fadeout();
-  }
-
-  get isInsignificantMove(): boolean {
-    return this.motionTracker.velocity < RIPPLE_VELOCITY_TRESHOLD;
-  }
-
-  get isPressupPhase(): boolean {
-    return this.currentEvent === Events.PRESSUP;
-  }
-
-  get isIdleRipple(): boolean {
-    return this.ripple.currentScale === RIPPLE_IDLE_SCALE;
-  }
-
-  private onPointerDown = (event: TouchEvent | MouseEvent) => {
-    if(this.isPressing) return;
-    this.activate();
-    this.addListeners();
-    this.motionTracker.reset().track(event);
-    if(!this.ripple.configs.fixed) event.preventDefault();
-    return this.ripple.fill(event);
-  }
-
-  private onPointerMove = (event: TouchEvent | MouseEvent) => {
-    this.motionTracker.track(event);
-    if(!this.ripple.configs.fixed && this.isInsignificantMove) return;
-    if(!this.ripple.dragable) return this.isPressing = false;
-    if(!this.ripple.pointerEventIsInHostArea(event) || this.ripple.configs.fixed) return this.rippleNoEventSplash();
-    if(this.ripple.outerPointStillInHostRadius(event)) this.ripple.translate(event);
-  }
-
-  private onPointerUp = (event: TouchEvent | MouseEvent) => {
-    this.removeListeners();
-    this.motionTracker.track(event);
-    if(!this.isPressing || this.emptyEvent) return;
-    if(this.isIdleRipple && this.isPressupPhase) return this.rippleFadeout();
-    return this.rippleSplash();
-  }
-
-  private onPointerLeave = (event: MouseEvent) => {
-    if(!this.isPressing) return;
-    this.rippleNoEventSplash();
+  emitCurrentEvent = () => {
+    if(this.isFastEvent && this.isRepeatingEvent) return;
+    return this.emitEvent(this.currentEvent);
   }
 }

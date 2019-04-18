@@ -13,7 +13,8 @@ import {
   Output,
   Inject,
   HostBinding,
-  EventEmitter
+  EventEmitter,
+  Renderer2
 } from '@angular/core';
 
 import {
@@ -49,36 +50,31 @@ export class BackgroundComponent implements OnDestroy {
 
   element: HTMLElement;
   parentElement: HTMLElement;
-
   _fadeinPlayer: AnimationPlayer;
   _fadeoutPlayer: AnimationPlayer;
-
-  _isDestroying: boolean;
-
-  @HostBinding('style.background') color: string;
-
+  
   fadeTransition: string;
+  isDestroying: boolean;
 
-  @Output() eventTrigger: EventEmitter<any> = new EventEmitter();
+  @Output() onAnimationEnd: EventEmitter<any> = new EventEmitter();
 
   constructor(
     private elRef: ElementRef,
     private builder: AnimationBuilder,
+    private renderer: Renderer2,
     @Inject(RIPPLE_BG_CONFIGS) public configs: RippleBgConfigs,
   ) {
     this.element = this.elRef.nativeElement;
     this.parentElement = this.element.parentNode as HTMLElement;
-    this.color = this.configs.backgroundColor;
+    this.renderer.setStyle(this.element, 'background', this.configs.backgroundColor);
     this.fadeTransition = this.configs.fadeTransition;
   }
 
   ngOnDestroy() {
+    this.isDestroying = true;
+    this.onAnimationEnd.unsubscribe();
     if(this._fadeinPlayer) this._fadeinPlayer.destroy();
     if(this._fadeoutPlayer) this._fadeoutPlayer.destroy();
-  }
-
-  prepareToBeDestroyed() {
-    this._isDestroying = true;
   }
 
   get parentRect(): ClientRect {
@@ -109,9 +105,9 @@ export class BackgroundComponent implements OnDestroy {
   }
 
   fadeout() {
-    if(this._isDestroying) return;
+    if(this.isDestroying) return;
     this._fadeoutPlayer = this.fadeoutPlayer;
     this._fadeoutPlayer.play();
-    this.eventTrigger.emit();
+    this.onAnimationEnd.emit();
   }
 }

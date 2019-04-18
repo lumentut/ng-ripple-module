@@ -16,45 +16,29 @@ import {
   ComponentFactoryResolver,
   ApplicationRef,
   ComponentRef,
-  Injector,
   Input,
   Output,
   Inject,
   Optional,
+  Renderer2,
   EventEmitter
 } from '@angular/core';
 
 import {
   RippleConfigs,
-  RippleCoreConfigs,
-  RippleBgConfigs,
+  RippleComponentConfigs,
   GLOBAL_RIPPLE_CONFIGS,
   DEFAULT_RIPPLE_CONFIGS,
-  RIPPLE_CORE_CONFIGS,
-  RIPPLE_BG_CONFIGS
 } from './ripple.configs';
-
-import {
-  RippleComponent
-} from './ripple.component';
-
-import {
-  BackgroundComponent
-} from './ripple-bg.component';
 
 import {
   RippleEmitters,
   RippleEventHandler
 } from './ripple.event.handler';
 
-import {
-  RippleMotionTracker
-} from './ripple.motion.tracker';
+import { RippleMotionTracker } from './ripple.tracker';
 
-export enum RippleCmpRefs {
-  RIPPLE = 'rippleCmpRef',
-  BACKGROUND = 'backgroundCmpRef'
-}
+import { Ripple } from './ripple';
 
 export function enforceStyleRecalculation(element: HTMLElement) {
   window.getComputedStyle(element).getPropertyValue('opacity');
@@ -64,63 +48,55 @@ export function enforceStyleRecalculation(element: HTMLElement) {
 export class RippleDirective implements AfterViewInit, OnDestroy {
 
   element: HTMLElement;
-  rippleCmpRef: ComponentRef<any>;
-  backgroundCmpRef: ComponentRef<any>;
   eventHandler: RippleEventHandler;
   configs: RippleConfigs;
-
-  private _children: any[];
-  private _eventHandler: RippleEventHandler;
-  private _motionTracker: RippleMotionTracker;
+  cmpConfigs: RippleComponentConfigs;
+  children: any[];
+  ripple: Ripple;
+  coreCmpRef: ComponentRef<any>;
+  backgroundCmpRef: ComponentRef<any>;
 
   @HostBinding('style.display') display: string = 'block';
   @HostBinding('style.overflow') overflow: string = 'hidden';
   @HostBinding('style.cursor') cursor: string = 'pointer';
-  @HostBinding('class.activated') activated: boolean;
   @HostBinding('style.width') width: string;
+  @HostBinding('class.activated') activated: boolean;
 
-  @Input()
+  @Input('light')
   set light(val: boolean) { this.configs.light = true; }
 
   @Input('centered-ripple')
-  set centered(val: boolean) { this._centered = true; }
-  private _centered: boolean;
+  set centered(val: boolean) { this.configs.centered = true; }
 
   @Input('fixed-ripple')
-  set fixed(val: boolean) { this._fixed = true; }
-  private _fixed: boolean;
+  set fixed(val: boolean) { this.configs.fixed = true; }
 
   @Input('rippleBgColor')
-  set rippleColor(color: string) { this._rippleBgColor = color; }
-  private _rippleBgColor: string;
+  set rippleBgColor(val: string) { this.configs.rippleDefaultBgColor = val; }
 
   @Input('activeBgColor')
-  set activeBgColor(color: string) { this._activeBgColor = color; }
-  private _activeBgColor: string;
+  set activeBgColor(val: string) { this.configs.activeDefaultBgColor = val; }
 
   @Input('fillTransition')
-  set fillTransition(value: string) { this._fillTransition = value; }
-  private _fillTransition: string;
+  set fillTransition(val: string) { this.configs.fillTransition = val; }
 
   @Input('splashTransition')
-  set splashTransition(value: string) { this._splashTransition = value; }
-  private _splashTransition: string;
+  set splashTransition(val: string) { this.configs.splashTransition = val; }
 
   @Input('fadeTransition')
-  set fadeTransition(value: string) { this._fadeTransition = value; }
-  private _fadeTransition: string;
+  set fadeTransition(val: string) { this.configs.fadeTransition = val; }
 
   @Input('bgFadeTransition')
-  set bgFadeTransition(value: string) { this._bgFadeTransition = value; }
-  private _bgFadeTransition: string;
+  set bgFadeTransition(val: string) { this.configs.bgFadeTransition = val; }
 
   @Input('tapLimit')
-  set tapLimit(value: number) { this._tapLimit = value; }
-  private _tapLimit: number;
+  set tapLimit(val: number) { this.configs.tapLimit = val; }
 
   @Input('splashOpacity')
-  set splashOpacity(value: number) { this._splashOpacity = value; }
-  private _splashOpacity: number;
+  set splashOpacity(val: number) { this.configs.splashOpacity = val; }
+
+  @Input('activeClass')
+  set activeClass(val: string) { this.configs.activeClass = val; }
 
   @Output() rtap: EventEmitter<any> = new EventEmitter();
   @Output() rpress: EventEmitter<any> = new EventEmitter();
@@ -131,6 +107,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     private elRef: ElementRef,
     public cfr: ComponentFactoryResolver,
     private appRef: ApplicationRef,
+    public renderer: Renderer2,
     private ngZone: NgZone,
     @Optional() @Inject(GLOBAL_RIPPLE_CONFIGS) customConfigs: RippleConfigs
   ) {
@@ -139,91 +116,24 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.appendChildren([this.background.element, this.ripple.element]);
-    this.background.eventTrigger.subscribe(() => this.eventHandler.emitCurrentEvent);
-    this.eventHandler = this.rippleEventHandler;
-    this.recalculateStyle();
+    this.ripple = new Ripple(
+      this.element,
+      this.cfr,
+      this.appRef ,
+      this.configs,
+      this.emitters
+    );
+
+    this.eventHandler = new RippleEventHandler(
+      this.ripple,
+      this.emitters,
+      this.ngZone
+    );
   }
 
   ngOnDestroy() {
-    this.rippleCmpRef.destroy();
-    this.background.prepareToBeDestroyed();
-    this.background.eventTrigger.unsubscribe();
-    this.backgroundCmpRef.destroy();
-    this.eventHandler.removePointerDownListener();
-  }
-
-  rerunChangesDetection() {
-    this.rippleCmpRef.changeDetectorRef.detectChanges();
-    this.backgroundCmpRef.changeDetectorRef.detectChanges();
-  }
-
-  private appendChildren(elements: any[]) {
-    this._children = elements;
-    this._children.forEach(element => this.element.appendChild(element));
-    this.rerunChangesDetection();
-  }
-
-  get _rippleColor(): string {
-    return this.configs.light ? this.configs.rippleLightBgColor : this.configs.rippleDefaultBgColor;
-  }
-
-  get rippleCoreConfigs(): RippleCoreConfigs {
-    return {
-      centered: this._centered || this.configs.centered,
-      fixed: this._fixed || this.configs.fixed,
-      rippleBgColor: this._rippleBgColor || this._rippleColor,
-      fillTransition: this._fillTransition || this.configs.fillTransition,
-      splashTransition: this._splashTransition || this.configs.splashTransition,
-      fadeTransition: this._fadeTransition || this.configs.fadeTransition,
-      splashOpacity: this._splashOpacity || this.configs.splashOpacity,
-      tapLimit: this._tapLimit || this.configs.tapLimit
-    };
-  }
-
-  get rippleInjector(): Injector {
-    return Injector.create({ providers: [
-      { provide: RIPPLE_CORE_CONFIGS, useValue: this.rippleCoreConfigs },
-      { provide: BackgroundComponent, useValue: this.background }
-    ]});
-  }
-
-  get ripple(): RippleComponent {
-    if(!this.rippleCmpRef) {
-      this.createComponentRef(this.rippleInjector, RippleComponent, RippleCmpRefs.RIPPLE);
-    }
-    return this.rippleCmpRef.instance;
-  }
-
-  get _backgroundColor(): string {
-    return this.configs.light ? this.configs.activeLightBgColor : this.configs.activeDefaultBgColor;
-  }
-
-  get rippleBgConfigs(): RippleBgConfigs {
-    return {
-      backgroundColor: this._activeBgColor || this._backgroundColor,
-      fadeTransition: this._bgFadeTransition || this.configs.bgFadeTransition
-    };
-  }
-
-  get backgroundInjector(): Injector {
-    return Injector.create({ providers: [{ provide: RIPPLE_BG_CONFIGS, useValue: this.rippleBgConfigs }] });
-  }
-
-  get background(): BackgroundComponent {
-    if(!this.backgroundCmpRef) {
-      this.createComponentRef(this.backgroundInjector, BackgroundComponent, RippleCmpRefs.BACKGROUND);
-    }
-    return this.backgroundCmpRef.instance;
-  }
-
-  private createComponentRef(injector: Injector, component: any, cmpRefName: string) {
-    this[`${cmpRefName}`] = this.cfr.resolveComponentFactory(component).create(injector);
-    this.appRef.attachView(this[`${cmpRefName}`].hostView);
-  }
-
-  private recalculateStyle() {
-    this._children.forEach(element => enforceStyleRecalculation(element));
+    this.ripple.onDestroy();
+    this.eventHandler.onDestroy();
   }
 
   get emitters(): RippleEmitters {
@@ -233,21 +143,5 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
       rpressup: this.rpressup,
       rclick: this.rclick
     };
-  }
-
-  get motionTracker(): RippleMotionTracker {
-    if(this._motionTracker) return this._motionTracker;
-    return this._motionTracker = new RippleMotionTracker();
-  }
-
-  get rippleEventHandler(): RippleEventHandler {
-    if(this._eventHandler) return this._eventHandler;
-    return this._eventHandler = new RippleEventHandler(
-      this.element,
-      this.ripple,
-      this.emitters,
-      this.motionTracker,
-      this.ngZone
-    );
   }
 }
