@@ -1,3 +1,11 @@
+/**
+ * @license
+ * Copyright (c) 2019 Yohanes Oktavianus Lumentut All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
+ */
+
 import {
   Injector,
   ComponentRef,
@@ -15,7 +23,7 @@ import {
 import { RippleHost } from './ripple.host';
 import { BackgroundComponent } from './ripple-bg.component';
 import { RippleComponent } from './ripple.component';
-import { RippleEmitters } from '../lib/ripple.event.handler';
+import { RippleEmitters } from './ripple.event.handler';
 
 export interface Coordinate {
   x: number;
