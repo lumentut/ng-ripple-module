@@ -62,7 +62,7 @@ export class RippleEventHandler {
     this.tracker = new RippleMotionTracker();
     this.initPointerDownListener();
     this.registerEvents();
-    this.ripple.background.onAnimationEnd.subscribe(this.onAnimationEnd)
+    this.ripple.background.onAnimationEnd.subscribe(this.onAnimationEnd);
   }
 
   private registerEvents() {
@@ -97,18 +97,11 @@ export class RippleEventHandler {
     });
   }
 
-  get pointerStrategy(): PointerStrategy {
-    return {
-      mouse: new MouseStrategy(this),
-      touch: new TouchStrategy(this)
-    };
-  }
-
   onPointerDown = (event: PointerEvent) => {
     this.pointer = event.pointerType;
     this.tracker.startTrack(event);
     this.ripple.mountElement();
-    this.strategy = this.pointerStrategy[event.pointerType];
+    this.strategy = new PointerStrategy[this.pointer](this);
     this.strategy.attachListeners();
     this.ripple.core.fill(event);
     this.activate();

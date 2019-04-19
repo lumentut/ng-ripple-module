@@ -18,11 +18,6 @@ export interface DeviceStrategy {
   detachListeners(): void;
 }
 
-export interface PointerStrategy {
-  mouse: MouseStrategy;
-  touch: TouchStrategy;
-}
-
 export class RippleListener {
 
   element: HTMLElement;
@@ -117,4 +112,9 @@ export class TouchStrategy extends RippleListener {
   onTouchEnd = (event: TouchEvent) => {
     this.onEnd(event);
   }
+}
+
+export const PointerStrategy: any  = {
+  mouse: MouseStrategy,
+  touch: TouchStrategy
 }
