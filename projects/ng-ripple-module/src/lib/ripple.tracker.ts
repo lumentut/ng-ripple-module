@@ -52,17 +52,17 @@ export class RippleMotionTracker {
   }
 
   private track(action: PointerActionTypes, event: any) {
-    
+
     const pointerEvent = event.changedTouches ? event.changedTouches[0] : event;
 
     const eventDetails: any = {
       ClientX: pointerEvent.clientX,
       ClientY: pointerEvent.clientY,
-      TimeStamp: pointerEvent.timeStamp | event.timeStamp,
-      Type: pointerEvent.type | event.type | event.pointerType
+      TimeStamp: pointerEvent.timeStamp || event.timeStamp,
+      Type: pointerEvent.type || event.type || event.pointerType
     };
 
-    for(let key of Object.keys(eventDetails)) {
+    for(const key of Object.keys(eventDetails)) {
       if(eventDetails[key]) {
         this[`pointer${action}${key}`] = eventDetails[key];
       }

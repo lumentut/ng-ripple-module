@@ -7,11 +7,14 @@
  */
 
 import {
+  NgZone,
   Injector,
   ComponentRef,
   ApplicationRef,
   ComponentFactoryResolver
 } from '@angular/core';
+
+import { Subject } from 'rxjs';
 
 import {
   RippleConfigs,
@@ -23,7 +26,13 @@ import {
 import { RippleHost } from './ripple.host';
 import { BackgroundComponent } from './ripple-bg.component';
 import { RippleComponent } from './ripple.component';
-import { RippleEmitters } from './ripple.event.handler';
+import { RippleMotionTracker } from './ripple.tracker';
+
+import {
+  PointerStrategy,
+  MouseStrategy,
+  TouchStrategy
+} from './ripple.strategy';
 
 export interface Coordinate {
   x: number;
@@ -59,18 +68,27 @@ export class Ripple {
   backgroundCmpRef: ComponentRef<any>;
 
   configs: RippleComponentConfigs;
+  tracker: RippleMotionTracker;
+
+  strategy: any;
+  pointer: string;
+  isPressing: boolean;
+
+  watchPress = new Subject<any>();
 
   constructor(
+    public ngZone: NgZone,
     public element: HTMLElement,
     private cfr: ComponentFactoryResolver,
     private appRef: ApplicationRef,
-    private baseConfigs: RippleConfigs,
-    private emitters: RippleEmitters
+    private baseConfigs: RippleConfigs
   ) {
     this.host = new RippleHost(element);
     this.configs = new RippleComponentConfigs(this.baseConfigs);
+    this.tracker = new RippleMotionTracker();
     this.createComponentRef(this.backgroundInjector, BackgroundComponent, RippleCmpRefs.BACKGROUND);
     this.createComponentRef(this.coreInjector, RippleComponent, RippleCmpRefs.RIPPLE);
+    this.initPointerDownListener();
   }
 
   private createComponentRef(injector: Injector, component: any, cmpRefName: string) {
@@ -100,18 +118,14 @@ export class Ripple {
     return this.coreCmpRef.instance;
   }
 
-  get componentRefs(): any[] {
-    return [this.coreCmpRef, this.backgroundCmpRef];
-  }
-
   mountElement() {
-    this.componentRefs.forEach(cmpRef => {
+    [this.coreCmpRef, this.backgroundCmpRef].forEach(cmpRef => {
       this.element.appendChild(cmpRef.instance.element);
     });
   }
 
   dismountElement() {
-    this.componentRefs.forEach(cmpRef => {
+    [this.coreCmpRef, this.backgroundCmpRef].forEach(cmpRef => {
       this.element.removeChild(cmpRef.instance.element);
     });
   }
@@ -119,5 +133,39 @@ export class Ripple {
   onDestroy() {
     this.coreCmpRef.destroy();
     this.backgroundCmpRef.destroy();
+    this.removePointerDownListener();
+  }
+
+  initPointerDownListener() {
+    this.ngZone.runOutsideAngular(() => {
+      this.element.addEventListener('pointerdown', this.onPointerDown, false);
+    });
+  }
+
+  removePointerDownListener() {
+    this.ngZone.runOutsideAngular(() => {
+      this.element.removeEventListener('pointerdown', this.onPointerDown);
+    });
+  }
+
+  onPointerDown = (event: PointerEvent) => {
+    this.pointer = event.pointerType;
+    this.tracker.startTrack(event);
+    this.mountElement();
+    this.strategy = new PointerStrategy(this);
+    this.strategy.attachListeners();
+    this.core.fill(event);
+    this.activate();
+  }
+
+  activate() {
+    this.isPressing = true;
+    this.element.classList.add(this.core.configs.activeClass);
+    this.ngZone.runOutsideAngular(() => this.watchPress.next());
+  }
+
+  deactivate() {
+    this.element.classList.remove(this.core.configs.activeClass);
+    this.isPressing = false;
   }
 }

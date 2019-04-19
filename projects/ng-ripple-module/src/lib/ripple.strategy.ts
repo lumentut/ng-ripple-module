@@ -6,29 +6,21 @@
  * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
  */
 
-import { RippleEventHandler } from './ripple.event.handler';
+import { Ripple } from './ripple';
 
-export type DeviceListener = [string, (event: TouchEvent | MouseEvent) => any];
-
-export interface DeviceStrategy {
-  listeners: DeviceListener[];
-  event: string;
-  context: RippleEventHandler;
-  attachListeners(): void;
-  detachListeners(): void;
-}
+export type PointerListener = [string, (event: TouchEvent | MouseEvent) => any];
 
 export class RippleListener {
 
-  element: HTMLElement;
-  listeners: DeviceListener[];
+  listeners: PointerListener[];
+  emitEvent: boolean = true;
 
-  constructor(public context: RippleEventHandler) {}
+  constructor(public context: any) {}
 
   execute(action: string) {
     this.listeners.forEach((item) => {
       const type = item[0]; const handler = item[1];
-      this.element[action](type, handler, false);
+      this.context.element[action](type, handler);
     });
   }
 
@@ -42,11 +34,11 @@ export class RippleListener {
 
   onMove(event: any) {
     this.context.tracker.trackMove(event);
-    if(!this.context.ripple.core.pointerEventCoordinateIsInHostArea(event)) {
+    if(!this.context.core.pointerEventCoordinateIsInHostArea(event)) {
       return this.splashAndDetach();
     }
-    if(this.context.ripple.core.outerPointStillInHostRadius(event)) {
-      return this.context.ripple.core.translate(event);
+    if(this.context.core.outerPointStillInHostRadius(event)) {
+      return this.context.core.translate(event);
     }
     return;
   }
@@ -58,19 +50,18 @@ export class RippleListener {
   }
 
   splashAndDetach() {
-    this.context.ripple.core.splash();
+    this.context.core.splash();
     this.detachListeners();
   }
 }
 
 export class MouseStrategy extends RippleListener {
 
-  constructor(context: RippleEventHandler) {
+  constructor(context: Ripple) {
     super(context);
-    this.element = context.element;
   }
 
-  get listeners(): DeviceListener[] {
+  get listeners(): PointerListener[] {
     return [
       ['mousemove', this.onMouseMove],
       ['mouseup', this.onMouseUp],
@@ -87,18 +78,18 @@ export class MouseStrategy extends RippleListener {
   }
 
   onMouseLeave = (event: MouseEvent) => {
+    this.emitEvent = false;
     this.onEnd(event);
   }
 }
 
 export class TouchStrategy extends RippleListener {
 
-  constructor(context: RippleEventHandler) {
+  constructor(context: Ripple) {
     super(context);
-    this.element = context.element;
   }
 
-  get listeners(): DeviceListener[] {
+  get listeners(): PointerListener[] {
     return [
       ['touchmove', this.onTouchMove],
       ['touchend', this.onTouchEnd]
@@ -114,7 +105,14 @@ export class TouchStrategy extends RippleListener {
   }
 }
 
-export const PointerStrategy: any  = {
+export const POINTER_STRATEGY: any  = {
   mouse: MouseStrategy,
   touch: TouchStrategy
+};
+
+export class PointerStrategy extends RippleListener {
+  constructor(context: Ripple) {
+    super(context);
+    return new POINTER_STRATEGY[context.pointer](context);
+  }
 }

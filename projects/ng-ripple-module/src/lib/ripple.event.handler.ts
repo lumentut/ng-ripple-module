@@ -6,16 +6,10 @@
  * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
  */
 
-import { NgZone, EventEmitter } from '@angular/core';
+import { EventEmitter } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Ripple } from './ripple';
-import { RippleMotionTracker } from './ripple.tracker';
 import { RippleEvent } from './ripple.event';
-
-import {
-  PointerStrategy,
-  MouseStrategy,
-  TouchStrategy
-} from './ripple.strategy';
 
 import { RIPPLE_REPEATING_EVENT_LIMIT } from './ripple.constants';
 
@@ -42,27 +36,28 @@ export interface RipplePointerEvent {
 
 export class RippleEventHandler {
 
-  pointer: string;
   element: HTMLElement;
-  isPressing: boolean;
-  emptyEvent: boolean;
   lastEvent: Events;
   lastEventTimestamp: number;
   registeredEvents = new Map<string, any>();
-  _actionTypes: Map<string, () => void>;
-  strategy: MouseStrategy | TouchStrategy;
-  tracker: RippleMotionTracker;
+  subscriptions: Subscription[] = [];
 
   constructor(
     public ripple: Ripple,
-    private emitters: RippleEmitters,
-    private ngZone: NgZone
+    private emitters: RippleEmitters
   ) {
     this.element = this.ripple.element;
-    this.tracker = new RippleMotionTracker();
-    this.initPointerDownListener();
     this.registerEvents();
-    this.ripple.background.onAnimationEnd.subscribe(this.onAnimationEnd);
+    this.subscribe();
+  }
+
+  private subscribe() {
+    this.subscriptions.push(this.ripple.background.animationEnd.subscribe(this.onAnimationEnd));
+    this.subscriptions.push(this.ripple.watchPress.subscribe(this.watchPressEvent));
+  }
+
+  private unsubscribe() {
+    this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 
   private registerEvents() {
@@ -76,59 +71,26 @@ export class RippleEventHandler {
   }
 
   onDestroy() {
-    this.ripple.background.onAnimationEnd.unsubscribe(this.onAnimationEnd);
-    this.removePointerDownListener();
+    this.unsubscribe();
   }
 
   onAnimationEnd = () => {
     this.ripple.dismountElement();
-    this.emitCurrentEvent();
-  }
-
-  initPointerDownListener() {
-    this.ngZone.runOutsideAngular(() => {
-      this.element.addEventListener('pointerdown', this.onPointerDown, false);
-    });
-  }
-
-  removePointerDownListener() {
-    this.ngZone.runOutsideAngular(() => {
-      this.element.removeEventListener('pointerdown', this.onPointerDown);
-    });
-  }
-
-  onPointerDown = (event: PointerEvent) => {
-    this.pointer = event.pointerType;
-    this.tracker.startTrack(event);
-    this.ripple.mountElement();
-    this.strategy = new PointerStrategy[this.pointer](this);
-    this.strategy.attachListeners();
-    this.ripple.core.fill(event);
-    this.activate();
-  }
-
-  activate() {
-    this.isPressing = true;
-    this.emptyEvent = false;
-    this.element.classList.add(this.ripple.core.configs.activeClass);
-    this.ngZone.runOutsideAngular(() => this.watchPressEvent());
-  }
-
-  deactivate() {
-    this.element.classList.remove(this.ripple.core.configs.activeClass);
-    this.isPressing = false;
+    if(this.ripple.strategy.emitEvent) {
+      this.emitCurrentEvent();
+    }
   }
 
   get pointerEvent(): any {
     return {
       touch: Events.TAP,
       mouse: Events.CLICK
-    }
+    };
   }
 
   get currentEvent(): Events {
-    if(this.tracker.duration <= this.ripple.core.tapLimit) {
-      return this.pointerEvent[this.pointer];
+    if(this.ripple.tracker.duration <= this.ripple.core.tapLimit) {
+      return this.pointerEvent[this.ripple.pointer];
     }
     return Events.PRESSUP;
   }
@@ -144,16 +106,14 @@ export class RippleEventHandler {
 
   emitEvent(eventName: Events) {
     this.lastEventName = eventName;
-    if(!this.emptyEvent) {
-      this.ngZone.run(() => {
-        this.registeredEvents.get(eventName).emit(this.event);
-      });
-    }
+    this.registeredEvents.get(eventName).emit(this.event);
   }
 
-  watchPressEvent() {
+  watchPressEvent = () => {
     setTimeout(() => {
-      if(this.isPressing) this.emitEvent(Events.PRESS);
+      if(this.ripple.isPressing) {
+        this.emitEvent(Events.PRESS);
+      }
     }, this.ripple.core.tapLimit);
   }
 
@@ -169,8 +129,10 @@ export class RippleEventHandler {
     return this.currentEvent === this.lastEvent;
   }
 
-  emitCurrentEvent = () => {
-    if(this.isFastEvent && this.isRepeatingEvent) return;
+  emitCurrentEvent() {
+    if(this.isFastEvent && this.isRepeatingEvent) {
+      return;
+    }
     return this.emitEvent(this.currentEvent);
   }
 }

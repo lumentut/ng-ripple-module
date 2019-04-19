@@ -49,7 +49,9 @@ export class RippleHost {
   }
 
   get marginRef() {
-    if(this.isRound) return {top: 0, left: 0};
+    if(this.isRound) {
+      return {top: 0, left: 0};
+    }
     return {
       top: (this.rect.height - this.diameter)/2,
       left: (this.rect.width - this.diameter)/2

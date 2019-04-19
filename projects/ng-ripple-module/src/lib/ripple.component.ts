@@ -108,12 +108,16 @@ export class RippleComponent implements AfterViewInit {
   }
 
   get animation(): RippleAnimation {
-    if(this._animation) return this._animation;
+    if(this._animation) {
+      return this._animation;
+    }
     return this._animation = new RippleAnimation(this.element, this.builder, this.configs);
   }
 
   pointerEventCoordinateIsInHostArea(event: TouchEvent | MouseEvent): boolean {
-    if(this.host.isRound) return this.pointerEventStillInCircleArea(event);
+    if(this.host.isRound) {
+      return this.pointerEventStillInCircleArea(event);
+    }
     return this.pointerEventStillInRectangleArea(event);
   }
 
@@ -176,10 +180,13 @@ export class RippleComponent implements AfterViewInit {
   }
 
   translate(event: any) {
-    if(this.configs.centered) return;
+
+    if(this.configs.centered) {
+      return;
+    }
 
     const center = this.host.center;
-    const pointerEvent = event.changedTouches ? event.changedTouches[0] : event;;
+    const pointerEvent = event.changedTouches ? event.changedTouches[0] : event;
 
     const translatePlayer = this.animation.translate(
       pointerEvent.clientX - center.x,

@@ -111,17 +111,16 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.ripple = new Ripple(
+      this.ngZone,
       this.element,
       this.cfr,
-      this.appRef ,
-      this.configs,
-      this.emitters
+      this.appRef,
+      this.configs
     );
 
     this.eventHandler = new RippleEventHandler(
       this.ripple,
-      this.emitters,
-      this.ngZone
+      this.emitters
     );
   }
 

@@ -10,12 +10,11 @@ import {
   Component,
   OnDestroy,
   ElementRef,
-  Output,
   Inject,
-  HostBinding,
-  EventEmitter,
   Renderer2
 } from '@angular/core';
+
+import { Subject } from 'rxjs';
 
 import {
   style,
@@ -52,11 +51,9 @@ export class BackgroundComponent implements OnDestroy {
   parentElement: HTMLElement;
   _fadeinPlayer: AnimationPlayer;
   _fadeoutPlayer: AnimationPlayer;
-  
   fadeTransition: string;
   isDestroying: boolean;
-
-  @Output() onAnimationEnd: EventEmitter<any> = new EventEmitter();
+  animationEnd = new Subject<any>();
 
   constructor(
     private elRef: ElementRef,
@@ -72,9 +69,14 @@ export class BackgroundComponent implements OnDestroy {
 
   ngOnDestroy() {
     this.isDestroying = true;
-    this.onAnimationEnd.unsubscribe();
-    if(this._fadeinPlayer) this._fadeinPlayer.destroy();
-    if(this._fadeoutPlayer) this._fadeoutPlayer.destroy();
+
+    if(this._fadeinPlayer) {
+      this._fadeinPlayer.destroy();
+    }
+
+    if(this._fadeoutPlayer) {
+      this._fadeoutPlayer.destroy();
+    }
   }
 
   get parentRect(): ClientRect {
@@ -105,9 +107,10 @@ export class BackgroundComponent implements OnDestroy {
   }
 
   fadeout() {
-    if(this.isDestroying) return;
-    this._fadeoutPlayer = this.fadeoutPlayer;
-    this._fadeoutPlayer.play();
-    this.onAnimationEnd.emit();
+    if(!this.isDestroying) {
+      this._fadeoutPlayer = this.fadeoutPlayer;
+      this._fadeoutPlayer.play();
+      this.animationEnd.next();
+    }
   }
 }
