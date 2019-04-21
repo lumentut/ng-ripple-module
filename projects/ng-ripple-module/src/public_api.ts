@@ -7,8 +7,9 @@
  */
 
 export * from './lib/ripple.directive';
-export * from './lib/ripple.component';
+export * from './lib/ripple-core.component';
 export * from './lib/ripple-bg.component';
+export * from './lib/ripple.component';
 export * from './lib/ripple.event';
 export * from './lib/ripple.event.handler';
 export * from './lib/ripple.tracker';

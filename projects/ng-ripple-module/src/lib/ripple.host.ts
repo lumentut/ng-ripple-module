@@ -23,7 +23,7 @@ export class RippleHost {
   isRound: boolean;
   radiusSquare: number;
 
-  constructor(private element: HTMLElement) {
+  constructor(public element: HTMLElement) {
     this.rect = this.element.getBoundingClientRect();
     this.style = getComputedStyle(this.element);
     this.isRound = this.calculatedIsRound();

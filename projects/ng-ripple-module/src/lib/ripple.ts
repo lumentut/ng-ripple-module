@@ -24,15 +24,11 @@ import {
 } from './ripple.configs';
 
 import { RippleHost } from './ripple.host';
+import { RippleState } from './ripple.component';
 import { BackgroundComponent } from './ripple-bg.component';
-import { RippleComponent } from './ripple.component';
+import { CoreComponent } from './ripple-core.component';
 import { RippleMotionTracker } from './ripple.tracker';
-
-import {
-  PointerStrategy,
-  MouseStrategy,
-  TouchStrategy
-} from './ripple.strategy';
+import { PointerStrategy, PointerDownListener } from './ripple.strategy';
 
 export interface Coordinate {
   x: number;
@@ -54,10 +50,12 @@ export interface RippleStyle {
   background?: string;
 }
 
-export enum RippleCmpRefs {
-  RIPPLE = 'coreCmpRef',
-  BACKGROUND = 'backgroundCmpRef'
-}
+export const POINTER = {
+  mouse: 'mouse',
+  touch: 'touch',
+  mousedown: 'mouse',
+  touchstart: 'touch'
+};
 
 export class Ripple {
 
@@ -66,15 +64,17 @@ export class Ripple {
   backgroundRect: ClientRect;
   coreCmpRef: ComponentRef<any>;
   backgroundCmpRef: ComponentRef<any>;
-
   configs: RippleComponentConfigs;
-  tracker: RippleMotionTracker;
+  pointerdownListener: PointerDownListener;
+  state: RippleState;
 
   strategy: any;
   pointer: string;
-  isPressing: boolean;
+  reAnimate: boolean;
+  dismountTimeout: any;
 
-  watchPress = new Subject<any>();
+  tracker = new RippleMotionTracker();
+  pressPublisher = new Subject<any>();
 
   constructor(
     public ngZone: NgZone,
@@ -85,32 +85,37 @@ export class Ripple {
   ) {
     this.host = new RippleHost(element);
     this.configs = new RippleComponentConfigs(this.baseConfigs);
-    this.tracker = new RippleMotionTracker();
-    this.createComponentRef(this.backgroundInjector, BackgroundComponent, RippleCmpRefs.BACKGROUND);
-    this.createComponentRef(this.coreInjector, RippleComponent, RippleCmpRefs.RIPPLE);
-    this.initPointerDownListener();
+    this.pointerdownListener = new PointerDownListener(this);
+    this.init();
   }
 
-  private createComponentRef(injector: Injector, component: any, cmpRefName: string) {
-    this[`${cmpRefName}`] = this.cfr.resolveComponentFactory(component).create(injector);
-    this.appRef.attachView(this[`${cmpRefName}`].hostView);
+  private get componentRefs(): any[] {
+    return [this.coreCmpRef, this.backgroundCmpRef];
   }
 
-  get backgroundInjector(): Injector {
+  private init() {
+    this.backgroundCmpRef = this.cfr.resolveComponentFactory(BackgroundComponent).create(this.backgroundInjector);
+    this.coreCmpRef = this.cfr.resolveComponentFactory(CoreComponent).create(this.coreInjector);
+    this.componentRefs.forEach(cmpRef => this.appRef.attachView(cmpRef.hostView));
+  }
+
+  private get backgroundInjector(): Injector {
     return Injector.create({
-      providers: [{ provide: RIPPLE_BG_CONFIGS, useValue: this.configs.rippleBackground }]
-    });
+      providers: [
+        { provide: RIPPLE_BG_CONFIGS, useValue: this.configs.rippleBackground },
+        { provide: RippleHost, useValue: this.host },
+    ]});
   }
 
   get background() {
     return this.backgroundCmpRef.instance;
   }
 
-  get coreInjector(): Injector {
+  private get coreInjector(): Injector {
     return Injector.create({ providers: [
       { provide: RIPPLE_CORE_CONFIGS, useValue: this.configs.rippleCore },
       { provide: BackgroundComponent, useValue: this.background },
-      { provide: RippleHost, useValue: this.host }
+      { provide: RippleHost, useValue: this.host },
     ]});
   }
 
@@ -119,53 +124,52 @@ export class Ripple {
   }
 
   mountElement() {
-    [this.coreCmpRef, this.backgroundCmpRef].forEach(cmpRef => {
-      this.element.appendChild(cmpRef.instance.element);
-    });
+    if(!this.isMounted) {
+      this.componentRefs.forEach(cmpRef => {
+        this.element.appendChild(cmpRef.instance.element);
+      });
+    }
   }
 
   dismountElement() {
-    [this.coreCmpRef, this.backgroundCmpRef].forEach(cmpRef => {
-      this.element.removeChild(cmpRef.instance.element);
+    this.componentRefs.forEach(cmpRef => {
+      if(cmpRef.instance.element.parentNode === this.element) {
+        this.element.removeChild(cmpRef.instance.element);
+      }
     });
+  }
+
+  prepareForDismounting() {
+    this.dismountTimeout = setTimeout(() => {
+      this.ngZone.runOutsideAngular(() => this.dismountElement());
+    }, this.background.fadeDuration + 250);
   }
 
   onDestroy() {
     this.coreCmpRef.destroy();
     this.backgroundCmpRef.destroy();
-    this.removePointerDownListener();
+    this.pointerdownListener.remove();
   }
 
-  initPointerDownListener() {
-    this.ngZone.runOutsideAngular(() => {
-      this.element.addEventListener('pointerdown', this.onPointerDown, false);
-    });
+  get isMounted(): boolean {
+    return this.element.contains(this.core.element) || this.element.contains(this.background.element);
   }
 
-  removePointerDownListener() {
-    this.ngZone.runOutsideAngular(() => {
-      this.element.removeEventListener('pointerdown', this.onPointerDown);
-    });
-  }
-
-  onPointerDown = (event: PointerEvent) => {
-    this.pointer = event.pointerType;
-    this.tracker.startTrack(event);
-    this.mountElement();
+  onPointerDown = (event: any) => {
+    this.pointer = POINTER[event.pointerType || event.type];
     this.strategy = new PointerStrategy(this);
     this.strategy.attachListeners();
-    this.core.fill(event);
+    this.tracker.startTrack(event);
     this.activate();
+    this.mountElement();
+    this.core.fill(event);
   }
 
   activate() {
-    this.isPressing = true;
     this.element.classList.add(this.core.configs.activeClass);
-    this.ngZone.runOutsideAngular(() => this.watchPress.next());
   }
 
   deactivate() {
     this.element.classList.remove(this.core.configs.activeClass);
-    this.isPressing = false;
   }
 }

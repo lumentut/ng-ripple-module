@@ -8,13 +8,10 @@
 
 import {
   Component,
-  OnDestroy,
   ElementRef,
   Inject,
   Renderer2
 } from '@angular/core';
-
-import { Subject } from 'rxjs';
 
 import {
   style,
@@ -28,6 +25,9 @@ import {
   RippleBgConfigs,
   RIPPLE_BG_CONFIGS
 } from './ripple.configs';
+
+import { RippleComponent } from './ripple.component';
+import { RippleHost } from './ripple.host';
 
 @Component({
   selector: 'ripple-bg',
@@ -45,49 +45,29 @@ import {
     }`
   ]
 })
-export class BackgroundComponent implements OnDestroy {
+export class BackgroundComponent extends RippleComponent {
 
-  element: HTMLElement;
-  parentElement: HTMLElement;
-  _fadeinPlayer: AnimationPlayer;
-  _fadeoutPlayer: AnimationPlayer;
   fadeTransition: string;
-  isDestroying: boolean;
-  animationEnd = new Subject<any>();
+  fadeDuration: number;
 
   constructor(
-    private elRef: ElementRef,
+    elRef: ElementRef,
+    host: RippleHost,
     private builder: AnimationBuilder,
     private renderer: Renderer2,
     @Inject(RIPPLE_BG_CONFIGS) public configs: RippleBgConfigs,
   ) {
-    this.element = this.elRef.nativeElement;
-    this.parentElement = this.element.parentNode as HTMLElement;
+    super(elRef, host);
     this.renderer.setStyle(this.element, 'background', this.configs.backgroundColor);
     this.fadeTransition = this.configs.fadeTransition;
-  }
-
-  ngOnDestroy() {
-    this.isDestroying = true;
-
-    if(this._fadeinPlayer) {
-      this._fadeinPlayer.destroy();
-    }
-
-    if(this._fadeoutPlayer) {
-      this._fadeoutPlayer.destroy();
-    }
-  }
-
-  get parentRect(): ClientRect {
-    return this.parentElement.getBoundingClientRect();
+    this.fadeDuration = parseInt(this.fadeTransition.replace(/\D/g,''), 10);
   }
 
   private animationPlayerFactory(animation: any[]) {
     return this.builder.build(animation).create(this.element);
   }
 
-  get fadeinPlayer(): AnimationPlayer {
+  get fadeinAnimationPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
       animate(this.fadeTransition, keyframes([
         style({ opacity: 0 }), style({ opacity: 1 })
@@ -95,22 +75,21 @@ export class BackgroundComponent implements OnDestroy {
     ]);
   }
 
-  get fadeoutPlayer(): AnimationPlayer {
+  get fadeoutAnimationPlayer(): AnimationPlayer {
     return this.animationPlayerFactory([
       animate(this.fadeTransition, style({ opacity: 0 }))
     ]);
   }
 
   fadein() {
-    this._fadeinPlayer = this.fadeinPlayer;
-    this._fadeinPlayer.play();
+    this.fadeinPlayer = this.fadeinAnimationPlayer;
+    this.fadeinPlayer.play();
   }
 
   fadeout() {
-    if(!this.isDestroying) {
-      this._fadeoutPlayer = this.fadeoutPlayer;
-      this._fadeoutPlayer.play();
-      this.animationEnd.next();
+    if(this.fadeinPlayer) {
+      this.fadeoutPlayer = this.fadeoutAnimationPlayer;
+      this.fadeoutPlayer.play();
     }
   }
 }

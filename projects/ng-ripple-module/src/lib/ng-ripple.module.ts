@@ -8,23 +8,23 @@
 
 import { NgModule } from '@angular/core';
 import { RippleDirective } from './ripple.directive';
-import { RippleComponent } from './ripple.component';
+import { CoreComponent } from './ripple-core.component';
 import { BackgroundComponent } from './ripple-bg.component';
 
 @NgModule({
   entryComponents: [
-    RippleComponent,
+    CoreComponent,
     BackgroundComponent
   ],
   declarations: [
-    RippleComponent,
+    CoreComponent,
     BackgroundComponent,
     RippleDirective
   ],
   providers: [],
   imports: [],
   exports: [
-    RippleComponent,
+    CoreComponent,
     BackgroundComponent,
     RippleDirective
   ]

@@ -7,7 +7,6 @@
  */
 
 import { EventEmitter } from '@angular/core';
-import { Subscription } from 'rxjs';
 import { Ripple } from './ripple';
 import { RippleEvent } from './ripple.event';
 
@@ -40,51 +39,34 @@ export class RippleEventHandler {
   lastEvent: Events;
   lastEventTimestamp: number;
   registeredEvents = new Map<string, any>();
-  subscriptions: Subscription[] = [];
+  pressTimeout: any;
 
   constructor(
     public ripple: Ripple,
     private emitters: RippleEmitters
   ) {
     this.element = this.ripple.element;
-    this.registerEvents();
-    this.subscribe();
+    this.events.forEach(event => this.registeredEvents.set(event[0] as string, event[1] as any));
+    this.ripple.pressPublisher.subscribe(() => this.emitEvent(Events.PRESS));
   }
 
-  private subscribe() {
-    this.subscriptions.push(this.ripple.background.animationEnd.subscribe(this.onAnimationEnd));
-    this.subscriptions.push(this.ripple.watchPress.subscribe(this.watchPressEvent));
-  }
-
-  private unsubscribe() {
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
-  }
-
-  private registerEvents() {
-    const events = [
+  private get events(): any[] {
+    return [
       [Events.TAP, this.emitters.rtap],
       [Events.PRESS, this.emitters.rpress],
       [Events.PRESSUP, this.emitters.rpressup],
       [Events.CLICK, this.emitters.rclick]
     ];
-    events.forEach(event => this.registeredEvents.set(event[0] as string, event[1] as any));
   }
 
   onDestroy() {
-    this.unsubscribe();
-  }
-
-  onAnimationEnd = () => {
-    this.ripple.dismountElement();
-    if(this.ripple.strategy.emitEvent) {
-      this.emitCurrentEvent();
-    }
+    this.ripple.pressPublisher.unsubscribe();
   }
 
   get pointerEvent(): any {
     return {
-      touch: Events.TAP,
-      mouse: Events.CLICK
+      touchstart: Events.TAP,
+      mousedown: Events.CLICK
     };
   }
 
@@ -107,14 +89,6 @@ export class RippleEventHandler {
   emitEvent(eventName: Events) {
     this.lastEventName = eventName;
     this.registeredEvents.get(eventName).emit(this.event);
-  }
-
-  watchPressEvent = () => {
-    setTimeout(() => {
-      if(this.ripple.isPressing) {
-        this.emitEvent(Events.PRESS);
-      }
-    }, this.ripple.core.tapLimit);
   }
 
   get lastEventTimespan() {

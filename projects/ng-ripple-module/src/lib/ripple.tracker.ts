@@ -38,8 +38,8 @@ export class RippleMotionTracker {
   pointerUpClientY: number;
   pointerUpType: string;
 
-  startTrack(event: PointerEvent) {
-    this.type = event.pointerType;
+  startTrack(event: TouchEvent | MouseEvent) {
+    this.type = event.type;
     this.track(PointerActionTypes.DOWN, event);
   }
 

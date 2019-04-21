@@ -15,7 +15,9 @@ export class RippleListener {
   listeners: PointerListener[];
   emitEvent: boolean = true;
 
-  constructor(public context: any) {}
+  constructor(public context: any) {
+    clearTimeout(this.context.dismountTimeout);
+  }
 
   execute(action: string) {
     this.listeners.forEach((item) => {
@@ -35,7 +37,7 @@ export class RippleListener {
   onMove(event: any) {
     this.context.tracker.trackMove(event);
     if(!this.context.core.pointerEventCoordinateIsInHostArea(event)) {
-      return this.splashAndDetach();
+      return this.splash();
     }
     if(this.context.core.outerPointStillInHostRadius(event)) {
       return this.context.core.translate(event);
@@ -44,20 +46,21 @@ export class RippleListener {
   }
 
   onEnd(event: any) {
+    this.detachListeners();
+    this.context.prepareForDismounting();
     this.context.tracker.trackUp(event);
-    this.context.deactivate();
-    this.splashAndDetach();
+    this.splash();
   }
 
-  splashAndDetach() {
+  splash() {
+    this.context.deactivate();
     this.context.core.splash();
-    this.detachListeners();
   }
 }
 
 export class MouseStrategy extends RippleListener {
 
-  constructor(context: Ripple) {
+  constructor(public context: Ripple) {
     super(context);
   }
 
@@ -85,8 +88,11 @@ export class MouseStrategy extends RippleListener {
 
 export class TouchStrategy extends RippleListener {
 
-  constructor(context: Ripple) {
+  pressTimeout: any;
+
+  constructor(public context: Ripple) {
     super(context);
+    this.setPressTimeout();
   }
 
   get listeners(): PointerListener[] {
@@ -96,11 +102,19 @@ export class TouchStrategy extends RippleListener {
     ];
   }
 
+  setPressTimeout() {
+    clearTimeout(this.pressTimeout);
+    this.pressTimeout = setTimeout(() => {
+      this.context.ngZone.runOutsideAngular(() => this.context.pressPublisher.next());
+    }, this.context.core.tapLimit);
+  }
+
   onTouchMove = (event: TouchEvent) => {
     this.onMove(event);
   }
 
   onTouchEnd = (event: TouchEvent) => {
+    clearTimeout(this.pressTimeout);
     this.onEnd(event);
   }
 }
@@ -110,9 +124,40 @@ export const POINTER_STRATEGY: any  = {
   touch: TouchStrategy
 };
 
-export class PointerStrategy extends RippleListener {
+export class PointerStrategy {
   constructor(context: Ripple) {
-    super(context);
     return new POINTER_STRATEGY[context.pointer](context);
+  }
+}
+
+export const POINTERDOWN: any = {
+  pointerdown: ['pointerdown'],
+  fallback: ['touchstart', 'mousedown']
+};
+
+export class PointerDownListener {
+
+  pointerdownEvents: any[];
+
+  constructor(private context: Ripple) {
+    const event = 'onpointerdown' in window ? 'pointerdown' : 'fallback';
+    this.pointerdownEvents = POINTERDOWN[event];
+    this.init();
+  }
+
+  init() {
+    this.context.ngZone.runOutsideAngular(() => {
+      this.pointerdownEvents.forEach((event) => {
+        this.context.element.addEventListener(event, this.context.onPointerDown);
+      });
+    });
+  }
+
+  remove() {
+    this.context.ngZone.runOutsideAngular(() => {
+      this.pointerdownEvents.forEach((event) => {
+        this.context.element.removeEventListener(event, this.context.onPointerDown);
+      });
+    });
   }
 }
