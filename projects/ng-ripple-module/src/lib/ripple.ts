@@ -27,8 +27,7 @@ import { RippleHost } from './ripple.host';
 import { RippleState } from './ripple.component';
 import { BackgroundComponent } from './ripple-bg.component';
 import { CoreComponent } from './ripple-core.component';
-import { RippleMotionTracker } from './ripple.tracker';
-import { PointerStrategy, PointerDownListener } from './ripple.strategy';
+import { RipplePointerListener } from './ripple.strategy';
 
 export interface Coordinate {
   x: number;
@@ -50,13 +49,6 @@ export interface RippleStyle {
   background?: string;
 }
 
-export const POINTER = {
-  mouse: 'mouse',
-  touch: 'touch',
-  mousedown: 'mouse',
-  touchstart: 'touch'
-};
-
 export class Ripple {
 
   host: RippleHost;
@@ -65,16 +57,17 @@ export class Ripple {
   coreCmpRef: ComponentRef<any>;
   backgroundCmpRef: ComponentRef<any>;
   configs: RippleComponentConfigs;
-  pointerdownListener: PointerDownListener;
+  listener: RipplePointerListener;
   state: RippleState;
 
-  strategy: any;
   pointer: string;
   reAnimate: boolean;
   dismountTimeout: any;
 
-  tracker = new RippleMotionTracker();
   pressPublisher = new Subject<any>();
+  pressupPublisher = new Subject<any>();
+  tapPublisher = new Subject<any>();
+  clickPublisher = new Subject<any>();
 
   constructor(
     public ngZone: NgZone,
@@ -85,15 +78,15 @@ export class Ripple {
   ) {
     this.host = new RippleHost(element);
     this.configs = new RippleComponentConfigs(this.baseConfigs);
-    this.pointerdownListener = new PointerDownListener(this);
-    this.init();
+    this.listener = new RipplePointerListener(this);
+    this.createComponentRef();
   }
 
   private get componentRefs(): any[] {
     return [this.coreCmpRef, this.backgroundCmpRef];
   }
 
-  private init() {
+  private createComponentRef() {
     this.backgroundCmpRef = this.cfr.resolveComponentFactory(BackgroundComponent).create(this.backgroundInjector);
     this.coreCmpRef = this.cfr.resolveComponentFactory(CoreComponent).create(this.coreInjector);
     this.componentRefs.forEach(cmpRef => this.appRef.attachView(cmpRef.hostView));
@@ -123,6 +116,10 @@ export class Ripple {
     return this.coreCmpRef.instance;
   }
 
+  get isMounted(): boolean {
+    return this.element.contains(this.core.element) || this.element.contains(this.background.element);
+  }
+
   mountElement() {
     if(!this.isMounted) {
       this.componentRefs.forEach(cmpRef => {
@@ -148,21 +145,7 @@ export class Ripple {
   onDestroy() {
     this.coreCmpRef.destroy();
     this.backgroundCmpRef.destroy();
-    this.pointerdownListener.remove();
-  }
-
-  get isMounted(): boolean {
-    return this.element.contains(this.core.element) || this.element.contains(this.background.element);
-  }
-
-  onPointerDown = (event: any) => {
-    this.pointer = POINTER[event.pointerType || event.type];
-    this.strategy = new PointerStrategy(this);
-    this.strategy.attachListeners();
-    this.tracker.startTrack(event);
-    this.activate();
-    this.mountElement();
-    this.core.fill(event);
+    this.listener.stopListening();
   }
 
   activate() {

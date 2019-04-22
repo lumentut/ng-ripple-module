@@ -7,13 +7,27 @@
  */
 
 import { Ripple } from './ripple';
+import { RippleEvent } from './ripple.event';
 
 export type PointerListener = [string, (event: TouchEvent | MouseEvent) => any];
+
+export enum RipplePublisher {
+  CLICK = 'clickPublisher',
+  TAP = 'tapPublisher',
+  PRESS = 'pressPublisher',
+  PRESSUP = 'pressupPublisher'
+}
+
+export enum Events {
+  TAP = 'rtap',
+  PRESS = 'rpress',
+  PRESSUP = 'rpressup',
+  CLICK = 'rclick'
+}
 
 export class RippleListener {
 
   listeners: PointerListener[];
-  emitEvent: boolean = true;
 
   constructor(public context: any) {
     clearTimeout(this.context.dismountTimeout);
@@ -34,10 +48,14 @@ export class RippleListener {
     this.execute('removeEventListener');
   }
 
+  event(name: Events): RippleEvent {
+    return new RippleEvent(this.context.element, this.context.host.center, name);
+  }
+
   onMove(event: any) {
-    this.context.tracker.trackMove(event);
-    if(!this.context.core.pointerEventCoordinateIsInHostArea(event)) {
-      return this.splash();
+    if(!this.context.core.pointerEventCoordinateIsInHostArea(event) ||
+      this.context.core.configs.fixed) {
+        return this.splash();
     }
     if(this.context.core.outerPointStillInHostRadius(event)) {
       return this.context.core.translate(event);
@@ -45,10 +63,11 @@ export class RippleListener {
     return;
   }
 
-  onEnd(event: any) {
+  onEnd() {
     this.detachListeners();
     this.context.prepareForDismounting();
-    this.context.tracker.trackUp(event);
+    this.context.element.blur();
+    this.context.deactivate();
     this.splash();
   }
 
@@ -58,6 +77,8 @@ export class RippleListener {
   }
 }
 
+export enum Mouse { MOVE = 'mousemove', UP = 'mouseup', LEAVE = 'mouseleave' }
+
 export class MouseStrategy extends RippleListener {
 
   constructor(public context: Ripple) {
@@ -66,9 +87,9 @@ export class MouseStrategy extends RippleListener {
 
   get listeners(): PointerListener[] {
     return [
-      ['mousemove', this.onMouseMove],
-      ['mouseup', this.onMouseUp],
-      ['mouseleave', this.onMouseLeave]
+      [Mouse.MOVE, this.onMouseMove],
+      [Mouse.UP, this.onMouseUp],
+      [Mouse.LEAVE, this.onMouseLeave]
     ];
   }
 
@@ -76,19 +97,22 @@ export class MouseStrategy extends RippleListener {
     this.onMove(event);
   }
 
-  onMouseUp = (event: MouseEvent) => {
-    this.onEnd(event);
+  onMouseUp = () => {
+    this.context.ngZone.runOutsideAngular(() => {
+      this.context.clickPublisher.next(this.event(Events.CLICK));
+    });
+    this.onEnd();
   }
 
-  onMouseLeave = (event: MouseEvent) => {
-    this.emitEvent = false;
-    this.onEnd(event);
-  }
+  onMouseLeave = () => this.onEnd();
 }
+
+export enum Touch { MOVE = 'touchmove', END = 'touchend' }
 
 export class TouchStrategy extends RippleListener {
 
   pressTimeout: any;
+  isPressing: boolean;
 
   constructor(public context: Ripple) {
     super(context);
@@ -97,25 +121,37 @@ export class TouchStrategy extends RippleListener {
 
   get listeners(): PointerListener[] {
     return [
-      ['touchmove', this.onTouchMove],
-      ['touchend', this.onTouchEnd]
+      [Touch.MOVE, this.onTouchMove],
+      [Touch.END, this.onTouchEnd]
     ];
   }
 
   setPressTimeout() {
     clearTimeout(this.pressTimeout);
     this.pressTimeout = setTimeout(() => {
-      this.context.ngZone.runOutsideAngular(() => this.context.pressPublisher.next());
+      this.isPressing = true;
+      this.context.ngZone.runOutsideAngular(() => {
+        this.context.pressPublisher.next(this.event(Events.PRESS));
+      });
     }, this.context.core.tapLimit);
   }
 
   onTouchMove = (event: TouchEvent) => {
+    if(!this.context.core.pointerEventCoordinateIsInHostArea(event)) {
+      return this.onEnd();
+    }
     this.onMove(event);
   }
 
-  onTouchEnd = (event: TouchEvent) => {
+  onTouchEnd = () => {
     clearTimeout(this.pressTimeout);
-    this.onEnd(event);
+    this.context.ngZone.runOutsideAngular(() => {
+      if(this.isPressing) {
+        return this.context[RipplePublisher.PRESSUP].next(this.event(Events.PRESSUP));
+      }
+      this.context[RipplePublisher.TAP].next(this.event(Events.TAP));
+    });
+    this.onEnd();
   }
 }
 
@@ -125,39 +161,51 @@ export const POINTER_STRATEGY: any  = {
 };
 
 export class PointerStrategy {
-  constructor(context: Ripple) {
-    return new POINTER_STRATEGY[context.pointer](context);
+  constructor(pointer: string, context: Ripple) {
+    return new POINTER_STRATEGY[pointer](context);
   }
 }
 
-export const POINTERDOWN: any = {
+export const POINTERDOWN_LISTENER: any = {
   pointerdown: ['pointerdown'],
   fallback: ['touchstart', 'mousedown']
 };
 
-export class PointerDownListener {
+export class RipplePointerListener {
 
   pointerdownEvents: any[];
+  pointer: string;
+  type: string;
+  strategy: any;
 
   constructor(private context: Ripple) {
-    const event = 'onpointerdown' in window ? 'pointerdown' : 'fallback';
-    this.pointerdownEvents = POINTERDOWN[event];
-    this.init();
+    this.type = 'onpointerdown' in window ? 'pointerdown' : 'fallback';
+    this.pointerdownEvents = POINTERDOWN_LISTENER[this.type];
+    this.startListening();
   }
 
-  init() {
+  private startListening() {
     this.context.ngZone.runOutsideAngular(() => {
       this.pointerdownEvents.forEach((event) => {
-        this.context.element.addEventListener(event, this.context.onPointerDown);
+        this.context.element.addEventListener(event, this.onPointerDown);
       });
     });
   }
 
-  remove() {
+  stopListening() {
     this.context.ngZone.runOutsideAngular(() => {
       this.pointerdownEvents.forEach((event) => {
-        this.context.element.removeEventListener(event, this.context.onPointerDown);
+        this.context.element.removeEventListener(event, this.onPointerDown);
       });
     });
+  }
+
+  onPointerDown = (event: any) => {
+    const pointer = (event.pointerType || event.type).substring(0,5);
+    this.strategy = new PointerStrategy(pointer, this.context);
+    this.strategy.attachListeners();
+    this.context.activate();
+    this.context.mountElement();
+    this.context.core.fill(event);
   }
 }

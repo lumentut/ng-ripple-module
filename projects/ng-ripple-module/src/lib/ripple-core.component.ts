@@ -7,12 +7,15 @@
  */
 
 import {
+  NgZone,
   Component,
   AfterViewInit,
   Inject,
   ElementRef,
   Renderer2
 } from '@angular/core';
+
+import { Subject } from 'rxjs';
 
 import {
   AnimationPlayer,
@@ -62,8 +65,8 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
   element: HTMLElement;
   parentElement: HTMLElement;
   animation: RippleAnimation;
-  fillPlayer: any;
-  splashPlayer: any;
+  fillPlayer: AnimationPlayer;
+  splashPlayer: AnimationPlayer;
   translatePlayers = [];
   parentRect: ClientRect;
   center: Coordinate;
@@ -71,6 +74,8 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
   dragable: boolean;
   tapLimit: number;
   diameter: number;
+
+  eventEmitter = new Subject<any>();
 
   constructor(
     elRef: ElementRef,
@@ -216,6 +221,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     });
 
     this[player].onDone(() => {
+      this.eventEmitter.next();
       this.background.fadeinPlayer.reset();
       this.background.fadeout();
       this[player].reset();

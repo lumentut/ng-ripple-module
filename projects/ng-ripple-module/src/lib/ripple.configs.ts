@@ -20,7 +20,9 @@ import {
   RIPPLE_FADE_TRANSITION,
   RIPPLE_BG_FADE_TRANSITION,
   RIPPLE_TAP_LIMIT,
-  RIPPLE_ACTIVE_CLASS
+  RIPPLE_ACTIVE_CLASS,
+  RIPPLE_EVENT_DELAY,
+  RIPPLE_EVENT_DELAY_VALUE
 } from './ripple.constants';
 
 export interface RippleCoreConfigs {
@@ -59,6 +61,8 @@ export interface RippleConfigs {
   splashOpacity?: number;
   tapLimit?: number;
   activeClass?: string;
+  delayEvent?: boolean;
+  delayValue?: number;
 }
 
 export const DEFAULT_RIPPLE_CONFIGS = {
@@ -75,7 +79,9 @@ export const DEFAULT_RIPPLE_CONFIGS = {
   bgFadeTransition: RIPPLE_BG_FADE_TRANSITION,
   splashOpacity: 1,
   tapLimit: RIPPLE_TAP_LIMIT,
-  activeClass: RIPPLE_ACTIVE_CLASS
+  activeClass: RIPPLE_ACTIVE_CLASS,
+  delayEvent: RIPPLE_EVENT_DELAY,
+  delayValue: RIPPLE_EVENT_DELAY_VALUE
 };
 
 export const GLOBAL_RIPPLE_CONFIGS = new InjectionToken<RippleConfigs>('global-ripple-configs');

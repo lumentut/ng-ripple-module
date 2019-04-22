@@ -24,6 +24,9 @@ import {
   EventEmitter
 } from '@angular/core';
 
+import { Subscription } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
 import {
   RippleConfigs,
   RippleComponentConfigs,
@@ -31,24 +34,21 @@ import {
   DEFAULT_RIPPLE_CONFIGS,
 } from './ripple.configs';
 
-import {
-  RippleEmitters,
-  RippleEventHandler
-} from './ripple.event.handler';
-
 import { Ripple } from './ripple';
+import { RipplePublisher, Events } from './ripple.strategy';
+import { RippleEvent } from './ripple.event';
 
 @Directive({ selector: '[ripple]' })
 export class RippleDirective implements AfterViewInit, OnDestroy {
 
   element: HTMLElement;
-  eventHandler: RippleEventHandler;
   configs: RippleConfigs;
   cmpConfigs: RippleComponentConfigs;
   children: any[];
   ripple: Ripple;
   coreCmpRef: ComponentRef<any>;
   backgroundCmpRef: ComponentRef<any>;
+  subscriptions: Subscription = new Subscription();
 
   @HostBinding('style.display') display: string = 'block';
   @HostBinding('style.overflow') overflow: string = 'hidden';
@@ -117,23 +117,33 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
       this.configs
     );
 
-    this.eventHandler = new RippleEventHandler(
-      this.ripple,
-      this.emitters
-    );
+    this.subscribeToRippleEvent();
   }
 
   ngOnDestroy() {
+    this.subscriptions.unsubscribe();
     this.ripple.onDestroy();
-    this.eventHandler.onDestroy();
   }
 
-  get emitters(): RippleEmitters {
-    return {
-      rtap: this.rtap,
-      rpress: this.rpress,
-      rpressup: this.rpressup,
-      rclick: this.rclick
-    };
+  subscribeToRippleEvent() {
+    this.emitters.forEach(emitter => {
+      this.subscriptions.add(this.ripple[emitter.publisher]
+        .pipe(delay(emitter.delay)).subscribe((event: RippleEvent) => {
+          emitter.output.emit(event);
+      }));
+    });
+  }
+
+  get emitDelayValue(): number {
+    return this.configs.delayEvent ? this.configs.delayValue : 0;
+  }
+
+  get emitters(): any[] {
+    return [
+      { publisher: RipplePublisher.CLICK, output: this.rclick, delay: this.emitDelayValue },
+      { publisher: RipplePublisher.TAP, output: this.rtap, delay: this.emitDelayValue },
+      { publisher: RipplePublisher.PRESS, output: this.rpress, delay: 0 },
+      { publisher: RipplePublisher.PRESSUP, output : this.rpressup, delay: 0 }
+    ];
   }
 }
