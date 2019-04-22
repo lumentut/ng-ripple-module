@@ -67,7 +67,6 @@ export class RippleListener {
     this.detachListeners();
     this.context.prepareForDismounting();
     this.context.element.blur();
-    this.context.deactivate();
     this.splash();
   }
 
@@ -161,8 +160,8 @@ export const POINTER_STRATEGY: any  = {
 };
 
 export class PointerStrategy {
-  constructor(pointer: string, context: Ripple) {
-    return new POINTER_STRATEGY[pointer](context);
+  constructor(context: Ripple) {
+    return new POINTER_STRATEGY[context.pointer](context);
   }
 }
 
@@ -174,7 +173,6 @@ export const POINTERDOWN_LISTENER: any = {
 export class RipplePointerListener {
 
   pointerdownEvents: any[];
-  pointer: string;
   type: string;
   strategy: any;
 
@@ -201,8 +199,8 @@ export class RipplePointerListener {
   }
 
   onPointerDown = (event: any) => {
-    const pointer = (event.pointerType || event.type).substring(0,5);
-    this.strategy = new PointerStrategy(pointer, this.context);
+    this.context.pointer = (event.pointerType || event.type).substring(0,5);
+    this.strategy = new PointerStrategy(this.context);
     this.strategy.attachListeners();
     this.context.activate();
     this.context.mountElement();
