@@ -52,8 +52,6 @@ export interface RippleStyle {
 export class Ripple {
 
   host: RippleHost;
-  coreRect: ClientRect;
-  backgroundRect: ClientRect;
   coreCmpRef: ComponentRef<any>;
   backgroundCmpRef: ComponentRef<any>;
   configs: RippleComponentConfigs;
@@ -61,7 +59,6 @@ export class Ripple {
   state: RippleState;
 
   pointer: string;
-  reAnimate: boolean;
   dismountTimeout: any;
 
   pressPublisher = new Subject<any>();

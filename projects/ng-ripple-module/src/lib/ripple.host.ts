@@ -26,16 +26,16 @@ export class RippleHost {
   constructor(public element: HTMLElement) {
     this.rect = this.element.getBoundingClientRect();
     this.style = getComputedStyle(this.element);
-    this.isRound = this.calculatedIsRound();
-    this.diameter = this.calculatedDiagonal();
+    this.isRound = this.getIsRound();
+    this.diameter = this.getCalculatedDiagonal();
     this.radiusSquare = this.radius*this.radius;
   }
 
-  private calculatedDiagonal(): number {
+  private getCalculatedDiagonal(): number {
     return Math.sqrt(this.rect.width*this.rect.width + this.rect.height*this.rect.height);
   }
 
-  private calculatedIsRound(): boolean {
+  private getIsRound(): boolean {
     return this.style.borderRadius === '50%';
   }
 
