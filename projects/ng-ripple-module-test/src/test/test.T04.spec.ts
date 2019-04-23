@@ -66,14 +66,7 @@ describe('T04 - Directive listen to Tap, Click, Press, and Press Up test', () =>
   
   }));
 
-  // const pointerEvent: PointerEvent = {
-  //   pointerType: 'mouse',
-
-  // }
-
   it('recognize rtap action', () => {
-
-    motionTracker.pointerDownTimeStamp = 0;
     
   });
 
