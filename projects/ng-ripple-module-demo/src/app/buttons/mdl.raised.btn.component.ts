@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
-// import { RippleConfigs, GLOBAL_RIPPLE_CONFIGS } from 'ng-ripple-module';
-import { RippleConfigs, GLOBAL_RIPPLE_CONFIGS } from '../../../../ng-ripple-module/src/lib/ripple.configs';
+import { Component, ViewChild } from '@angular/core';
+import { RippleDirective } from '@ng-ripple-module/ripple.directive';
+import { RippleConfigs, GLOBAL_RIPPLE_CONFIGS } from '@ng-ripple-module/ripple.configs';
 
 const configs: RippleConfigs = {
   rippleDefaultBgColor: 'rgba(0,0,0,0.07)',
@@ -25,4 +25,11 @@ const configs: RippleConfigs = {
     {provide: GLOBAL_RIPPLE_CONFIGS, useValue: configs}
   ]
 })
-export class MdlRaisedBtnComponent {}
+export class MdlRaisedBtnComponent {
+
+  @ViewChild(RippleDirective) rippleDirective: RippleDirective;
+
+  constructor(){
+    console.log(this)
+  }
+}

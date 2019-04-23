@@ -1,2 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
-@import "node_modules/@angular-mdl/core/scss/material-design-lite.scss";
+@import "node_modules/material-design-lite/src/material-design-lite.scss";
+
+button.mdl-button--raised:focus:not(:active) {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12) !important;
+}
+
+.mdl-button--accent.mdl-button--accent.mdl-button--raised {
+  color: rgb(255,255,255);
+  background-color: #4a8bfc;
+}
