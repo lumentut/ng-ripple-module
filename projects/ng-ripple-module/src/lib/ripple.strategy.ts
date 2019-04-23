@@ -36,7 +36,7 @@ export class RippleListener {
   execute(action: string) {
     this.listeners.forEach((item) => {
       const type = item[0]; const handler = item[1];
-      this.context.element[action](type, handler);
+      this.context.ngZone.runOutsideAngular(() => this.context.element[action](type, handler));
     });
   }
 
@@ -53,20 +53,18 @@ export class RippleListener {
   }
 
   onMove(event: any) {
-    if(!this.context.core.pointerEventCoordinateIsInHostArea(event) ||
+    if(!this.context.core.centerStillIsInHostArea(event) ||
       this.context.core.configs.fixed) {
         return this.splash();
     }
     if(this.context.core.outerPointStillInHostRadius(event)) {
       return this.context.core.translate(event);
     }
-    return;
   }
 
   onEnd() {
     this.detachListeners();
     this.context.prepareForDismounting();
-    this.context.element.blur();
     this.splash();
   }
 
@@ -136,9 +134,6 @@ export class TouchStrategy extends RippleListener {
   }
 
   onTouchMove = (event: TouchEvent) => {
-    if(!this.context.core.pointerEventCoordinateIsInHostArea(event)) {
-      return this.onEnd();
-    }
     this.onMove(event);
   }
 
@@ -177,8 +172,7 @@ export class RipplePointerListener {
   strategy: any;
 
   constructor(private context: Ripple) {
-    this.type = 'onpointerdown' in window ? 'pointerdown' : 'fallback';
-    this.pointerdownEvents = POINTERDOWN_LISTENER[this.type];
+    this.pointerdownEvents = POINTERDOWN_LISTENER[this.context.listenerType];
     this.startListening();
   }
 
@@ -199,11 +193,11 @@ export class RipplePointerListener {
   }
 
   onPointerDown = (event: any) => {
-    this.context.pointer = (event.pointerType || event.type).substring(0,5);
+    this.context.pointer = (event.pointerType || event.type).slice(0,5);
     this.strategy = new PointerStrategy(this.context);
     this.strategy.attachListeners();
-    this.context.activate();
     this.context.mountElement();
+    this.context.activate();
     this.context.core.fill(event);
   }
 }

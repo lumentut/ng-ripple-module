@@ -24,6 +24,9 @@
       ],
       "ng-ripple-module/*": [
         "dist/ng-ripple-module/*"
+      ],
+      "@ng-ripple-module/*": [
+        "projects/ng-ripple-module/src/lib/*"
       ]
     }
   }

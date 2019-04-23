@@ -7,7 +7,6 @@
  */
 
 import {
-  NgZone,
   Component,
   AfterViewInit,
   Inject,
@@ -45,6 +44,11 @@ export enum EndFillBy {
   FADEOUT = 'fadeout'
 }
 
+export enum HostType {
+  ROUND = 'round',
+  RECTANGLE = 'rectangle'
+}
+
 @Component({
   selector: 'ripple-core',
   template: `<ng-content></ng-content>`,
@@ -63,14 +67,15 @@ export enum EndFillBy {
 export class CoreComponent extends RippleComponent implements AfterViewInit {
 
   element: HTMLElement;
-  parentElement: HTMLElement;
   animation: RippleAnimation;
   fillPlayer: AnimationPlayer;
   splashPlayer: AnimationPlayer;
+  translatePlayer: AnimationPlayer;
   translatePlayers = [];
   parentRect: ClientRect;
   center: Coordinate;
-
+  
+  hostType: string;
   dragable: boolean;
   tapLimit: number;
   diameter: number;
@@ -89,6 +94,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     this.renderer.setStyle(this.element, 'background', this.configs.rippleBgColor);
     this.tapLimit = this.configs.tapLimit;
     this.animation = new RippleAnimation(this.element, this.builder, this.configs);
+    this.hostType = host.isRound ? HostType.ROUND : HostType.RECTANGLE;
   }
 
   ngAfterViewInit() {
@@ -116,47 +122,41 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     }
   }
 
-  pointerEventCoordinateIsInHostArea(event: TouchEvent | MouseEvent): boolean {
+  centerStillIsInHostArea(event: TouchEvent | MouseEvent): boolean {
     if(this.host.isRound) {
-      return this.pointerEventStillInCircleArea(event);
+      return this.centerStillInCircleArea(event);
     }
-    return this.pointerEventStillInRectangleArea(event);
+    return this.centerStillInRectangleArea(event);
   }
 
   private pointer(event: any) {
     return event.changedTouches ? event.changedTouches[0] : event;
   }
 
-  pointerEventStillInCircleArea(event: TouchEvent | MouseEvent): boolean {
-    const center = this.host.center,
-          pointerEvent = this.pointer(event),
-          dx = pointerEvent.clientX - center.x,
-          dy = pointerEvent.clientY - center.y,
-          eventRadiusSq = dx*dx + dy*dy;
-    return eventRadiusSq < this.host.radiusSquare;
+  private fromHostCenterSq(event: TouchEvent | MouseEvent) {
+    const evt = this.pointer(event),
+          dx = evt.clientX - this.host.center.x,
+          dy = evt.clientY - this.host.center.y;
+    return dx*dx + dy*dy;
   }
 
-  pointerEventStillInRectangleArea(event: TouchEvent | MouseEvent): boolean {
-    const center = this.host.center,
-          rect = this.host.rect,
-          pointerEvent = this.pointer(event),
-          halfW = rect.width/2, halfH = rect.height/2,
-          minX = center.x - halfW, maxX = center.x + halfW,
-          minY = center.y - halfH, maxY = center.y + halfH,
-          isInRangeX = minX < pointerEvent.clientX && pointerEvent.clientX < maxX,
-          isInRangeY = minY < pointerEvent.clientY && pointerEvent.clientY < maxY;
+  centerStillInCircleArea(event: TouchEvent | MouseEvent): boolean {
+    return this.fromHostCenterSq(event) < this.host.radiusSquare;
+  }
+
+  centerStillInRectangleArea(event: TouchEvent | MouseEvent): boolean {
+    const rect = this.host.rect,
+          evt = this.pointer(event),
+          isInRangeX = rect.left < evt.clientX && evt.clientX < rect.right,
+          isInRangeY = rect.top < evt.clientY && evt.clientY < rect.bottom;
     return isInRangeX && isInRangeY;
   }
 
   outerPointStillInHostRadius(event: TouchEvent | MouseEvent): boolean {
-    const center = this.host.center,
-          pointerEvent = this.pointer(event),
-          dx = pointerEvent.clientX - center.x,
-          dy = pointerEvent.clientY - center.y,
-          eventRadiusSq = dx*dx + dy*dy,
-          maxRadius = this.host.radius - 0.5*this.rect.width,
-          maxRadiusSq = maxRadius*maxRadius;
-    return eventRadiusSq < maxRadiusSq;
+    const contactPointFromCenterSq = this.fromHostCenterSq(event),
+          maxContactPointFromCenter = this.host.radius - 0.5*this.rect.width,
+          maxContactPointFromCenterSq = maxContactPointFromCenter*maxContactPointFromCenter;
+    return contactPointFromCenterSq < maxContactPointFromCenterSq;
   }
 
   fill(event: TouchEvent | MouseEvent) {
@@ -188,22 +188,13 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     const center = this.host.center;
     const evt = event.changedTouches ? event.changedTouches[0] : event;
 
-    const translatePlayer = this.animation.translate(
+    this.translatePlayer = this.animation.translate(
       evt.clientX - center.x,
       evt.clientY - center.y,
       this.currentScale
     );
-
-    this.translatePlayers.push(translatePlayer);
-
-    const index = this.translatePlayers.indexOf(translatePlayer);
-
-    if(index > 0) {
-      this.translatePlayers[index-1].destroy();
-      this.translatePlayers.splice(index-1, 1);
-    }
-
-    translatePlayer.play();
+    
+    this.translatePlayer.play();
   }
 
   splash = () => this.endFillBy(EndFillBy.SPLASH);

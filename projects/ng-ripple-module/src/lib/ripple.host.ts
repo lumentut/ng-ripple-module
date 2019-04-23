@@ -8,13 +8,6 @@
 
 import { Coordinate } from './ripple';
 
-export function centerCoordinate(rect: ClientRect): Coordinate {
-  return {
-    x: rect.left + (rect.width/2),
-    y: rect.top + (rect.height/2),
-  };
-}
-
 export class RippleHost {
 
   rect: ClientRect;
@@ -36,12 +29,15 @@ export class RippleHost {
   }
 
   private getIsRound(): boolean {
-    return this.style.borderRadius === '50%';
+    return this.style.borderRadius === '50%' && this.rect.width === this.rect.height;
   }
 
   get center(): Coordinate {
     const rect = this.element.getBoundingClientRect();
-    return centerCoordinate(rect);
+    return {
+      x: rect.left + (rect.width/2),
+      y: rect.top + (rect.height/2),
+    };
   }
 
   get radius(): number {
@@ -49,9 +45,6 @@ export class RippleHost {
   }
 
   get marginRef() {
-    if(this.isRound) {
-      return {top: 0, left: 0};
-    }
     return {
       top: (this.rect.height - this.diameter)/2,
       left: (this.rect.width - this.diameter)/2

@@ -59,6 +59,7 @@ export class Ripple {
   state: RippleState;
 
   pointer: string;
+  listenerType: string;
   dismountTimeout: any;
 
   pressPublisher = new Subject<any>();
@@ -75,6 +76,7 @@ export class Ripple {
   ) {
     this.host = new RippleHost(element);
     this.configs = new RippleComponentConfigs(this.baseConfigs);
+    this.listenerType = 'onpointerdown' in window ? 'pointerdown' : 'fallback';
     this.listener = new RipplePointerListener(this);
     this.createComponentRef();
   }
@@ -86,7 +88,10 @@ export class Ripple {
   private createComponentRef() {
     this.backgroundCmpRef = this.cfr.resolveComponentFactory(BackgroundComponent).create(this.backgroundInjector);
     this.coreCmpRef = this.cfr.resolveComponentFactory(CoreComponent).create(this.coreInjector);
-    this.componentRefs.forEach(cmpRef => this.appRef.attachView(cmpRef.hostView));
+    this.componentRefs.forEach(cmpRef => {
+      this.appRef.attachView(cmpRef.hostView);
+      cmpRef.changeDetectorRef.detach();
+    });
   }
 
   private get backgroundInjector(): Injector {

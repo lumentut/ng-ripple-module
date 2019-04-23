@@ -13,6 +13,7 @@ import {
   NgZone,
   HostBinding,
   ElementRef,
+  ChangeDetectorRef,
   ComponentFactoryResolver,
   ApplicationRef,
   ComponentRef,
@@ -35,7 +36,7 @@ import {
 } from './ripple.configs';
 
 import { Ripple } from './ripple';
-import { RipplePublisher, Events } from './ripple.strategy';
+import { RipplePublisher } from './ripple.strategy';
 import { RippleEvent } from './ripple.event';
 
 @Directive({ selector: '[ripple]' })
@@ -99,6 +100,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   constructor(
     private elRef: ElementRef,
     public cfr: ComponentFactoryResolver,
+    private cdr: ChangeDetectorRef,
     private appRef: ApplicationRef,
     public renderer: Renderer2,
     private ngZone: NgZone,
@@ -116,8 +118,9 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
       this.appRef,
       this.configs
     );
-
+    
     this.subscribeToRippleEvent();
+    this.cdr.detach();
   }
 
   ngOnDestroy() {

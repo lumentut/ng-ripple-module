@@ -7,11 +7,13 @@ export enum RippleState {
   DISMOUNTED = 'dismounted'
 }
 
-@Component({})
+@Component({
+  template: `<ng-content></ng-content>`
+})
 export class RippleComponent {
 
   element: HTMLElement;
-  parentElement: HTMLElement;
+  hostElement: HTMLElement;
   state: RippleState;
   fadeinPlayer: any;
   fadeoutPlayer: any;
@@ -21,6 +23,6 @@ export class RippleComponent {
     public host: RippleHost
   ) {
     this.element = this.elRef.nativeElement;
-    this.parentElement = this.element.parentNode as HTMLElement;
+    this.hostElement = this.element.parentNode as HTMLElement;
   }
 }
