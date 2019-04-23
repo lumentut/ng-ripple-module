@@ -54,7 +54,6 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   @HostBinding('style.display') display: string = 'block';
   @HostBinding('style.overflow') overflow: string = 'hidden';
   @HostBinding('style.cursor') cursor: string = 'pointer';
-  @HostBinding('class.activated') activated: boolean;
 
   @Input('light')
   set light(val: boolean) { this.configs.light = true; }
