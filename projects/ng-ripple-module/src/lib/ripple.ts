@@ -20,8 +20,10 @@ import {
   RippleConfigs,
   RippleComponentConfigs,
   RIPPLE_BG_CONFIGS,
-  RIPPLE_CORE_CONFIGS
+  RIPPLE_CORE_CONFIGS,
 } from './ripple.configs';
+
+import { RIPPLE_DISMOUNTING_TIMEOUT } from './ripple.constants';
 
 import { RippleHost } from './ripple.host';
 import { RippleState } from './ripple.component';
@@ -57,6 +59,7 @@ export class Ripple {
   configs: RippleComponentConfigs;
   listener: RipplePointerListener;
   state: RippleState;
+  componentsReference: any[];
 
   pointer: string;
   listenerType: string;
@@ -78,20 +81,42 @@ export class Ripple {
     this.configs = new RippleComponentConfigs(this.baseConfigs);
     this.listenerType = 'onpointerdown' in window ? 'pointerdown' : 'fallback';
     this.listener = new RipplePointerListener(this);
-    this.createComponentRef();
+    this.createComponentRefs();
   }
 
-  private get componentRefs(): any[] {
-    return [this.coreCmpRef, this.backgroundCmpRef];
+  get haveBackground(): boolean {
+    return this.baseConfigs.backgroundIncluded;
   }
 
-  private createComponentRef() {
-    this.backgroundCmpRef = this.cfr.resolveComponentFactory(BackgroundComponent).create(this.backgroundInjector);
+  private get componentsRef(): any[] {
+    return this.componentsReference;
+  }
+
+  private createCoreComponentRef() {
     this.coreCmpRef = this.cfr.resolveComponentFactory(CoreComponent).create(this.coreInjector);
-    this.componentRefs.forEach(cmpRef => {
-      this.appRef.attachView(cmpRef.hostView);
-      cmpRef.changeDetectorRef.detach();
-    });
+    this.appRef.attachView(this.coreCmpRef.hostView);
+    this.coreCmpRef.changeDetectorRef.detach();
+  }
+
+  private createBackgroundComponentRef() {
+    this.backgroundCmpRef = this.cfr.resolveComponentFactory(BackgroundComponent).create(this.backgroundInjector);
+    this.appRef.attachView(this.backgroundCmpRef.hostView);
+    this.backgroundCmpRef.changeDetectorRef.detach();
+  }
+
+  private createComponentRefs() {
+    if(this.haveBackground) {
+      this.createBackgroundComponentRef();
+    }
+    this.createCoreComponentRef();
+    this.createComponentsReference();
+  }
+
+  private createComponentsReference() {
+    this.componentsReference = [this.coreCmpRef];
+    if(this.haveBackground) {
+      this.componentsReference.push(this.backgroundCmpRef);
+    }
   }
 
   private get backgroundInjector(): Injector {
@@ -107,11 +132,17 @@ export class Ripple {
   }
 
   private get coreInjector(): Injector {
-    return Injector.create({ providers: [
+    const providers = [
       { provide: RIPPLE_CORE_CONFIGS, useValue: this.configs.rippleCore },
-      { provide: BackgroundComponent, useValue: this.background },
-      { provide: RippleHost, useValue: this.host },
-    ]});
+      { provide: RippleHost, useValue: this.host }
+    ];
+
+    const backgroundProvider = [];
+    if(this.haveBackground) {
+      backgroundProvider.push({ provide: BackgroundComponent, useValue: this.background });
+    }
+
+    return Injector.create({ providers: [...providers, ...backgroundProvider]});
   }
 
   get core() {
@@ -119,19 +150,20 @@ export class Ripple {
   }
 
   get isMounted(): boolean {
-    return this.element.contains(this.core.element) || this.element.contains(this.background.element);
+    return this.element.contains(this.core.element);
   }
 
   mountElement() {
     if(!this.isMounted) {
-      this.componentRefs.forEach(cmpRef => {
+      clearTimeout(this.dismountTimeout);
+      this.componentsRef.forEach(cmpRef => {
         this.element.appendChild(cmpRef.instance.element);
       });
     }
   }
 
   dismountElement() {
-    this.componentRefs.forEach(cmpRef => {
+    this.componentsRef.forEach(cmpRef => {
       if(cmpRef.instance.element.parentNode === this.element) {
         this.element.removeChild(cmpRef.instance.element);
       }
@@ -141,12 +173,12 @@ export class Ripple {
   prepareForDismounting() {
     this.dismountTimeout = setTimeout(() => {
       this.ngZone.runOutsideAngular(() => this.dismountElement());
-    }, this.background.fadeDuration + 250);
+    }, RIPPLE_DISMOUNTING_TIMEOUT);
   }
 
   onDestroy() {
     this.coreCmpRef.destroy();
-    this.backgroundCmpRef.destroy();
+    if(this.haveBackground) { this.backgroundCmpRef.destroy(); }
     this.listener.stopListening();
   }
 

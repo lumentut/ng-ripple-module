@@ -9,6 +9,7 @@
 import {
   Component,
   AfterViewInit,
+  Optional,
   Inject,
   ElementRef,
   Renderer2
@@ -66,15 +67,12 @@ export enum HostType {
 })
 export class CoreComponent extends RippleComponent implements AfterViewInit {
 
-  element: HTMLElement;
   animation: RippleAnimation;
   fillPlayer: AnimationPlayer;
   splashPlayer: AnimationPlayer;
   translatePlayer: AnimationPlayer;
-  translatePlayers = [];
-  parentRect: ClientRect;
   center: Coordinate;
-  
+
   hostType: string;
   dragable: boolean;
   tapLimit: number;
@@ -87,7 +85,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     host: RippleHost,
     private renderer: Renderer2,
     protected builder: AnimationBuilder,
-    private background: BackgroundComponent,
+    @Optional() private background: BackgroundComponent,
     @Inject(RIPPLE_CORE_CONFIGS) public configs: RippleCoreConfigs
   ) {
     super(elRef, host);
@@ -161,7 +159,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
   fill(event: TouchEvent | MouseEvent) {
 
-    this.background.fadein();
+    if(this.background) { this.background.fadein(); }
 
     let tx = 0, ty = 0;
     if(!this.configs.centered) {
@@ -181,9 +179,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
   translate(event: any) {
 
-    if(this.configs.centered) {
-      return;
-    }
+    if(this.configs.centered) { return; }
 
     const center = this.host.center;
     const evt = event.changedTouches ? event.changedTouches[0] : event;
@@ -193,7 +189,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
       evt.clientY - center.y,
       this.currentScale
     );
-    
+
     this.translatePlayer.play();
   }
 
@@ -204,18 +200,17 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
   private endFillBy(type: string) {
 
     const player = `${type}Player`;
-    this[player] = this.animation[type];
 
-    this[player].onStart(() => {
-      this.translatePlayers.length = 0;
-      this.fillPlayer.reset();
-    });
+    this[player] = this.animation[type];
+    this[player].onStart(() => this.fillPlayer=undefined);
 
     this[player].onDone(() => {
       this.eventEmitter.next();
-      this.background.fadeinPlayer.reset();
-      this.background.fadeout();
-      this[player].reset();
+      if(this.background) {
+        this.background.fadeinPlayer=undefined;
+        this.background.fadeout();
+      }
+      this[player]=undefined;
     });
 
     this[player].play();

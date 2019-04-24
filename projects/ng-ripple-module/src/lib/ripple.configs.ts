@@ -22,7 +22,10 @@ import {
   RIPPLE_TAP_LIMIT,
   RIPPLE_ACTIVE_CLASS,
   RIPPLE_EVENT_DELAY,
-  RIPPLE_EVENT_DELAY_VALUE
+  RIPPLE_EVENT_DELAY_VALUE,
+  RIPPLE_SPLASH_OPACITY,
+  RIPPLE_BACKGROUND_INCLUDED,
+  RIPPLE_DISMOUNTING_TIMEOUT
 } from './ripple.constants';
 
 export interface RippleCoreConfigs {
@@ -35,6 +38,7 @@ export interface RippleCoreConfigs {
   splashOpacity: number;
   tapLimit: number;
   activeClass: string;
+  backgroundIncluded: boolean;
 }
 
 export const RIPPLE_CORE_CONFIGS = new InjectionToken<RippleCoreConfigs>('ripple-core-configs');
@@ -63,6 +67,8 @@ export interface RippleConfigs {
   activeClass?: string;
   delayEvent?: boolean;
   delayValue?: number;
+  backgroundIncluded?: boolean;
+  dismountingTimeout?: number;
 }
 
 export const DEFAULT_RIPPLE_CONFIGS = {
@@ -77,11 +83,13 @@ export const DEFAULT_RIPPLE_CONFIGS = {
   splashTransition: RIPPLE_SPLASH_TRANSITION,
   fadeTransition: RIPPLE_FADE_TRANSITION,
   bgFadeTransition: RIPPLE_BG_FADE_TRANSITION,
-  splashOpacity: 1,
+  splashOpacity: RIPPLE_SPLASH_OPACITY,
   tapLimit: RIPPLE_TAP_LIMIT,
   activeClass: RIPPLE_ACTIVE_CLASS,
   delayEvent: RIPPLE_EVENT_DELAY,
-  delayValue: RIPPLE_EVENT_DELAY_VALUE
+  delayValue: RIPPLE_EVENT_DELAY_VALUE,
+  backgroundIncluded: RIPPLE_BACKGROUND_INCLUDED,
+  dismountingTimeout: RIPPLE_DISMOUNTING_TIMEOUT
 };
 
 export const GLOBAL_RIPPLE_CONFIGS = new InjectionToken<RippleConfigs>('global-ripple-configs');
@@ -104,7 +112,8 @@ export class RippleComponentConfigs {
       fadeTransition: this.configs.fadeTransition,
       splashOpacity: this.configs.splashOpacity,
       tapLimit: this.configs.tapLimit,
-      activeClass: this.configs.activeClass
+      activeClass: this.configs.activeClass,
+      backgroundIncluded: this.configs.backgroundIncluded
     };
   }
 

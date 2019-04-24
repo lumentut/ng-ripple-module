@@ -99,7 +99,6 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   constructor(
     private elRef: ElementRef,
     public cfr: ComponentFactoryResolver,
-    private cdr: ChangeDetectorRef,
     private appRef: ApplicationRef,
     public renderer: Renderer2,
     private ngZone: NgZone,
@@ -117,9 +116,8 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
       this.appRef,
       this.configs
     );
-    
+
     this.subscribeToRippleEvent();
-    this.cdr.detach();
   }
 
   ngOnDestroy() {
@@ -131,7 +129,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     this.emitters.forEach(emitter => {
       this.subscriptions.add(this.ripple[emitter.publisher]
         .pipe(delay(emitter.delay)).subscribe((event: RippleEvent) => {
-          emitter.output.emit(event);
+          this.ngZone.run(() => emitter.output.emit(event));
       }));
     });
   }
