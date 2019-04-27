@@ -51,7 +51,7 @@ export class RippleAnimation {
     }));
   }
 
-  fill(tx: number, ty: number): any {
+  fill(tx: number, ty: number): AnimationPlayer {
 
     const showInTouchCoordinate = style({
       opacity: 1,
@@ -68,7 +68,7 @@ export class RippleAnimation {
     return player;
   }
 
-  translate(tx: number, ty: number, scale: number): any {
+  translate(tx: number, ty: number, scale: number): AnimationPlayer {
 
     const translation = style({
       transform: `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`
@@ -83,13 +83,13 @@ export class RippleAnimation {
     return player;
   }
 
-  get splash(): any {
+  get splash(): AnimationPlayer {
     const splashToCenter = this.splashToCenter(this.configs.splashTransition);
     const player = this.animationPlayerFactory([splashToCenter, this.fade]);
     return player;
   }
 
-  get fadeout(): any {
+  get fadeout(): AnimationPlayer {
     const player = this.animationPlayerFactory([this.fade]);
     return player;
   }

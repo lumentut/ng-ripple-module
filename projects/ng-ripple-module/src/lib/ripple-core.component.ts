@@ -27,6 +27,7 @@ import {
   RippleCoreConfigs
 } from './ripple.configs';
 
+import { RIPPLE_SCALE_INCREASER } from './ripple.constants';
 import { RippleComponent } from './ripple.component';
 import { BackgroundComponent } from './ripple-bg.component';
 import { RippleAnimation } from './ripple.animation';
@@ -77,6 +78,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
   dragable: boolean;
   tapLimit: number;
   diameter: number;
+  scale: number;
 
   eventEmitter = new Subject<any>();
 
@@ -179,15 +181,19 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
   translate(event: any) {
 
+    if(!this.scale) { this.scale = this.currentScale; }
     if(this.configs.centered) { return; }
 
     const center = this.host.center;
     const evt = event.changedTouches ? event.changedTouches[0] : event;
+    const scale = this.scale;
+
+    this.scale = scale + RIPPLE_SCALE_INCREASER;
 
     this.translatePlayer = this.animation.translate(
       evt.clientX - center.x,
       evt.clientY - center.y,
-      this.currentScale
+      scale
     );
 
     this.translatePlayer.play();
@@ -202,15 +208,15 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     const player = `${type}Player`;
 
     this[player] = this.animation[type];
-    this[player].onStart(() => this.fillPlayer=undefined);
+    this[player].onStart(() => this.fillPlayer=null);
 
     this[player].onDone(() => {
       this.eventEmitter.next();
       if(this.background) {
-        this.background.fadeinPlayer=undefined;
+        this.background.fadeinPlayer=null;
         this.background.fadeout();
       }
-      this[player]=undefined;
+      this[player]=null;
     });
 
     this[player].play();

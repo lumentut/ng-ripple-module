@@ -13,8 +13,6 @@ export enum RippleState {
 export class RippleComponent {
 
   element: HTMLElement;
-  hostElement: HTMLElement;
-  state: RippleState;
   fadeinPlayer: any;
   fadeoutPlayer: any;
 
@@ -23,6 +21,5 @@ export class RippleComponent {
     public host: RippleHost
   ) {
     this.element = this.elRef.nativeElement;
-    this.hostElement = this.element.parentNode as HTMLElement;
   }
 }

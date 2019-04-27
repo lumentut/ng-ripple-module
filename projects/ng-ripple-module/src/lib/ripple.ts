@@ -26,7 +26,6 @@ import {
 import { RIPPLE_DISMOUNTING_TIMEOUT } from './ripple.constants';
 
 import { RippleHost } from './ripple.host';
-import { RippleState } from './ripple.component';
 import { BackgroundComponent } from './ripple-bg.component';
 import { CoreComponent } from './ripple-core.component';
 import { RipplePointerListener } from './ripple.strategy';
@@ -51,6 +50,11 @@ export interface RippleStyle {
   background?: string;
 }
 
+export enum ComponentReference {
+  BACKGROUND = 'backgroundCmpRef',
+  CORE = 'coreCmpRef'
+}
+
 export class Ripple {
 
   host: RippleHost;
@@ -58,7 +62,6 @@ export class Ripple {
   backgroundCmpRef: ComponentRef<any>;
   configs: RippleComponentConfigs;
   listener: RipplePointerListener;
-  state: RippleState;
   componentsReference: any[];
 
   pointer: string;
@@ -92,23 +95,17 @@ export class Ripple {
     return this.componentsReference;
   }
 
-  private createCoreComponentRef() {
-    this.coreCmpRef = this.cfr.resolveComponentFactory(CoreComponent).create(this.coreInjector);
-    this.appRef.attachView(this.coreCmpRef.hostView);
-    this.coreCmpRef.changeDetectorRef.detach();
-  }
-
-  private createBackgroundComponentRef() {
-    this.backgroundCmpRef = this.cfr.resolveComponentFactory(BackgroundComponent).create(this.backgroundInjector);
-    this.appRef.attachView(this.backgroundCmpRef.hostView);
-    this.backgroundCmpRef.changeDetectorRef.detach();
+  private createComponentRef(cmpRef: string, component: any, injector: Injector) {
+    this[cmpRef] = this.cfr.resolveComponentFactory(component).create(injector);
+    this.appRef.attachView(this[cmpRef].hostView);
+    this[cmpRef].changeDetectorRef.detach();
   }
 
   private createComponentRefs() {
     if(this.haveBackground) {
-      this.createBackgroundComponentRef();
+      this.createComponentRef(ComponentReference.BACKGROUND, BackgroundComponent, this.backgroundInjector);
     }
-    this.createCoreComponentRef();
+    this.createComponentRef(ComponentReference.CORE, CoreComponent, this.coreInjector);
     this.createComponentsReference();
   }
 

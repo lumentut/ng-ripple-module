@@ -63,6 +63,7 @@ export class RippleListener {
   }
 
   onEnd() {
+    this.context.core.scale=undefined;
     this.detachListeners();
     this.context.prepareForDismounting();
     this.splash();
@@ -192,13 +193,8 @@ export class RipplePointerListener {
     });
   }
 
-  private cleanUpPreviousStrategyListeners() {
-    if(this.strategy) { this.strategy.detachListeners(); }
-  }
-
   onPointerDown = (event: any) => {
     this.context.pointer = (event.pointerType || event.type).slice(0,5);
-    this.cleanUpPreviousStrategyListeners();
     this.strategy = new PointerStrategy(this.context);
     this.strategy.attachListeners();
     this.context.mountElement();
