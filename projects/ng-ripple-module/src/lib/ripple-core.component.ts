@@ -33,7 +33,6 @@ import { BackgroundComponent } from './ripple-bg.component';
 import { RippleAnimation } from './ripple.animation';
 import { RippleHost } from './ripple.host';
 import { Coordinate, RippleStyle } from './ripple';
-import { coordinate } from './ripple.strategy';
 
 export interface RippleColor {
   rippleDefaultColor?: string;
@@ -132,7 +131,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
   private coordinateFromHostCenterSq(coord: Coordinate) {
     const dx = coord.x - this.host.center.x,
-          dy = coord.y- this.host.center.y;
+          dy = coord.y - this.host.center.y;
     return dx*dx + dy*dy;
   }
 
