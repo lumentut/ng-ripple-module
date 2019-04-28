@@ -64,6 +64,9 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   @Input('fixed-ripple')
   set fixed(val: boolean) { this.configs.fixed = true; }
 
+  @Input('immediateEvent')
+  set immediateEvent(val: boolean) { this.configs.delayEvent = false; }
+
   @Input('rippleBgColor')
   set rippleBgColor(val: string) { this.configs.rippleDefaultBgColor = val; }
 
