@@ -25,7 +25,8 @@ import {
   RIPPLE_EVENT_DELAY_VALUE,
   RIPPLE_SPLASH_OPACITY,
   RIPPLE_BACKGROUND_INCLUDED,
-  RIPPLE_DISMOUNTING_TIMEOUT
+  RIPPLE_DISMOUNTING_TIMEOUT,
+  RIPPLE_EVENT_INCLUDED
 } from './ripple.constants';
 
 export interface RippleCoreConfigs {
@@ -65,6 +66,7 @@ export interface RippleConfigs {
   splashOpacity?: number;
   tapLimit?: number;
   activeClass?: string;
+  eventIncluded?: boolean;
   delayEvent?: boolean;
   delayValue?: number;
   backgroundIncluded?: boolean;
@@ -86,6 +88,7 @@ export const DEFAULT_RIPPLE_CONFIGS = {
   splashOpacity: RIPPLE_SPLASH_OPACITY,
   tapLimit: RIPPLE_TAP_LIMIT,
   activeClass: RIPPLE_ACTIVE_CLASS,
+  eventIncluded: RIPPLE_EVENT_INCLUDED,
   delayEvent: RIPPLE_EVENT_DELAY,
   delayValue: RIPPLE_EVENT_DELAY_VALUE,
   backgroundIncluded: RIPPLE_BACKGROUND_INCLUDED,

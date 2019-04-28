@@ -117,7 +117,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
       this.configs
     );
 
-    this.subscribeToRippleEvent();
+    this.subscribeToRippleEventsIfRequired();
   }
 
   ngOnDestroy() {
@@ -125,7 +125,8 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     this.ripple.onDestroy();
   }
 
-  subscribeToRippleEvent() {
+  subscribeToRippleEventsIfRequired() {
+    if(!this.configs.eventIncluded) { return; }
     this.emitters.forEach(emitter => {
       this.subscriptions.add(this.ripple[emitter.publisher]
         .pipe(delay(emitter.delay)).subscribe((event: RippleEvent) => {
