@@ -33,6 +33,7 @@ import { BackgroundComponent } from './ripple-bg.component';
 import { RippleAnimation } from './ripple.animation';
 import { RippleHost } from './ripple.host';
 import { Coordinate, RippleStyle } from './ripple';
+import { coordinate } from './ripple.strategy';
 
 export interface RippleColor {
   rippleDefaultColor?: string;
@@ -122,53 +123,46 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     }
   }
 
-  centerStillIsInHostArea(event: TouchEvent | MouseEvent): boolean {
+  centerCoordinateStillIsInHostArea(coord: Coordinate): boolean {
     if(this.host.isRound) {
-      return this.centerStillInCircleArea(event);
+      return this.coordinateCenterStillInCircleArea(coord);
     }
-    return this.centerStillInRectangleArea(event);
+    return this.coordinateCenterStillInRectangleArea(coord);
   }
 
-  private pointer(event: any) {
-    return event.changedTouches ? event.changedTouches[0] : event;
-  }
-
-  private fromHostCenterSq(event: TouchEvent | MouseEvent) {
-    const evt = this.pointer(event),
-          dx = evt.clientX - this.host.center.x,
-          dy = evt.clientY - this.host.center.y;
+  private coordinateFromHostCenterSq(coord: Coordinate) {
+    const dx = coord.x - this.host.center.x,
+          dy = coord.y- this.host.center.y;
     return dx*dx + dy*dy;
   }
 
-  centerStillInCircleArea(event: TouchEvent | MouseEvent): boolean {
-    return this.fromHostCenterSq(event) < this.host.radiusSquare;
+  coordinateCenterStillInCircleArea(coord: Coordinate): boolean {
+    return this.coordinateFromHostCenterSq(coord) < this.host.radiusSquare;
   }
 
-  centerStillInRectangleArea(event: TouchEvent | MouseEvent): boolean {
+  coordinateCenterStillInRectangleArea(coord: Coordinate): boolean {
     const rect = this.host.rect,
-          evt = this.pointer(event),
-          isInRangeX = rect.left < evt.clientX && evt.clientX < rect.right,
-          isInRangeY = rect.top < evt.clientY && evt.clientY < rect.bottom;
+          isInRangeX = rect.left < coord.x && coord.x < rect.right,
+          isInRangeY = rect.top < coord.y && coord.y < rect.bottom;
     return isInRangeX && isInRangeY;
   }
 
-  outerPointStillInHostRadius(event: TouchEvent | MouseEvent): boolean {
-    const contactPointFromCenterSq = this.fromHostCenterSq(event),
+  outerPointCoordinateStillInHostRadius(coord: Coordinate): boolean {
+    const contactPointFromCenterSq = this.coordinateFromHostCenterSq(coord),
           maxContactPointFromCenter = this.host.radius - 0.5*this.rect.width,
           maxContactPointFromCenterSq = maxContactPointFromCenter*maxContactPointFromCenter;
     return contactPointFromCenterSq < maxContactPointFromCenterSq;
   }
 
-  fill(event: TouchEvent | MouseEvent) {
+  fillAt(coord: Coordinate) {
 
     if(this.background) { this.background.fadein(); }
 
     let tx = 0, ty = 0;
     if(!this.configs.centered) {
       const center = this.host.center;
-      const evt = this.pointer(event);
-      tx = evt.clientX - center.x;
-      ty = evt.clientY - center.y;
+      tx = coord.x - center.x;
+      ty = coord.y - center.y;
     }
 
     this.fillPlayer = this.animation.fill(tx, ty);
@@ -179,20 +173,19 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     return this.rect.width/this.host.diameter;
   }
 
-  translate(event: any) {
+  translateTo(coord: Coordinate) {
 
     if(!this.scale) { this.scale = this.currentScale; }
     if(this.configs.centered) { return; }
 
     const center = this.host.center;
-    const evt = event.changedTouches ? event.changedTouches[0] : event;
     const scale = this.scale;
 
     this.scale = scale + RIPPLE_SCALE_INCREASER;
 
     this.translatePlayer = this.animation.translate(
-      evt.clientX - center.x,
-      evt.clientY - center.y,
+      coord.x - center.x,
+      coord.y - center.y,
       scale
     );
 

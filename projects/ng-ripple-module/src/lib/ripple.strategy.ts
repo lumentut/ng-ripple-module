@@ -9,6 +9,11 @@
 import { Ripple } from './ripple';
 import { RippleEvent } from './ripple.event';
 
+export function coordinate(event: any) {
+  const evt = event.changedTouches ? event.changedTouches[0] : event;
+  return { x: evt.clientX, y: evt.clientY };
+}
+
 export type PointerListener = [string, (event: TouchEvent | MouseEvent) => any];
 
 export enum RipplePublisher {
@@ -53,12 +58,13 @@ export class RippleListener {
   }
 
   onMove(event: any) {
-    if(!this.context.core.centerStillIsInHostArea(event) ||
+    const coord = coordinate(event);
+    if(!this.context.core.centerCoordinateStillIsInHostArea(coord) ||
       this.context.core.configs.fixed) {
         return this.splash();
     }
-    if(this.context.core.outerPointStillInHostRadius(event)) {
-      return this.context.core.translate(event);
+    if(this.context.core.outerPointCoordinateStillInHostRadius(coord)) {
+      return this.context.core.translateTo(coord);
     }
   }
 
@@ -91,9 +97,7 @@ export class MouseStrategy extends RippleListener {
     ];
   }
 
-  onMouseMove = (event: MouseEvent) => {
-    this.onMove(event);
-  }
+  onMouseMove = (event: MouseEvent) => this.onMove(event);
 
   onMouseUp = () => {
     this.context.ngZone.runOutsideAngular(() => {
@@ -134,9 +138,7 @@ export class TouchStrategy extends RippleListener {
     }, this.context.core.tapLimit);
   }
 
-  onTouchMove = (event: TouchEvent) => {
-    this.onMove(event);
-  }
+  onTouchMove = (event: TouchEvent) => this.onMove(event);
 
   onTouchEnd = () => {
     clearTimeout(this.pressTimeout);
@@ -199,6 +201,6 @@ export class RipplePointerListener {
     this.strategy.attachListeners();
     this.context.mountElement();
     this.context.activate();
-    this.context.core.fill(event);
+    this.context.core.fillAt(coordinate(event));
   }
 }
