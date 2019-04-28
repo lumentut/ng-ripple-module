@@ -26,7 +26,10 @@ import {
   RIPPLE_SPLASH_OPACITY,
   RIPPLE_BACKGROUND_INCLUDED,
   RIPPLE_DISMOUNTING_TIMEOUT,
-  RIPPLE_EVENT_INCLUDED
+  RIPPLE_EVENT_INCLUDED,
+  RIPPLE_FIXED_DEFAULT,
+  RIPPLE_CENTERED_DEFAULT,
+  RIPPLE_LIGHT_DEFAULT
 } from './ripple.constants';
 
 export interface RippleCoreConfigs {
@@ -74,9 +77,9 @@ export interface RippleConfigs {
 }
 
 export const DEFAULT_RIPPLE_CONFIGS = {
-  fixed: false,
-  centered: false,
-  light: false,
+  fixed: RIPPLE_FIXED_DEFAULT,
+  centered: RIPPLE_CENTERED_DEFAULT,
+  light: RIPPLE_LIGHT_DEFAULT,
   rippleDefaultBgColor: RIPPLE_DEFAULT_BGCOLOR,
   activeDefaultBgColor: RIPPLE_DEFAULT_ACTIVE_BGCOLOR,
   rippleLightBgColor: RIPPLE_LIGHT_BGCOLOR,
