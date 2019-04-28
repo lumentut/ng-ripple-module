@@ -63,9 +63,7 @@ export class RippleAnimation {
       transform: RIPPLE_TO_CENTER_TRANSFORM
     }));
 
-    const player = this.animationPlayerFactory([showInTouchCoordinate, centering]);
-
-    return player;
+    return this.animationPlayerFactory([showInTouchCoordinate, centering]);
   }
 
   translate(tx: number, ty: number, scale: number): AnimationPlayer {
@@ -78,19 +76,15 @@ export class RippleAnimation {
       transform: RIPPLE_TO_CENTER_TRANSFORM
     }));
 
-    const player = this.animationPlayerFactory([translation, centering]);
-
-    return player;
+    return this.animationPlayerFactory([translation, centering]);
   }
 
   get splash(): AnimationPlayer {
     const splashToCenter = this.splashToCenter(this.configs.splashTransition);
-    const player = this.animationPlayerFactory([splashToCenter, this.fade]);
-    return player;
+    return this.animationPlayerFactory([splashToCenter, this.fade]);
   }
 
   get fadeout(): AnimationPlayer {
-    const player = this.animationPlayerFactory([this.fade]);
-    return player;
+    return this.animationPlayerFactory([this.fade]);
   }
 }

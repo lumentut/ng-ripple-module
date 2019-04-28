@@ -41,7 +41,7 @@ export class RippleListener {
   execute(action: string) {
     this.listeners.forEach((item) => {
       const type = item[0]; const handler = item[1];
-      this.context.ngZone.runOutsideAngular(() => this.context.element[action](type, handler));
+      this.context.ngZone.runOutsideAngular(() => this.context.element[action](type, handler, false));
     });
   }
 
@@ -69,7 +69,6 @@ export class RippleListener {
   }
 
   onEnd() {
-    this.context.core.scale=undefined;
     this.detachListeners();
     this.context.prepareForDismounting();
     this.splash();

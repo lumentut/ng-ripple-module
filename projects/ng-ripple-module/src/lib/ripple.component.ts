@@ -1,11 +1,6 @@
 import { ElementRef, Component } from '@angular/core';
-
+import { AnimationPlayer } from '@angular/animations';
 import { RippleHost } from './ripple.host';
-
-export enum RippleState {
-  MOUNTED = 'mounted',
-  DISMOUNTED = 'dismounted'
-}
 
 @Component({
   template: `<ng-content></ng-content>`
@@ -13,8 +8,7 @@ export enum RippleState {
 export class RippleComponent {
 
   element: HTMLElement;
-  fadeinPlayer: any;
-  fadeoutPlayer: any;
+  animationPlayer: AnimationPlayer;
 
   constructor(
     private elRef: ElementRef,

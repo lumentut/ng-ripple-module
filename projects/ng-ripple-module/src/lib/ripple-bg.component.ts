@@ -82,14 +82,12 @@ export class BackgroundComponent extends RippleComponent {
   }
 
   fadein() {
-    this.fadeinPlayer = this.fadeinAnimationPlayer;
-    this.fadeinPlayer.play();
+    this.animationPlayer = this.fadeinAnimationPlayer;
+    this.animationPlayer.play();
   }
 
   fadeout() {
-    if(this.fadeinPlayer) {
-      this.fadeoutPlayer = this.fadeoutAnimationPlayer;
-      this.fadeoutPlayer.play();
-    }
+    this.animationPlayer = this.fadeoutAnimationPlayer;
+    this.animationPlayer.play();
   }
 }

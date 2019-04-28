@@ -19,7 +19,7 @@ import { Subject } from 'rxjs';
 
 import {
   AnimationPlayer,
-  AnimationBuilder,
+  AnimationBuilder
 } from '@angular/animations';
 
 import {
@@ -69,10 +69,9 @@ export enum HostType {
 export class CoreComponent extends RippleComponent implements AfterViewInit {
 
   animation: RippleAnimation;
-  fillPlayer: AnimationPlayer;
-  splashPlayer: AnimationPlayer;
-  translatePlayer: AnimationPlayer;
   center: Coordinate;
+
+  translatePlayers = [];
 
   hostType: string;
   dragable: boolean;
@@ -157,15 +156,17 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
     if(this.background) { this.background.fadein(); }
 
+    this.center = this.host.center;
+    this.scale = undefined;
+
     let tx = 0, ty = 0;
     if(!this.configs.centered) {
-      const center = this.host.center;
-      tx = coord.x - center.x;
-      ty = coord.y - center.y;
+      tx = coord.x - this.center.x;
+      ty = coord.y - this.center.y;
     }
 
-    this.fillPlayer = this.animation.fill(tx, ty);
-    this.fillPlayer.play();
+    this.animationPlayer = this.animation.fill(tx,ty);
+    this.animationPlayer.play();
   }
 
   get currentScale(): number {
@@ -177,18 +178,29 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     if(!this.scale) { this.scale = this.currentScale; }
     if(this.configs.centered) { return; }
 
-    const center = this.host.center;
     const scale = this.scale;
-
     this.scale = scale + RIPPLE_SCALE_INCREASER;
 
-    this.translatePlayer = this.animation.translate(
-      coord.x - center.x,
-      coord.y - center.y,
+    const player = this.animation.translate(
+      coord.x - this.center.x,
+      coord.y - this.center.y,
       scale
     );
 
-    this.translatePlayer.play();
+    this.manageTranslatePlayers(player);
+    this.animationPlayer.play();
+  }
+
+  private manageTranslatePlayers(player: AnimationPlayer) {
+    this.animationPlayer = player;
+    this.translatePlayers.push(player);
+
+    const playerIndex = this.translatePlayers.indexOf(player);
+
+    if(playerIndex > 0) {
+      this.translatePlayers[playerIndex-1].destroy();
+      this.translatePlayers.splice(playerIndex-1, 1);
+    }
   }
 
   splash = () => this.endFillBy(EndFillBy.SPLASH);
@@ -197,20 +209,14 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
   private endFillBy(type: string) {
 
-    const player = `${type}Player`;
+    this.animationPlayer = this.animation[type];
 
-    this[player] = this.animation[type];
-    this[player].onStart(() => this.fillPlayer=null);
-
-    this[player].onDone(() => {
+    this.animationPlayer.onDone(() => {
       this.eventEmitter.next();
-      if(this.background) {
-        this.background.fadeinPlayer=null;
-        this.background.fadeout();
-      }
-      this[player]=null;
+      if(this.background) { this.background.fadeout(); }
+      this.animationPlayer = null;
     });
 
-    this[player].play();
+    this.animationPlayer.play();
   }
 }
