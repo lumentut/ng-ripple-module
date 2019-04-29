@@ -15,18 +15,10 @@ import {
   Renderer2
 } from '@angular/core';
 
+import { AnimationPlayer, AnimationBuilder } from '@angular/animations';
 import { Subject } from 'rxjs';
 
-import {
-  AnimationPlayer,
-  AnimationBuilder
-} from '@angular/animations';
-
-import {
-  RIPPLE_CORE_CONFIGS,
-  RippleCoreConfigs
-} from './ripple.configs';
-
+import { RIPPLE_CORE_CONFIGS, RippleCoreConfigs } from './ripple.configs';
 import { RIPPLE_SCALE_INCREASER } from './ripple.constants';
 import { RippleComponent } from './ripple.component';
 import { BackgroundComponent } from './ripple-bg.component';
@@ -123,9 +115,9 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
   centerCoordinateStillIsInHostArea(coord: Coordinate): boolean {
     if(this.host.isRound) {
-      return this.coordinateCenterStillInCircleArea(coord);
+      return this.centerCoordinateStillInCircleArea(coord);
     }
-    return this.coordinateCenterStillInRectangleArea(coord);
+    return this.centerCoordinateStillInRectangleArea(coord);
   }
 
   private coordinateFromHostCenterSq(coord: Coordinate) {
@@ -134,11 +126,11 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     return dx*dx + dy*dy;
   }
 
-  coordinateCenterStillInCircleArea(coord: Coordinate): boolean {
+  centerCoordinateStillInCircleArea(coord: Coordinate): boolean {
     return this.coordinateFromHostCenterSq(coord) < this.host.radiusSquare;
   }
 
-  coordinateCenterStillInRectangleArea(coord: Coordinate): boolean {
+  centerCoordinateStillInRectangleArea(coord: Coordinate): boolean {
     const rect = this.host.rect,
           isInRangeX = rect.left < coord.x && coord.x < rect.right,
           isInRangeY = rect.top < coord.y && coord.y < rect.bottom;
@@ -175,10 +167,9 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
   translateTo(coord: Coordinate) {
 
-    if(!this.scale) { this.scale = this.currentScale; }
     if(this.configs.centered) { return; }
 
-    const scale = this.scale;
+    const scale = this.scale ? this.scale : this.currentScale;
     this.scale = scale + RIPPLE_SCALE_INCREASER;
 
     const player = this.animation.translate(
@@ -187,11 +178,11 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
       scale
     );
 
-    this.manageTranslatePlayers(player);
+    this.manageTranslateAnimation(player);
     this.animationPlayer.play();
   }
 
-  private manageTranslatePlayers(player: AnimationPlayer) {
+  private manageTranslateAnimation(player: AnimationPlayer) {
     this.animationPlayer = player;
     this.translatePlayers.push(player);
 
@@ -199,6 +190,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
     if(playerIndex > 0) {
       this.translatePlayers[playerIndex-1].destroy();
+      this.translatePlayers[playerIndex-1] = null;
       this.translatePlayers.splice(playerIndex-1, 1);
     }
   }
