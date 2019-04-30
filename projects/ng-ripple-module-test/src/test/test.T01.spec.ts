@@ -26,7 +26,7 @@ import {
 import { RippleDirective } from '@ng-ripple-module/ripple.directive';
 
 @Component({
-  template: `<a href="#" ripple light centered-ripple fixed-ripple></a>`,
+  template: `<a href="#" ripple light centered-ripple fixed-ripple immediate-event></a>`,
   styles: [
     `:host a {
       width: 250px;
@@ -40,7 +40,7 @@ class RippleLightTestComponent {
   constructor(public elRef: ElementRef) {}
 }
 
-describe('T01 - Directive: Light, Centered & Fixed Ripple Test', () => {
+describe('T01 - Directive: Light, Centered, Fixed & Immediate Event Ripple Test', () => {
 
   let fixture: ComponentFixture<RippleLightTestComponent>;
   let directiveEl: DebugElement;
@@ -86,4 +86,7 @@ describe('T01 - Directive: Light, Centered & Fixed Ripple Test', () => {
     expect(directive.ripple.core.configs.fixed).toBeTruthy();
   });
 
+  it('passing immediate event ripple', () => {
+    expect(directive.configs.delayEvent).toBeFalsy();
+  });
 });

@@ -19,38 +19,38 @@ import { By } from '@angular/platform-browser';
 import { NgRippleModule } from '@ng-ripple-module/ng-ripple.module';
 import { RippleDirective } from '@ng-ripple-module/ripple.directive';
 
-const rippleBgColor = "white";
-const activeBgColor = "grey";
-const fillTransition ="150ms"	;
-const splashTransition ="50ms cubic-bezier(0.1,0.2,0.3,0.4)";	
-const fadeTransition ="150ms";
-const bgFadeTransition ="105ms";
+const rippleBgColor = 'white';
+const activeBgColor = 'grey';
+const fillTransition = '150ms';
+const splashTransition = '50ms cubic-bezier(0.1,0.2,0.3,0.4)';
+const fadeTransition = '150ms';
+const bgFadeTransition = '105ms';
 const tapLimit = 400;
 const splashOpacity = 0.5;
-const activeClass = "foo";
+const activeClass = 'foo';
 
-@Component({	
+@Component({
   template: `<a href="#" ripple
-    rippleBgColor="{{ rippleBgColor }}"	
+    rippleBgColor="{{ rippleBgColor }}"
     activeBgColor="{{ activeBgColor }}"
-    fillTransition="{{ fillTransition }}"	
-    splashTransition="{{ splashTransition }}"	
-    fadeTransition="{{ fadeTransition }}"	
-    bgFadeTransition="{{ bgFadeTransition }}"	
+    fillTransition="{{ fillTransition }}"
+    splashTransition="{{ splashTransition }}"
+    fadeTransition="{{ fadeTransition }}"
+    bgFadeTransition="{{ bgFadeTransition }}"
     tapLimit="{{ tapLimit }}"
     splashOpacity="{{ splashOpacity }}"
     activeClass="{{ activeClass }}">
   </a>`
-  ,	
-  styles: [	
-    `:host a {	
-      width: 250px;	
-      height: 250px;	
-      border-radius: 50%;	
-      position: relative;	
-    }`	
-  ]	
-})	
+  ,
+  styles: [
+    `:host a {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      position: relative;
+    }`
+  ]
+})
 class RippleTestComponent {
 
   rippleBgColor = rippleBgColor;
@@ -68,29 +68,29 @@ class RippleTestComponent {
 
 describe('T02 - Directive: Color, Transition, Tap Limit, Opacity and Active Class', () => {
 
-  let fixture: ComponentFixture<RippleTestComponent>;	
-  let directiveEl: DebugElement;	
-  let directive: RippleDirective;	
+  let fixture: ComponentFixture<RippleTestComponent>;
+  let directiveEl: DebugElement;
+  let directive: RippleDirective;
 
-  beforeEach(async(() => {	
+  beforeEach(async(() => {
 
-    TestBed.configureTestingModule({	
-      declarations: [	
-        RippleTestComponent	
-      ],	
-      imports: [	
-        BrowserAnimationsModule,	
-        NgRippleModule	
-      ],	
-      providers: []	
-    }).compileComponents();	
+    TestBed.configureTestingModule({
+      declarations: [
+        RippleTestComponent
+      ],
+      imports: [
+        BrowserAnimationsModule,
+        NgRippleModule
+      ],
+      providers: []
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(RippleTestComponent);	
-    directiveEl = fixture.debugElement.query(By.directive(RippleDirective));	
-    directive = directiveEl.injector.get(RippleDirective);	
+    fixture = TestBed.createComponent(RippleTestComponent);
+    directiveEl = fixture.debugElement.query(By.directive(RippleDirective));
+    directive = directiveEl.injector.get(RippleDirective);
 
     fixture.detectChanges();
-  
+
   }));
 
   it('passing rippleBgColor', () => {

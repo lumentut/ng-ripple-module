@@ -18,6 +18,12 @@ import { By } from '@angular/platform-browser';
 
 import { NgRippleModule } from '@ng-ripple-module/ng-ripple.module';
 import { RippleDirective } from '@ng-ripple-module/ripple.directive';
+import { GLOBAL_RIPPLE_CONFIGS, RippleConfigs } from '@ng-ripple-module/ripple.configs';
+
+
+const configs: RippleConfigs = {
+  backgroundIncluded: false
+};
 
 @Component({
   template: `<a href="#" ripple></a>`,
@@ -28,13 +34,16 @@ import { RippleDirective } from '@ng-ripple-module/ripple.directive';
       border-radius: 50%;
       position: relative;
     }`
+  ],
+  providers: [
+    {provide: GLOBAL_RIPPLE_CONFIGS, useValue: configs}
   ]
 })
 class RippleTestComponent {
   constructor(public elRef: ElementRef) {}
 }
 
-describe('T03 - Directive: Mount/Dismount Core Element and Background Element', () => {
+describe('T08 - No background component option test', () => {
 
   let component: RippleTestComponent;
   let fixture: ComponentFixture<RippleTestComponent>;
@@ -65,20 +74,20 @@ describe('T03 - Directive: Mount/Dismount Core Element and Background Element', 
 
   }));
 
-  it('create element on mountElement', () => {
+  it('create no background element on mountElement', () => {
     directive.ripple.mountElement();
     fixture.detectChanges();
     const children = hostElement.children;
-    const expectedChildren = ['ripple-core', 'ripple-bg'];
-    expect(expectedChildren).toContain(children[0].localName);
-    expect(expectedChildren).toContain(children[1].localName);
+    expect(children[0].localName).toEqual('ripple-core');
+    expect(children.length).toBe(1);
   });
 
-  it('remove element after dismountElement', () => {
+  it('remove core element after dismountElement', () => {
     directive.ripple.mountElement();
     fixture.detectChanges();
     directive.ripple.dismountElement();
     fixture.detectChanges();
     expect(hostElement.children.length).toBe(0);
   });
+
 });

@@ -32,8 +32,8 @@ import {
   template: `<a href="#" ripple></a>`,
   styles: [
     `:host a {
-      width: 50px;
-      height: 50px;
+      width: 250px;
+      height: 250px;
       border-radius: 50%;
       position: relative;
     }`
@@ -43,7 +43,7 @@ class RippleTestComponent {
   constructor(public elRef: ElementRef) {}
 }
 
-describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up test', () => {
+describe('T05 - Directive listen to Fallback Tap, Click, Press, and Press Up test', () => {
 
   let fixture: ComponentFixture<RippleTestComponent>;
   let directiveEl: DebugElement;
@@ -52,7 +52,7 @@ describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up 
   let splashMillis: string;
   let splashDuration: number;
   let delayValue: number;
-  let pointerDown: string;
+  let fallBack: string;
   let touchEvent: any;
   let mouseEvent: any;
 
@@ -75,28 +75,28 @@ describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up 
     splashMillis = directive.configs.splashTransition.replace(/ .*/, '');
     splashDuration = splashMillis.match(/\d+/g).map(Number)[0];
     delayValue = directive.configs.delayValue;
-    pointerDown = 'pointerdown';
+    fallBack = 'fallback';
     fixture.detectChanges();
 
-    directive.ripple.listenerType = pointerDown;
+    directive.ripple.listenerType = fallBack;
     listener = new RipplePointerListener(directive.ripple);
 
     touchEvent = {
-      pointerType: 'touch',
+      pointerType: 'touchstart',
       clientX: 0,
       clientY: 0
     };
 
     mouseEvent = {
-      pointerType: 'mouse',
+      pointerType: 'mousedown',
       clientX: 0,
       clientY: 0
     };
 
   }));
 
-  it('recognize pointerdown', () => {
-    expect(listener.pointerdownEvents).toEqual(POINTERDOWN_LISTENER[pointerDown]);
+  it('recognize pointerdown fallback', () => {
+    expect(listener.pointerdownEvents).toEqual(POINTERDOWN_LISTENER[fallBack]);
   });
 
   it('listen to touch action', () => {
