@@ -24,8 +24,8 @@ import { RippleDirective } from '@ng-ripple-module/ripple.directive';
 import {
   Touch,
   Mouse,
-  RipplePointerListener,
-  POINTERDOWN_LISTENER
+  POINTERDOWN_EVENTS,
+  RippleListener
 } from '@ng-ripple-module/ripple.strategy';
 
 @Component({
@@ -48,7 +48,7 @@ describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up 
   let fixture: ComponentFixture<RippleTestComponent>;
   let directiveEl: DebugElement;
   let directive: RippleDirective;
-  let listener: RipplePointerListener;
+  let listener: RippleListener;
   let splashMillis: string;
   let splashDuration: number;
   let delayValue: number;
@@ -78,8 +78,8 @@ describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up 
     pointerDown = 'pointerdown';
     fixture.detectChanges();
 
-    directive.ripple.listenerType = pointerDown;
-    listener = new RipplePointerListener(directive.ripple);
+    directive.ripple.trigger = pointerDown;
+    listener = new RippleListener(directive.ripple);
 
     touchEvent = {
       pointerType: 'touch',
@@ -96,7 +96,7 @@ describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up 
   }));
 
   it('recognize pointerdown', () => {
-    expect(listener.pointerdownEvents).toEqual(POINTERDOWN_LISTENER[pointerDown]);
+    expect([listener.listeners[0][0]]).toEqual(POINTERDOWN_EVENTS[pointerDown]);
   });
 
   it('listen to touch action', () => {
@@ -119,7 +119,7 @@ describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up 
   it('emit tap event', fakeAsync((): void => {
     spyOn(directive.rtap, 'emit');
     listener.onPointerDown(touchEvent);
-    listener.context.ngZone.run(() => listener.strategy.onTouchEnd());
+    listener.ripple.ngZone.run(() => listener.strategy.onTouchEnd());
     tick(delayValue + splashDuration);
     expect(directive.rtap.emit).toHaveBeenCalled();
   }));
@@ -127,7 +127,7 @@ describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up 
   it('emit press event', fakeAsync((): void => {
     spyOn(directive.rpress, 'emit');
     listener.onPointerDown(touchEvent);
-    tick(listener.context.core.tapLimit);
+    tick(listener.ripple.core.tapLimit);
     expect(directive.rpress.emit).toHaveBeenCalled();
   }));
 
@@ -135,7 +135,7 @@ describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up 
     spyOn(directive.rpressup, 'emit');
     listener.onPointerDown(touchEvent);
     listener.strategy.isPressing = true;
-    listener.context.ngZone.run(() => listener.strategy.onTouchEnd());
+    listener.ripple.ngZone.run(() => listener.strategy.onTouchEnd());
     tick(delayValue + splashDuration);
     expect(directive.rpressup.emit).toHaveBeenCalled();
   }));
@@ -143,7 +143,7 @@ describe('T04 - Directive listen to Pointerdown Tap, Click, Press, and Press Up 
   it('emit click event', fakeAsync((): void => {
     spyOn(directive.rclick, 'emit');
     listener.onPointerDown(mouseEvent);
-    listener.context.ngZone.run(() => listener.strategy.onMouseUp());
+    listener.ripple.ngZone.run(() => listener.strategy.onMouseUp());
     tick(delayValue + splashDuration);
     expect(directive.rclick.emit).toHaveBeenCalled();
   }));

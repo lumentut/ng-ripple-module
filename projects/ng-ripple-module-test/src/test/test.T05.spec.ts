@@ -24,8 +24,8 @@ import { RippleDirective } from '@ng-ripple-module/ripple.directive';
 import {
   Touch,
   Mouse,
-  RipplePointerListener,
-  POINTERDOWN_LISTENER
+  POINTERDOWN_EVENTS,
+  RippleListener
 } from '@ng-ripple-module/ripple.strategy';
 
 @Component({
@@ -48,7 +48,7 @@ describe('T05 - Directive listen to Fallback Tap, Click, Press, and Press Up tes
   let fixture: ComponentFixture<RippleTestComponent>;
   let directiveEl: DebugElement;
   let directive: RippleDirective;
-  let listener: RipplePointerListener;
+  let listener: RippleListener;
   let splashMillis: string;
   let splashDuration: number;
   let delayValue: number;
@@ -78,8 +78,8 @@ describe('T05 - Directive listen to Fallback Tap, Click, Press, and Press Up tes
     fallBack = 'fallback';
     fixture.detectChanges();
 
-    directive.ripple.listenerType = fallBack;
-    listener = new RipplePointerListener(directive.ripple);
+    directive.ripple.trigger = fallBack;
+    listener = new RippleListener(directive.ripple);
 
     touchEvent = {
       pointerType: 'touchstart',
@@ -96,7 +96,8 @@ describe('T05 - Directive listen to Fallback Tap, Click, Press, and Press Up tes
   }));
 
   it('recognize pointerdown fallback', () => {
-    expect(listener.pointerdownEvents).toEqual(POINTERDOWN_LISTENER[fallBack]);
+    const listeners = listener.listeners;
+    expect([listeners[0][0], listeners[1][0]]).toEqual(POINTERDOWN_EVENTS[fallBack]);
   });
 
   it('listen to touch action', () => {
@@ -119,7 +120,7 @@ describe('T05 - Directive listen to Fallback Tap, Click, Press, and Press Up tes
   it('emit tap event', fakeAsync((): void => {
     spyOn(directive.rtap, 'emit');
     listener.onPointerDown(touchEvent);
-    listener.context.ngZone.run(() => listener.strategy.onTouchEnd());
+    listener.ripple.ngZone.run(() => listener.strategy.onTouchEnd());
     tick(delayValue + splashDuration);
     expect(directive.rtap.emit).toHaveBeenCalled();
   }));
@@ -127,7 +128,7 @@ describe('T05 - Directive listen to Fallback Tap, Click, Press, and Press Up tes
   it('emit press event', fakeAsync((): void => {
     spyOn(directive.rpress, 'emit');
     listener.onPointerDown(touchEvent);
-    tick(listener.context.core.tapLimit);
+    tick(listener.ripple.core.tapLimit);
     expect(directive.rpress.emit).toHaveBeenCalled();
   }));
 
@@ -135,7 +136,7 @@ describe('T05 - Directive listen to Fallback Tap, Click, Press, and Press Up tes
     spyOn(directive.rpressup, 'emit');
     listener.onPointerDown(touchEvent);
     listener.strategy.isPressing = true;
-    listener.context.ngZone.run(() => listener.strategy.onTouchEnd());
+    listener.ripple.ngZone.run(() => listener.strategy.onTouchEnd());
     tick(delayValue + splashDuration);
     expect(directive.rpressup.emit).toHaveBeenCalled();
   }));
@@ -143,7 +144,7 @@ describe('T05 - Directive listen to Fallback Tap, Click, Press, and Press Up tes
   it('emit click event', fakeAsync((): void => {
     spyOn(directive.rclick, 'emit');
     listener.onPointerDown(mouseEvent);
-    listener.context.ngZone.run(() => listener.strategy.onMouseUp());
+    listener.ripple .ngZone.run(() => listener.strategy.onMouseUp());
     tick(delayValue + splashDuration);
     expect(directive.rclick.emit).toHaveBeenCalled();
   }));
