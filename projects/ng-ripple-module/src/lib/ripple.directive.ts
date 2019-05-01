@@ -13,7 +13,6 @@ import {
   NgZone,
   HostBinding,
   ElementRef,
-  ChangeDetectorRef,
   ComponentFactoryResolver,
   ApplicationRef,
   ComponentRef,
@@ -64,7 +63,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   @Input('fixed-ripple')
   set fixed(val: boolean) { this.configs.fixed = true; }
 
-  @Input('immediateEvent')
+  @Input('immediate-event')
   set immediateEvent(val: boolean) { this.configs.delayEvent = false; }
 
   @Input('rippleBgColor')
@@ -104,7 +103,7 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
     public cfr: ComponentFactoryResolver,
     private appRef: ApplicationRef,
     public renderer: Renderer2,
-    private ngZone: NgZone,
+    public ngZone: NgZone,
     @Optional() @Inject(GLOBAL_RIPPLE_CONFIGS) customConfigs: RippleConfigs
   ) {
     this.element = this.elRef.nativeElement;

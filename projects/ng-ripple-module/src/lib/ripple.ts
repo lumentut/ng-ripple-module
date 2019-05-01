@@ -28,7 +28,7 @@ import { RIPPLE_DISMOUNTING_TIMEOUT } from './ripple.constants';
 import { RippleHost } from './ripple.host';
 import { BackgroundComponent } from './ripple-bg.component';
 import { CoreComponent } from './ripple-core.component';
-import { RipplePointerListener } from './ripple.strategy';
+import { RippleListener } from './ripple.strategy';
 
 export interface Coordinate {
   x: number;
@@ -61,11 +61,11 @@ export class Ripple {
   coreCmpRef: ComponentRef<any>;
   backgroundCmpRef: ComponentRef<any>;
   configs: RippleComponentConfigs;
-  listener: RipplePointerListener;
+  listener: RippleListener;
   componentsReference: any[];
 
   pointer: string;
-  listenerType: string;
+  trigger: string;
   dismountTimeout: any;
 
   pressPublisher = new Subject<any>();
@@ -82,8 +82,8 @@ export class Ripple {
   ) {
     this.host = new RippleHost(element);
     this.configs = new RippleComponentConfigs(this.baseConfigs);
-    this.listenerType = 'onpointerdown' in window ? 'pointerdown' : 'fallback';
-    this.listener = new RipplePointerListener(this);
+    this.trigger = 'onpointerdown' in window ? 'pointerdown' : 'fallback';
+    this.listener = new RippleListener(this);
     this.createComponentRefs();
   }
 
@@ -156,6 +156,7 @@ export class Ripple {
       this.componentsRef.forEach(cmpRef => {
         this.element.appendChild(cmpRef.instance.element);
       });
+      this.activate();
     }
   }
 
@@ -168,6 +169,7 @@ export class Ripple {
   }
 
   prepareForDismounting() {
+    this.deactivate();
     this.dismountTimeout = setTimeout(() => {
       this.ngZone.runOutsideAngular(() => this.dismountElement());
     }, RIPPLE_DISMOUNTING_TIMEOUT);
@@ -176,7 +178,7 @@ export class Ripple {
   onDestroy() {
     this.coreCmpRef.destroy();
     if(this.haveBackground) { this.backgroundCmpRef.destroy(); }
-    this.listener.stopListening();
+    this.listener.stopListening(this.listener.listeners);
   }
 
   activate() {

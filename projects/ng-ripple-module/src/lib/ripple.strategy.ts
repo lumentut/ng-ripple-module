@@ -9,9 +9,12 @@
 import { Ripple } from './ripple';
 import { RippleEvent } from './ripple.event';
 
-export function coordinate(event: any) {
+export function getContact(event: any) {
   const evt = event.changedTouches ? event.changedTouches[0] : event;
-  return { x: evt.clientX, y: evt.clientY };
+  return {
+    point: { x: evt.clientX, y: evt.clientY },
+    input: (event.pointerType || event.type).slice(0,5)
+  };
 }
 
 export type PointerListener = [string, (event: TouchEvent | MouseEvent) => any];
@@ -30,62 +33,48 @@ export enum Events {
   CLICK = 'rclick'
 }
 
-export class RippleListener {
+export class RipplePointerListener {
 
+  ripple: Ripple;
   listeners: PointerListener[];
+  publishCurrentEvent: () => void;
+  isSilent: boolean;
 
-  constructor(public context: any) {
-    clearTimeout(this.context.dismountTimeout);
-  }
-
-  execute(action: string) {
-    this.listeners.forEach((item) => {
-      const type = item[0]; const handler = item[1];
-      this.context.ngZone.runOutsideAngular(() => this.context.element[action](type, handler, false));
-    });
-  }
-
-  attachListeners() {
-    this.execute('addEventListener');
-  }
-
-  detachListeners() {
-    this.execute('removeEventListener');
+  constructor(public context: RippleListener) {
+    this.ripple = this.context.ripple;
+    this.isSilent = this.ripple.configs.isSilent;
+    clearTimeout(this.context.ripple.dismountTimeout);
   }
 
   event(name: Events): RippleEvent {
-    return new RippleEvent(this.context.element, this.context.host.center, name);
+    return new RippleEvent(this.context.element, this.ripple.host.center, name);
   }
 
   onMove(event: any) {
-    const coord = coordinate(event);
-    if(!this.context.core.centerCoordinateStillIsInHostArea(coord) ||
-      this.context.core.configs.fixed) {
-        return this.splash();
+    const coordinate = getContact(event).point;
+    if(!this.ripple.core.centerCoordinateStillIsInHostArea(coordinate) ||
+      this.ripple.core.configs.fixed) {
+      return this.onEnd();
     }
-    if(this.context.core.outerPointCoordinateStillInHostRadius(coord)) {
-      return this.context.core.translateTo(coord);
+    if(this.ripple.core.outerPointCoordinateStillInHostRadius(coordinate)) {
+      return this.ripple.core.translateTo(coordinate);
     }
   }
 
   onEnd() {
-    this.detachListeners();
-    this.context.prepareForDismounting();
-    this.splash();
-  }
-
-  splash() {
-    this.context.deactivate();
-    this.context.core.splash();
+    this.context.stopListening(this.listeners);
+    this.ripple.prepareForDismounting();
+    this.ripple.core.splash();
   }
 }
 
 export enum Mouse { MOVE = 'mousemove', UP = 'mouseup', LEAVE = 'mouseleave' }
 
-export class MouseStrategy extends RippleListener {
+export class MouseStrategy extends RipplePointerListener {
 
-  constructor(public context: Ripple) {
+  constructor(public context: RippleListener) {
     super(context);
+    this.context.startListening(this.listeners);
   }
 
   get listeners(): PointerListener[] {
@@ -96,13 +85,21 @@ export class MouseStrategy extends RippleListener {
     ];
   }
 
-  onMouseMove = (event: MouseEvent) => this.onMove(event);
+  onMouseMove = (event: MouseEvent) => {
+    this.ripple.ngZone.runOutsideAngular(() => this.onMove(event));
+  }
+
+  publishCurrentEvent = () => {
+    this.ripple.clickPublisher.next(this.event(Events.CLICK));
+  }
 
   onMouseUp = () => {
-    this.context.ngZone.runOutsideAngular(() => {
-      this.context.clickPublisher.next(this.event(Events.CLICK));
-    });
     this.onEnd();
+    if(!this.isSilent) {
+      this.ripple.ngZone.runOutsideAngular(() => {
+        this.publishCurrentEvent();
+      });
+    }
   }
 
   onMouseLeave = () => this.onEnd();
@@ -110,14 +107,19 @@ export class MouseStrategy extends RippleListener {
 
 export enum Touch { MOVE = 'touchmove', END = 'touchend' }
 
-export class TouchStrategy extends RippleListener {
+export class TouchStrategy extends RipplePointerListener {
 
   pressTimeout: any;
   isPressing: boolean;
 
-  constructor(public context: Ripple) {
+  constructor(public context: RippleListener) {
     super(context);
-    this.setPressTimeout();
+    this.context.startListening(this.listeners);
+    if(!this.isSilent) {
+      this.ripple.ngZone.runOutsideAngular(() => {
+        this.setPressTimeout();
+      });
+    }
   }
 
   get listeners(): PointerListener[] {
@@ -131,23 +133,29 @@ export class TouchStrategy extends RippleListener {
     clearTimeout(this.pressTimeout);
     this.pressTimeout = setTimeout(() => {
       this.isPressing = true;
-      this.context.ngZone.runOutsideAngular(() => {
-        this.context.pressPublisher.next(this.event(Events.PRESS));
-      });
-    }, this.context.core.tapLimit);
+      this.ripple.pressPublisher.next(this.event(Events.PRESS));
+    }, this.ripple.core.tapLimit);
   }
 
-  onTouchMove = (event: TouchEvent) => this.onMove(event);
+  onTouchMove = (event: TouchEvent) => {
+    this.ripple.ngZone.runOutsideAngular(() => this.onMove(event));
+  }
+
+  publishCurrentEvent = () => {
+    clearTimeout(this.pressTimeout);
+    if(this.isPressing) {
+      return this.ripple[RipplePublisher.PRESSUP].next(this.event(Events.PRESSUP));
+    }
+    this.ripple[RipplePublisher.TAP].next(this.event(Events.TAP));
+  }
 
   onTouchEnd = () => {
-    clearTimeout(this.pressTimeout);
-    this.context.ngZone.runOutsideAngular(() => {
-      if(this.isPressing) {
-        return this.context[RipplePublisher.PRESSUP].next(this.event(Events.PRESSUP));
-      }
-      this.context[RipplePublisher.TAP].next(this.event(Events.TAP));
-    });
     this.onEnd();
+    if(!this.isSilent) {
+      this.ripple.ngZone.runOutsideAngular(() => {
+        this.publishCurrentEvent();
+      });
+    }
   }
 }
 
@@ -157,49 +165,56 @@ export const POINTER_STRATEGY: any  = {
 };
 
 export class PointerStrategy {
-  constructor(context: Ripple) {
-    return new POINTER_STRATEGY[context.pointer](context);
+  constructor(context: RippleListener) {
+    return new POINTER_STRATEGY[context.contact.input](context);
   }
 }
 
-export const POINTERDOWN_LISTENER: any = {
+export const POINTERDOWN_EVENTS: any = {
   pointerdown: ['pointerdown'],
   fallback: ['touchstart', 'mousedown']
 };
 
-export class RipplePointerListener {
+export class RippleListener {
 
-  pointerdownEvents: any[];
-  type: string;
+  element: HTMLElement;
   strategy: any;
+  listeners = [];
+  contact: any;
 
-  constructor(private context: Ripple) {
-    this.pointerdownEvents = POINTERDOWN_LISTENER[this.context.listenerType];
-    this.startListening();
+  constructor(public ripple: Ripple) {
+    this.element = ripple.element;
+    this.initialize();
   }
 
-  private startListening() {
-    this.context.ngZone.runOutsideAngular(() => {
-      this.pointerdownEvents.forEach((event) => {
-        this.context.element.addEventListener(event, this.onPointerDown);
+  initialize() {
+    POINTERDOWN_EVENTS[this.ripple.trigger].forEach((event: string) => {
+      this.listeners.push([event, this.onPointerDown]);
+    });
+    this.startListening(this.listeners);
+  }
+
+  private execute(action: string, listeners: PointerListener[]) {
+    this.ripple.ngZone.runOutsideAngular(() => {
+      listeners.forEach(listener => {
+        const event = listener[0]; const handler = listener[1];
+        this.element[action](event, handler, false);
       });
     });
   }
 
-  stopListening() {
-    this.context.ngZone.runOutsideAngular(() => {
-      this.pointerdownEvents.forEach((event) => {
-        this.context.element.removeEventListener(event, this.onPointerDown);
-      });
-    });
+  startListening(listeners: PointerListener[]) {
+    this.execute('addEventListener', listeners);
+  }
+
+  stopListening(listeners: PointerListener[]) {
+    this.execute('removeEventListener', listeners);
   }
 
   onPointerDown = (event: any) => {
-    this.context.pointer = (event.pointerType || event.type).slice(0,5);
-    this.strategy = new PointerStrategy(this.context);
-    this.strategy.attachListeners();
-    this.context.mountElement();
-    this.context.activate();
-    this.context.core.fillAt(coordinate(event));
+    this.contact = getContact(event);
+    this.strategy = new PointerStrategy(this);
+    this.ripple.mountElement();
+    this.ripple.core.fillAt(this.contact.point);
   }
 }

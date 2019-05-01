@@ -133,4 +133,8 @@ export class RippleComponentConfigs {
       fadeTransition: this.configs.bgFadeTransition
     };
   }
+
+  get isSilent(): boolean {
+    return !this.configs.eventIncluded;
+  }
 }

@@ -71,6 +71,8 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
   diameter: number;
   scale: number;
 
+  translateTimeout: any;
+
   eventEmitter = new Subject<any>();
 
   constructor(
@@ -169,8 +171,11 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
 
     if(this.configs.centered) { return; }
 
-    const scale = this.scale ? this.scale : this.currentScale;
-    this.scale = scale + RIPPLE_SCALE_INCREASER;
+    clearTimeout(this.translateTimeout);
+    this.translateTimeout = setTimeout(() => this.scale = undefined ,15);
+
+    let scale = this.scale ? this.scale : this.currentScale;
+    scale = scale + RIPPLE_SCALE_INCREASER;
 
     const player = this.animation.translate(
       coord.x - this.center.x,
@@ -178,21 +183,20 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
       scale
     );
 
+    this.scale = scale;
     this.manageTranslateAnimation(player);
     this.animationPlayer.play();
   }
 
   private manageTranslateAnimation(player: AnimationPlayer) {
-    this.animationPlayer = player;
     this.translatePlayers.push(player);
-
     const playerIndex = this.translatePlayers.indexOf(player);
-
     if(playerIndex > 0) {
       this.translatePlayers[playerIndex-1].destroy();
       this.translatePlayers[playerIndex-1] = null;
       this.translatePlayers.splice(playerIndex-1, 1);
     }
+    this.animationPlayer = player;
   }
 
   splash = () => this.endFillBy(EndFillBy.SPLASH);
