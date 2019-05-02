@@ -214,6 +214,8 @@ export class RippleListener {
   onPointerDown = (event: any) => {
     this.contact = getContact(event);
     this.strategy = new PointerStrategy(this);
+    this.ripple.host.computeRectAndStyle();
+    this.ripple.core.resize();
     this.ripple.mountElement();
     this.ripple.core.fillAt(this.contact.point);
   }

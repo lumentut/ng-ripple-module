@@ -118,10 +118,8 @@ export class Ripple {
 
   private get backgroundInjector(): Injector {
     return Injector.create({
-      providers: [
-        { provide: RIPPLE_BG_CONFIGS, useValue: this.configs.rippleBackground },
-        { provide: RippleHost, useValue: this.host },
-    ]});
+      providers: [{ provide: RIPPLE_BG_CONFIGS, useValue: this.configs.rippleBackground }]
+    });
   }
 
   get background() {
@@ -131,15 +129,14 @@ export class Ripple {
   private get coreInjector(): Injector {
     const providers = [
       { provide: RIPPLE_CORE_CONFIGS, useValue: this.configs.rippleCore },
-      { provide: RippleHost, useValue: this.host }
+      { provide: RippleHost, useValue: this.host },
     ];
 
     const backgroundProvider = [];
     if(this.haveBackground) {
       backgroundProvider.push({ provide: BackgroundComponent, useValue: this.background });
     }
-
-    return Injector.create({ providers: [...providers, ...backgroundProvider]});
+    return Injector.create({ providers: [...providers, ...backgroundProvider] });
   }
 
   get core() {

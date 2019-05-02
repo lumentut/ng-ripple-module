@@ -26,9 +26,6 @@ import {
   RIPPLE_BG_CONFIGS
 } from './ripple.configs';
 
-import { RippleComponent } from './ripple.component';
-import { RippleHost } from './ripple.host';
-
 @Component({
   selector: 'ripple-bg',
   template: `<ng-content></ng-content>`,
@@ -45,19 +42,20 @@ import { RippleHost } from './ripple.host';
     }`
   ]
 })
-export class BackgroundComponent extends RippleComponent {
+export class BackgroundComponent {
 
+  element: HTMLElement;
+  animationPlayer: AnimationPlayer;
   fadeTransition: string;
   fadeDuration: number;
 
   constructor(
     elRef: ElementRef,
-    host: RippleHost,
     private builder: AnimationBuilder,
     private renderer: Renderer2,
     @Inject(RIPPLE_BG_CONFIGS) public configs: RippleBgConfigs,
   ) {
-    super(elRef, host);
+    this.element = elRef.nativeElement;
     this.renderer.setStyle(this.element, 'background', this.configs.backgroundColor);
     this.fadeTransition = this.configs.fadeTransition;
     this.fadeDuration = parseInt(this.fadeTransition.replace(/\D/g,''), 10);

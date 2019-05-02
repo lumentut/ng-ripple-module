@@ -20,7 +20,6 @@ import { Subject } from 'rxjs';
 
 import { RIPPLE_CORE_CONFIGS, RippleCoreConfigs } from './ripple.configs';
 import { RIPPLE_SCALE_INCREASER } from './ripple.constants';
-import { RippleComponent } from './ripple.component';
 import { BackgroundComponent } from './ripple-bg.component';
 import { RippleAnimation } from './ripple.animation';
 import { RippleHost } from './ripple.host';
@@ -38,11 +37,6 @@ export enum EndFillBy {
   FADEOUT = 'fadeout'
 }
 
-export enum HostType {
-  ROUND = 'round',
-  RECTANGLE = 'rectangle'
-}
-
 @Component({
   selector: 'ripple-core',
   template: `<ng-content></ng-content>`,
@@ -58,40 +52,39 @@ export enum HostType {
     }`
   ]
 })
-export class CoreComponent extends RippleComponent implements AfterViewInit {
+export class CoreComponent implements AfterViewInit {
 
+  element: HTMLElement;
   animation: RippleAnimation;
+  animationPlayer: AnimationPlayer;
   center: Coordinate;
 
   translatePlayers = [];
 
   hostType: string;
-  dragable: boolean;
   tapLimit: number;
   diameter: number;
   scale: number;
-
   translateTimeout: any;
 
   eventEmitter = new Subject<any>();
 
   constructor(
     elRef: ElementRef,
-    host: RippleHost,
+    private host: RippleHost,
     private renderer: Renderer2,
     protected builder: AnimationBuilder,
     @Optional() private background: BackgroundComponent,
     @Inject(RIPPLE_CORE_CONFIGS) public configs: RippleCoreConfigs
   ) {
-    super(elRef, host);
+    this.element = elRef.nativeElement;
     this.renderer.setStyle(this.element, 'background', this.configs.rippleBgColor);
     this.tapLimit = this.configs.tapLimit;
     this.animation = new RippleAnimation(this.element, this.builder, this.configs);
-    this.hostType = host.isRound ? HostType.ROUND : HostType.RECTANGLE;
   }
 
   ngAfterViewInit() {
-    this.setCoreSize();
+    this.resize();
   }
 
   get rect(): ClientRect {
@@ -107,7 +100,7 @@ export class CoreComponent extends RippleComponent implements AfterViewInit {
     };
   }
 
-  private setCoreSize() {
+  private resize() {
     for(const key in this.properties) {
       if(this.properties[key]) {
         this.renderer.setStyle(this.element, key, `${this.properties[key]}px`);
