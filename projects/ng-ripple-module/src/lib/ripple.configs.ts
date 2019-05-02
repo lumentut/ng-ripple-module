@@ -21,15 +21,9 @@ import {
   RIPPLE_BG_FADE_TRANSITION,
   RIPPLE_TAP_LIMIT,
   RIPPLE_ACTIVE_CLASS,
-  RIPPLE_EVENT_DELAY,
   RIPPLE_EVENT_DELAY_VALUE,
   RIPPLE_SPLASH_OPACITY,
-  RIPPLE_BACKGROUND_INCLUDED,
-  RIPPLE_DISMOUNTING_TIMEOUT,
-  RIPPLE_EVENT_INCLUDED,
-  RIPPLE_FIXED_DEFAULT,
-  RIPPLE_CENTERED_DEFAULT,
-  RIPPLE_LIGHT_DEFAULT
+  RIPPLE_DISMOUNTING_TIMEOUT
 } from './ripple.constants';
 
 export interface RippleCoreConfigs {
@@ -77,9 +71,9 @@ export interface RippleConfigs {
 }
 
 export const DEFAULT_RIPPLE_CONFIGS = {
-  fixed: RIPPLE_FIXED_DEFAULT,
-  centered: RIPPLE_CENTERED_DEFAULT,
-  light: RIPPLE_LIGHT_DEFAULT,
+  fixed: false,
+  centered: false,
+  light: false,
   rippleDefaultBgColor: RIPPLE_DEFAULT_BGCOLOR,
   activeDefaultBgColor: RIPPLE_DEFAULT_ACTIVE_BGCOLOR,
   rippleLightBgColor: RIPPLE_LIGHT_BGCOLOR,
@@ -91,10 +85,10 @@ export const DEFAULT_RIPPLE_CONFIGS = {
   splashOpacity: RIPPLE_SPLASH_OPACITY,
   tapLimit: RIPPLE_TAP_LIMIT,
   activeClass: RIPPLE_ACTIVE_CLASS,
-  eventIncluded: RIPPLE_EVENT_INCLUDED,
-  delayEvent: RIPPLE_EVENT_DELAY,
+  eventIncluded: true,
+  delayEvent: true,
   delayValue: RIPPLE_EVENT_DELAY_VALUE,
-  backgroundIncluded: RIPPLE_BACKGROUND_INCLUDED,
+  backgroundIncluded: true,
   dismountingTimeout: RIPPLE_DISMOUNTING_TIMEOUT
 };
 
