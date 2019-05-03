@@ -1,5 +1,4 @@
-import { Component,ViewChild } from '@angular/core';
-import { RippleDirective } from '@ng-ripple-module/ripple.directive';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -10,10 +9,12 @@ export class AppComponent {
 
   title = 'ng-ripple-module';
   cardTitle = 'Angular';
+  version = 'v.0.0.21';
 
   constructor() {
     console.log(this)
   }
+
   onTap(event: any) {
     console.log(event)
   }

@@ -11,7 +11,7 @@ const configs: RippleConfigs = {
   selector: 'mdl-colored-btn',
   template: `
     <button ripple light class="mdl-button mdl-button--raised mdl-button--accent">
-      Button
+      <ng-content></ng-content>
     </button>`
   ,
   styles: [
