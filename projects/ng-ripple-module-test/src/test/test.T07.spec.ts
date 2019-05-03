@@ -19,6 +19,7 @@ import { By } from '@angular/platform-browser';
 import { NgRippleModule } from '@ng-ripple-module/ng-ripple.module';
 import { RippleDirective } from '@ng-ripple-module/ripple.directive';
 import { RippleHost } from '@ng-ripple-module/ripple.host';
+import { HostType } from '@ng-ripple-module/ripple-core.component';
 
 @Component({
   template: `<a href="#" ripple></a>`,
@@ -90,7 +91,7 @@ describe('T07 - Host Element shape and contact position detection test', () => {
   }));
 
   it('detect round shaped host', () => {
-    expect(roundHost.isRound).toBeTruthy();
+    expect(directiveRound.ripple.core.hostType).toEqual(HostType.ROUND);
   });
 
   it('detect contact point outside/inside round host correctly', () => {
@@ -102,17 +103,17 @@ describe('T07 - Host Element shape and contact position detection test', () => {
     const y = Math.sin(angle * Math.PI / 180) * rect.width / 2;
 
     // Contact point at Q1 (4.30)
-    const coordInsideQ1 = { x: center.x + x - 1, y: center.y + y - 1 };
+    const coordInsideQ1 = { x: center.x + x, y: center.y + y };
     expect(directiveRound.ripple.core.centerCoordinateStillIsInHostArea(coordInsideQ1)).toBeTruthy();
 
-    const coordOutsideQ1 = { x: center.x + x, y: center.y + y };
+    const coordOutsideQ1 = { x: center.x + x + 1, y: center.y + y + 1};
     expect(directiveRound.ripple.core.centerCoordinateStillIsInHostArea(coordOutsideQ1)).toBeFalsy();
 
     // Contact point at Q2 (7.30)
-    const coordInsideQ2 = { x: center.x - x + 1, y: center.y + y - 1 };
+    const coordInsideQ2 = { x: center.x - x, y: center.y + y };
     expect(directiveRound.ripple.core.centerCoordinateStillIsInHostArea(coordInsideQ2)).toBeTruthy();
 
-    const coordOutsideQ2 = { x: center.x - x, y: center.y + y };
+    const coordOutsideQ2 = { x: center.x - x - 1, y: center.y + y + 1};
     expect(directiveRound.ripple.core.centerCoordinateStillIsInHostArea(coordOutsideQ2)).toBeFalsy();
 
     // Contact point at Q3 (10.30)
@@ -131,7 +132,7 @@ describe('T07 - Host Element shape and contact position detection test', () => {
   });
 
   it('detect rectangle shaped host', () => {
-    expect(rectangleHost.isRound).toBeFalsy();
+    expect(directiveRectangle.ripple.core.hostType).toEqual(HostType.RECTANGLE);
   });
 
   it('detect contact point outside/inside rectangle host correctly', () => {
