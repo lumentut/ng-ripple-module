@@ -12,29 +12,38 @@ export class RippleHost {
 
   rect: ClientRect;
   style: CSSStyleDeclaration;
+  center: Coordinate;
+  radius: number;
   radiusSquare: number;
+  borderRadius: string;
+  diameter: number;
+  marginRef: any;
 
   constructor(public element: HTMLElement) {
-    this.computeRectAndStyle();
+    this.borderRadius = getComputedStyle(this.element).borderRadius;
+    this.calculateProperties();
   }
 
-  computeRectAndStyle() {
+  calculateProperties() {
     this.rect = this.element.getBoundingClientRect();
+    this.radius = this.getRadius();
     this.radiusSquare = this.radius*this.radius;
-    this.style = getComputedStyle(this.element);
+    this.diameter = this.getDiameter();
+    this.center = this.getCenter();
+    this.marginRef = this.getMarginRef();
   }
 
-  get diameter(): number {
+  getDiameter(): number {
     const rect = this.rect;
     return Math.sqrt(rect.width*rect.width + rect.height*rect.height);
   }
 
   get isRound(): boolean {
     const rect = this.rect;
-    return this.style.borderRadius === '50%' && rect.width === rect.height;
+    return this.borderRadius === '50%' && rect.width === rect.height;
   }
 
-  get center(): Coordinate {
+  getCenter(): Coordinate {
     const rect = this.rect;
     return {
       x: rect.left + (rect.width/2),
@@ -42,11 +51,11 @@ export class RippleHost {
     };
   }
 
-  get radius(): number {
+  getRadius(): number {
     return this.rect.width/2;
   }
 
-  get marginRef() {
+  getMarginRef() {
     return {
       top: (this.rect.height - this.diameter)/2,
       left: (this.rect.width - this.diameter)/2

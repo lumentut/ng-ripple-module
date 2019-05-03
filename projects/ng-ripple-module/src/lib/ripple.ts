@@ -150,6 +150,7 @@ export class Ripple {
   mountElement() {
     if(!this.isMounted) {
       clearTimeout(this.dismountTimeout);
+      this.coreCmpRef.instance.resize();
       this.componentsRef.forEach(cmpRef => {
         this.element.appendChild(cmpRef.instance.element);
       });

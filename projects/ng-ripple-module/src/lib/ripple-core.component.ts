@@ -7,6 +7,7 @@
  */
 
 import {
+  NgZone,
   Component,
   AfterViewInit,
   Optional,
@@ -18,8 +19,12 @@ import {
 import { AnimationPlayer, AnimationBuilder } from '@angular/animations';
 import { Subject } from 'rxjs';
 
+import {
+  RIPPLE_SCALE_INCREASER,
+  RIPPLE_TRANSLATE_TIMEOUT
+} from './ripple.constants';
+
 import { RIPPLE_CORE_CONFIGS, RippleCoreConfigs } from './ripple.configs';
-import { RIPPLE_SCALE_INCREASER } from './ripple.constants';
 import { BackgroundComponent } from './ripple-bg.component';
 import { RippleAnimation } from './ripple.animation';
 import { RippleHost } from './ripple.host';
@@ -35,6 +40,11 @@ export interface RippleColor {
 export enum EndFillBy {
   SPLASH = 'splash',
   FADEOUT = 'fadeout'
+}
+
+export enum HostType {
+  ROUND = 'round',
+  RECTANGLE = 'rectangle'
 }
 
 @Component({
@@ -71,7 +81,8 @@ export class CoreComponent implements AfterViewInit {
 
   constructor(
     elRef: ElementRef,
-    private host: RippleHost,
+    private ngZone: NgZone,
+    public host: RippleHost,
     private renderer: Renderer2,
     protected builder: AnimationBuilder,
     @Optional() private background: BackgroundComponent,
@@ -81,6 +92,7 @@ export class CoreComponent implements AfterViewInit {
     this.renderer.setStyle(this.element, 'background', this.configs.rippleBgColor);
     this.tapLimit = this.configs.tapLimit;
     this.animation = new RippleAnimation(this.element, this.builder, this.configs);
+    this.hostType = host.isRound ? HostType.ROUND : HostType.RECTANGLE;
   }
 
   ngAfterViewInit() {
@@ -160,15 +172,20 @@ export class CoreComponent implements AfterViewInit {
     return this.rect.width/this.host.diameter;
   }
 
+  setTranslateTimeout() {
+    clearTimeout(this.translateTimeout);
+    this.translateTimeout = setTimeout(() => {
+      this.scale = undefined;
+    }, RIPPLE_TRANSLATE_TIMEOUT);
+  }
+
   translateTo(coord: Coordinate) {
 
     if(this.configs.centered) { return; }
 
-    clearTimeout(this.translateTimeout);
-    this.translateTimeout = setTimeout(() => this.scale = undefined ,15);
-
+    this.ngZone.runOutsideAngular(() => this.setTranslateTimeout());
     let scale = this.scale ? this.scale : this.currentScale;
-    scale = scale + RIPPLE_SCALE_INCREASER;
+    scale += RIPPLE_SCALE_INCREASER;
 
     const player = this.animation.translate(
       coord.x - this.center.x,
