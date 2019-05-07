@@ -174,7 +174,7 @@ export class CoreComponent implements AfterViewInit {
   getScale(): number {
     const scale = this.scale ? this.scale : this.currentScale;
     return scale + RIPPLE_SCALE_INCREASER;
-  } 
+  }
 
   setTranslateTimeout() {
     clearTimeout(this.translateTimeout);

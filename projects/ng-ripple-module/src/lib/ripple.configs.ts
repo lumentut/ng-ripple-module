@@ -95,11 +95,11 @@ export const DEFAULT_RIPPLE_CONFIGS = {
 export const GLOBAL_RIPPLE_CONFIGS = new InjectionToken<RippleConfigs>('global-ripple-configs');
 
 export function getDuration(transition: string) {
-  const millis = transition.replace(/ .*/, '');
+  const ms = transition.replace(/ .*/, '');
   return {
-    millis: millis,
-    duration: millis.match(/\d+/g).map(Number)[0]
-  }
+    millis: ms,
+    duration: ms.match(/\d+/g).map(Number)[0]
+  };
 }
 
 export class RippleComponentConfigs {

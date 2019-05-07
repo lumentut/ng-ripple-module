@@ -14,7 +14,10 @@ import {
   NgZone,
   ElementRef,
   Inject,
-  Optional
+  Optional,
+  HostBinding,
+  AfterViewInit,
+  OnDestroy
 } from '@angular/core';
 
 import { Subscription } from 'rxjs';
@@ -34,15 +37,20 @@ export interface RippleEmitter {
   publisher: string;
   output: EventEmitter<any>;
   delay: number;
-};
+}
 
-export abstract class RippleIO {
+export abstract class RippleIO implements AfterViewInit, OnDestroy {
+
+  subscriptions: Subscription = new Subscription();
+
+  @Output() rtap: EventEmitter<any> = new EventEmitter();
+  @Output() rpress: EventEmitter<any> = new EventEmitter();
+  @Output() rpressup: EventEmitter<any> = new EventEmitter();
+  @Output() rclick: EventEmitter<any> = new EventEmitter();
 
   abstract element: HTMLElement;
   abstract ngAfterViewInit(): void;
   abstract ngOnDestroy(): void;
-
-  subscriptions: Subscription = new Subscription();
 
   @Input('light')
   set light(val: boolean) { this.configs.light = true; }
@@ -83,11 +91,6 @@ export abstract class RippleIO {
   @Input('activeClass')
   set activeClass(val: string) { this.configs.activeClass = val; }
 
-  @Output() rtap: EventEmitter<any> = new EventEmitter();
-  @Output() rpress: EventEmitter<any> = new EventEmitter();
-  @Output() rpressup: EventEmitter<any> = new EventEmitter();
-  @Output() rclick: EventEmitter<any> = new EventEmitter();
-
   constructor(
     public ngZone: NgZone,
     public ripple: Ripple,
@@ -111,17 +114,16 @@ export abstract class RippleIO {
 
 @Directive({
   selector: '[ripple], [ng-ripple]',
-  host: {
-    '[style.position]': '"relative"',
-    '[style.display]': '"block"',
-    '[style.overflow]': '"hidden"',
-    '[style.cursor]': '"pointer"',
-  },
   providers: [Ripple]
 })
-export class RippleDirective extends RippleIO {
+export class RippleDirective extends RippleIO implements AfterViewInit, OnDestroy {
 
   element: HTMLElement;
+
+  @HostBinding('style.position') position: string = 'relative';
+  @HostBinding('style.display') display: string = 'block';
+  @HostBinding('style.overflow') overflow: string = 'hidden';
+  @HostBinding('style.cursor') cursor: string = 'pointer';
 
   constructor(
     elRef: ElementRef,
@@ -129,7 +131,7 @@ export class RippleDirective extends RippleIO {
     ripple: Ripple,
     @Optional() @Inject(GLOBAL_RIPPLE_CONFIGS) customConfigs: RippleConfigs
   ) {
-    super(ngZone, ripple, { ...DEFAULT_RIPPLE_CONFIGS, ...customConfigs })
+    super(ngZone, ripple, { ...DEFAULT_RIPPLE_CONFIGS, ...customConfigs });
     this.element = elRef.nativeElement;
   }
 
