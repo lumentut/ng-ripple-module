@@ -33,17 +33,18 @@ export enum Events {
   CLICK = 'rclick'
 }
 
-export class RipplePointerListener {
+export abstract class RipplePointerListener {
 
   ripple: Ripple;
-  listeners: PointerListener[];
-  publishCurrentEvent: () => void;
   isSilent: boolean;
+
+  abstract get listeners(): PointerListener[];
+  abstract publishCurrentEvent(): void;
 
   constructor(public context: RippleListener) {
     this.ripple = this.context.ripple;
     this.isSilent = this.ripple.configs.isSilent;
-    clearTimeout(this.context.ripple.dismountTimeout);
+    clearTimeout(this.ripple.dismountTimeout);
   }
 
   event(name: Events): RippleEvent {
@@ -142,7 +143,6 @@ export class TouchStrategy extends RipplePointerListener {
   }
 
   publishCurrentEvent = () => {
-    clearTimeout(this.pressTimeout);
     if(this.isPressing) {
       return this.ripple[RipplePublisher.PRESSUP].next(this.event(Events.PRESSUP));
     }
@@ -152,6 +152,7 @@ export class TouchStrategy extends RipplePointerListener {
   onTouchEnd = () => {
     this.onEnd();
     if(!this.isSilent) {
+      clearTimeout(this.pressTimeout);
       this.ripple.ngZone.runOutsideAngular(() => {
         this.publishCurrentEvent();
       });
@@ -183,11 +184,7 @@ export class RippleListener {
   contact: any;
 
   constructor(public ripple: Ripple) {
-    this.element = ripple.element;
-    this.initialize();
-  }
-
-  initialize() {
+    this.element = this.ripple.host.element;
     POINTERDOWN_EVENTS[this.ripple.trigger].forEach((event: string) => {
       this.listeners.push([event, this.onPointerDown]);
     });
@@ -209,6 +206,11 @@ export class RippleListener {
 
   stopListening(listeners: PointerListener[]) {
     this.execute('removeEventListener', listeners);
+  }
+
+  destroy() {
+    this.stopListening(this.listeners);
+    this.strategy = null;
   }
 
   onPointerDown = (event: any) => {

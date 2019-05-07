@@ -7,21 +7,14 @@
  */
 
 import {
-  Directive,
-  AfterViewInit,
-  OnDestroy,
-  NgZone,
-  HostBinding,
-  ElementRef,
-  ComponentFactoryResolver,
-  ApplicationRef,
-  ComponentRef,
   Input,
   Output,
+  EventEmitter,
+  Directive,
+  NgZone,
+  ElementRef,
   Inject,
-  Optional,
-  Renderer2,
-  EventEmitter
+  Optional
 } from '@angular/core';
 
 import { Subscription } from 'rxjs';
@@ -29,30 +22,27 @@ import { delay } from 'rxjs/operators';
 
 import {
   RippleConfigs,
-  RippleComponentConfigs,
   GLOBAL_RIPPLE_CONFIGS,
   DEFAULT_RIPPLE_CONFIGS,
 } from './ripple.configs';
 
 import { Ripple } from './ripple';
-import { RipplePublisher } from './ripple.strategy';
 import { RippleEvent } from './ripple.event';
+import { RipplePublisher } from './ripple.strategy';
 
-@Directive({ selector: '[ripple]' })
-export class RippleDirective implements AfterViewInit, OnDestroy {
+export interface RippleEmitter {
+  publisher: string;
+  output: EventEmitter<any>;
+  delay: number;
+};
 
-  element: HTMLElement;
-  configs: RippleConfigs;
-  cmpConfigs: RippleComponentConfigs;
-  children: any[];
-  ripple: Ripple;
-  coreCmpRef: ComponentRef<any>;
-  backgroundCmpRef: ComponentRef<any>;
+export abstract class RippleIO {
+
+  abstract element: HTMLElement;
+  abstract ngAfterViewInit(): void;
+  abstract ngOnDestroy(): void;
+
   subscriptions: Subscription = new Subscription();
-
-  @HostBinding('style.display') display: string = 'block';
-  @HostBinding('style.overflow') overflow: string = 'hidden';
-  @HostBinding('style.cursor') cursor: string = 'pointer';
 
   @Input('light')
   set light(val: boolean) { this.configs.light = true; }
@@ -99,40 +89,17 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   @Output() rclick: EventEmitter<any> = new EventEmitter();
 
   constructor(
-    private elRef: ElementRef,
-    public cfr: ComponentFactoryResolver,
-    private appRef: ApplicationRef,
-    public renderer: Renderer2,
     public ngZone: NgZone,
-    @Optional() @Inject(GLOBAL_RIPPLE_CONFIGS) customConfigs: RippleConfigs
-  ) {
-    this.element = this.elRef.nativeElement;
-    this.configs = { ...DEFAULT_RIPPLE_CONFIGS, ...customConfigs };
-  }
+    public ripple: Ripple,
+    public configs: RippleConfigs,
+  ) {}
 
-  ngAfterViewInit() {
-    this.ripple = new Ripple(
-      this.ngZone,
-      this.element,
-      this.cfr,
-      this.appRef,
-      this.configs
-    );
-
-    this.subscribeToRippleEventsIfRequired();
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-    this.ripple.onDestroy();
-  }
-
-  subscribeToRippleEventsIfRequired() {
+  subscribeToRippleEvents(emitters: RippleEmitter[]) {
     if(!this.configs.eventIncluded) { return; }
-    this.emitters.forEach(emitter => {
+    emitters.forEach(emitter => {
       this.subscriptions.add(this.ripple[emitter.publisher]
         .pipe(delay(emitter.delay)).subscribe((event: RippleEvent) => {
-          this.ngZone.run(() => emitter.output.emit(event));
+          this.ngZone.runOutsideAngular(() => emitter.output.emit(event));
       }));
     });
   }
@@ -140,8 +107,43 @@ export class RippleDirective implements AfterViewInit, OnDestroy {
   get emitDelayValue(): number {
     return this.configs.delayEvent ? this.configs.delayValue : 0;
   }
+}
 
-  get emitters(): any[] {
+@Directive({
+  selector: '[ripple], [ng-ripple]',
+  host: {
+    '[style.position]': '"relative"',
+    '[style.display]': '"block"',
+    '[style.overflow]': '"hidden"',
+    '[style.cursor]': '"pointer"',
+  },
+  providers: [Ripple]
+})
+export class RippleDirective extends RippleIO {
+
+  element: HTMLElement;
+
+  constructor(
+    elRef: ElementRef,
+    ngZone: NgZone,
+    ripple: Ripple,
+    @Optional() @Inject(GLOBAL_RIPPLE_CONFIGS) customConfigs: RippleConfigs
+  ) {
+    super(ngZone, ripple, { ...DEFAULT_RIPPLE_CONFIGS, ...customConfigs })
+    this.element = elRef.nativeElement;
+  }
+
+  ngAfterViewInit() {
+    this.ripple.initialize(this.element, this.configs);
+    this.subscribeToRippleEvents(this.emitters);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+    this.ripple.onDestroy();
+  }
+
+  get emitters(): RippleEmitter[] {
     return [
       { publisher: RipplePublisher.CLICK, output: this.rclick, delay: this.emitDelayValue },
       { publisher: RipplePublisher.TAP, output: this.rtap, delay: this.emitDelayValue },

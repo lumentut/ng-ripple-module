@@ -94,41 +94,69 @@ export const DEFAULT_RIPPLE_CONFIGS = {
 
 export const GLOBAL_RIPPLE_CONFIGS = new InjectionToken<RippleConfigs>('global-ripple-configs');
 
+export function getDuration(transition: string) {
+  const millis = transition.replace(/ .*/, '');
+  return {
+    millis: millis,
+    duration: millis.match(/\d+/g).map(Number)[0]
+  }
+}
+
 export class RippleComponentConfigs {
 
-  constructor(public configs: any) {}
+  constructor(public base: RippleConfigs) {}
 
   get coreColor(): string {
-    return this.configs.light ? this.configs.rippleLightBgColor : this.configs.rippleDefaultBgColor;
+    return this.base.light ? this.base.rippleLightBgColor : this.base.rippleDefaultBgColor;
   }
 
   get rippleCore(): RippleCoreConfigs {
     return {
-      centered: this.configs.centered,
-      fixed: this.configs.fixed,
+      centered: this.base.centered,
+      fixed: this.base.fixed,
       rippleBgColor: this.coreColor,
-      fillTransition: this.configs.fillTransition,
-      splashTransition: this.configs.splashTransition,
-      fadeTransition: this.configs.fadeTransition,
-      splashOpacity: this.configs.splashOpacity,
-      tapLimit: this.configs.tapLimit,
-      activeClass: this.configs.activeClass,
-      backgroundIncluded: this.configs.backgroundIncluded
+      fillTransition: this.base.fillTransition,
+      splashTransition: this.base.splashTransition,
+      fadeTransition: this.base.fadeTransition,
+      splashOpacity: this.base.splashOpacity,
+      tapLimit: this.base.tapLimit,
+      activeClass: this.base.activeClass,
+      backgroundIncluded: this.base.backgroundIncluded
     };
   }
 
   get backgroundColor(): string {
-    return this.configs.light ? this.configs.activeLightBgColor : this.configs.activeDefaultBgColor;
+    return this.base.light ? this.base.activeLightBgColor : this.base.activeDefaultBgColor;
   }
 
   get rippleBackground(): RippleBgConfigs {
     return {
       backgroundColor: this.backgroundColor,
-      fadeTransition: this.configs.bgFadeTransition
+      fadeTransition: this.base.bgFadeTransition
     };
   }
 
   get isSilent(): boolean {
-    return !this.configs.eventIncluded;
+    return !this.base.eventIncluded;
+  }
+
+  private getDuration(transition: string): number {
+    return transition.replace(/ .*/, '').match(/\d+/g).map(Number)[0];
+  }
+
+  get splashDuration(): number {
+    return this.getDuration(this.base.splashTransition);
+  }
+
+  get fadeDuration(): number {
+    return this.base.backgroundIncluded ? this.getDuration(this.base.fadeTransition) : 0;
+  }
+
+  get calculatedDismountTimeout() {
+    return (this.splashDuration + this.fadeDuration)*1.5;
+  }
+
+  get dismountTimeoutDuration(): number {
+    return this.base.dismountingTimeout ? this.base.dismountingTimeout : this.calculatedDismountTimeout;
   }
 }

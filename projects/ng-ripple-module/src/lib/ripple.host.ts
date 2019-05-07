@@ -25,7 +25,15 @@ export class RippleHost {
   }
 
   calculateProperties() {
-    this.rect = this.element.getBoundingClientRect();
+    const rect = this.element.getBoundingClientRect();
+    const { width, height, top, left } = rect;
+
+    if(this.rect && width === this.rect.width && height === this.rect.height &&
+      top === this.rect.top && left === this.rect.left) {
+      return;
+    }
+
+    this.rect = rect;
     this.radius = this.getRadius();
     this.radiusSquare = this.radius*this.radius;
     this.diameter = this.getDiameter();
@@ -34,8 +42,7 @@ export class RippleHost {
   }
 
   getDiameter(): number {
-    const rect = this.rect;
-    return Math.sqrt(rect.width*rect.width + rect.height*rect.height);
+    return Math.hypot(this.rect.width, this.rect.height);
   }
 
   get isRound(): boolean {
@@ -46,19 +53,19 @@ export class RippleHost {
   getCenter(): Coordinate {
     const rect = this.rect;
     return {
-      x: rect.left + (rect.width/2),
-      y: rect.top + (rect.height/2),
+      x: rect.left + (0.5*rect.width),
+      y: rect.top + (0.5*rect.height),
     };
   }
 
   getRadius(): number {
-    return this.rect.width/2;
+    return 0.5*this.rect.width;
   }
 
   getMarginRef() {
     return {
-      top: (this.rect.height - this.diameter)/2,
-      left: (this.rect.width - this.diameter)/2
+      top: 0.5*(this.rect.height - this.diameter),
+      left: 0.5*(this.rect.width - this.diameter)
     };
   }
 }

@@ -81,7 +81,6 @@ export class CoreComponent implements AfterViewInit {
 
   constructor(
     elRef: ElementRef,
-    private ngZone: NgZone,
     public host: RippleHost,
     private renderer: Renderer2,
     protected builder: AnimationBuilder,
@@ -172,6 +171,11 @@ export class CoreComponent implements AfterViewInit {
     return this.rect.width/this.host.diameter;
   }
 
+  getScale(): number {
+    const scale = this.scale ? this.scale : this.currentScale;
+    return scale + RIPPLE_SCALE_INCREASER;
+  } 
+
   setTranslateTimeout() {
     clearTimeout(this.translateTimeout);
     this.translateTimeout = setTimeout(() => {
@@ -183,10 +187,9 @@ export class CoreComponent implements AfterViewInit {
 
     if(this.configs.centered) { return; }
 
-    this.ngZone.runOutsideAngular(() => this.setTranslateTimeout());
-    let scale = this.scale ? this.scale : this.currentScale;
-    scale += RIPPLE_SCALE_INCREASER;
+    this.setTranslateTimeout();
 
+    const scale = this.getScale();
     const player = this.animation.translate(
       coord.x - this.center.x,
       coord.y - this.center.y,
