@@ -18,6 +18,7 @@ import { By } from '@angular/platform-browser';
 
 import { NgRippleModule } from '@ng-ripple-module/ng-ripple.module';
 import { RippleDirective } from '@ng-ripple-module/ripple.directive';
+import { Ripple } from '@ng-ripple-module/ripple';
 import { RippleHost } from '@ng-ripple-module/ripple.host';
 import { HostType } from '@ng-ripple-module/ripple-core.component';
 

@@ -51,6 +51,7 @@ describe('T05 - Directive listen to Fallback Tap, Click, Press, and Press Up tes
   let listener: RippleListener;
   let splashMillis: string;
   let splashDuration: number;
+  let fadeDuration: number;
   let delayValue: number;
   let fallBack: string;
   let touchEvent: any;

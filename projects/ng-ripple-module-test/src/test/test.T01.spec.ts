@@ -69,7 +69,7 @@ describe('T01 - Directive: Light, Centered, Fixed & Immediate Event Ripple Test'
 
   it('passing light ripple', () => {
     expect(directive.configs.light).toBeTruthy();
-    expect(directive.ripple.configs.configs.light).toBeTruthy();
+    expect(directive.ripple.configs.base.light).toBeTruthy();
 
     expect(directive.ripple.configs.rippleCore.rippleBgColor).toEqual(RIPPLE_LIGHT_BGCOLOR);
     expect(directive.ripple.core.configs.rippleBgColor).toEqual(RIPPLE_LIGHT_BGCOLOR);
