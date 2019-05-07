@@ -43,6 +43,11 @@ export abstract class RippleIO implements AfterViewInit, OnDestroy {
 
   subscriptions: Subscription = new Subscription();
 
+  @HostBinding('style.position') position: string = 'relative';
+  @HostBinding('style.display') display: string = 'block';
+  @HostBinding('style.overflow') overflow: string = 'hidden';
+  @HostBinding('style.cursor') cursor: string = 'pointer';
+
   @Output() rtap: EventEmitter<any> = new EventEmitter();
   @Output() rpress: EventEmitter<any> = new EventEmitter();
   @Output() rpressup: EventEmitter<any> = new EventEmitter();
@@ -51,11 +56,6 @@ export abstract class RippleIO implements AfterViewInit, OnDestroy {
   abstract element: HTMLElement;
   abstract ngAfterViewInit(): void;
   abstract ngOnDestroy(): void;
-
-  @HostBinding('style.position') position: string = 'relative';
-  @HostBinding('style.display') display: string = 'block';
-  @HostBinding('style.overflow') overflow: string = 'hidden';
-  @HostBinding('style.cursor') cursor: string = 'pointer';
 
   @Input('light')
   set light(val: boolean) { this.configs.light = true; }
