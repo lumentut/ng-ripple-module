@@ -85,7 +85,6 @@ export const DEFAULT_RIPPLE_CONFIGS = {
   splashOpacity: RIPPLE_SPLASH_OPACITY,
   tapLimit: RIPPLE_TAP_LIMIT,
   activeClass: RIPPLE_ACTIVE_CLASS,
-  eventIncluded: true,
   delayEvent: true,
   delayValue: RIPPLE_EVENT_DELAY_VALUE,
   backgroundIncluded: true,
@@ -136,10 +135,6 @@ export class RippleComponentConfigs {
     };
   }
 
-  get isSilent(): boolean {
-    return !this.base.eventIncluded;
-  }
-
   private getDuration(transition: string): number {
     return transition.replace(/ .*/, '').match(/\d+/g).map(Number)[0];
   }
@@ -158,5 +153,9 @@ export class RippleComponentConfigs {
 
   get dismountTimeoutDuration(): number {
     return this.base.dismountingTimeout ? this.base.dismountingTimeout : this.calculatedDismountTimeout;
+  }
+
+  get delayValue(): number {
+    return this.base.delayEvent ? this.base.delayValue : 0;
   }
 }

@@ -77,8 +77,6 @@ export class CoreComponent implements AfterViewInit {
   scale: number;
   translateTimeout: any;
 
-  eventEmitter = new Subject<any>();
-
   constructor(
     elRef: ElementRef,
     public host: RippleHost,
@@ -221,7 +219,6 @@ export class CoreComponent implements AfterViewInit {
     this.animationPlayer = this.animation[type];
 
     this.animationPlayer.onDone(() => {
-      this.eventEmitter.next();
       if(this.background) { this.background.fadeout(); }
       this.animationPlayer = null;
     });

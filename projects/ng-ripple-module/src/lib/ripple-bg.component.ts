@@ -80,11 +80,13 @@ export class BackgroundComponent {
   }
 
   fadein() {
+    if(this.animationPlayer) this.animationPlayer.destroy();
     this.animationPlayer = this.fadeinAnimationPlayer;
     this.animationPlayer.play();
   }
 
   fadeout() {
+    this.animationPlayer.destroy();
     this.animationPlayer = this.fadeoutAnimationPlayer;
     this.animationPlayer.play();
   }

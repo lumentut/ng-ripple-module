@@ -19,13 +19,6 @@ export function getContact(event: any) {
 
 export type PointerListener = [string, (event: TouchEvent | MouseEvent) => any];
 
-export enum RipplePublisher {
-  CLICK = 'clickPublisher',
-  TAP = 'tapPublisher',
-  PRESS = 'pressPublisher',
-  PRESSUP = 'pressupPublisher'
-}
-
 export enum Events {
   TAP = 'rtap',
   PRESS = 'rpress',
@@ -39,16 +32,27 @@ export abstract class RipplePointerListener {
   isSilent: boolean;
 
   abstract get listeners(): PointerListener[];
-  abstract publishCurrentEvent(): void;
 
   constructor(public context: RippleListener) {
     this.ripple = this.context.ripple;
-    this.isSilent = this.ripple.configs.isSilent;
+    this.ripple.host.calculateProperties();
+    this.isSilent = this.ripple.publisher ? false : true;
     clearTimeout(this.ripple.dismountTimeout);
   }
 
+  publish(event: Events) {
+    if(this.isSilent) { return; }
+    this.ripple.ngZone.runOutsideAngular(() => {
+      this.ripple.publisher.dispatch(this.event(event))
+    });
+  }
+
+  delay(name: Events): number {
+    return name === Events.PRESS ? 0 : this.ripple.configs.delayValue;
+  }
+
   event(name: Events): RippleEvent {
-    return new RippleEvent(this.context.element, this.ripple.host.center, name);
+    return new RippleEvent( this.context.element, this.ripple.host.center, this.delay(name), name);
   }
 
   onMove(event: any) {
@@ -90,17 +94,9 @@ export class MouseStrategy extends RipplePointerListener {
     this.ripple.ngZone.runOutsideAngular(() => this.onMove(event));
   }
 
-  publishCurrentEvent = () => {
-    this.ripple.clickPublisher.next(this.event(Events.CLICK));
-  }
-
   onMouseUp = () => {
     this.onEnd();
-    if(!this.isSilent) {
-      this.ripple.ngZone.runOutsideAngular(() => {
-        this.publishCurrentEvent();
-      });
-    }
+    this.publish(Events.CLICK);
   }
 
   onMouseLeave = () => this.onEnd();
@@ -117,9 +113,7 @@ export class TouchStrategy extends RipplePointerListener {
     super(context);
     this.context.startListening(this.listeners);
     if(!this.isSilent) {
-      this.ripple.ngZone.runOutsideAngular(() => {
-        this.setPressTimeout();
-      });
+      this.ripple.ngZone.runOutsideAngular(() => this.setPressTimeout());
     }
   }
 
@@ -134,7 +128,7 @@ export class TouchStrategy extends RipplePointerListener {
     clearTimeout(this.pressTimeout);
     this.pressTimeout = setTimeout(() => {
       this.isPressing = true;
-      this.ripple.pressPublisher.next(this.event(Events.PRESS));
+      this.publish(Events.PRESS);
     }, this.ripple.core.tapLimit);
   }
 
@@ -142,21 +136,10 @@ export class TouchStrategy extends RipplePointerListener {
     this.ripple.ngZone.runOutsideAngular(() => this.onMove(event));
   }
 
-  publishCurrentEvent = () => {
-    if(this.isPressing) {
-      return this.ripple[RipplePublisher.PRESSUP].next(this.event(Events.PRESSUP));
-    }
-    this.ripple[RipplePublisher.TAP].next(this.event(Events.TAP));
-  }
-
   onTouchEnd = () => {
     this.onEnd();
-    if(!this.isSilent) {
-      clearTimeout(this.pressTimeout);
-      this.ripple.ngZone.runOutsideAngular(() => {
-        this.publishCurrentEvent();
-      });
-    }
+    this.publish(this.isPressing ? Events.PRESSUP : Events.TAP);
+    clearTimeout(this.pressTimeout);
   }
 }
 
@@ -216,7 +199,6 @@ export class RippleListener {
   onPointerDown = (event: any) => {
     this.contact = getContact(event);
     this.strategy = new PointerStrategy(this);
-    this.ripple.host.calculateProperties();
     this.ripple.mountElement();
     this.ripple.core.fillAt(this.contact.point);
   }

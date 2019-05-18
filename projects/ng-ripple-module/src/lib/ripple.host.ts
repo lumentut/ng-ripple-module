@@ -7,17 +7,22 @@
  */
 
 import { Coordinate } from './ripple';
+import { Subject } from 'rxjs';
 
 export class RippleHost {
 
   rect: ClientRect;
-  style: CSSStyleDeclaration;
   center: Coordinate;
+  width: number;
+  height: number;
+  top: number;
+  left: number;
   radius: number;
   radiusSquare: number;
   borderRadius: string;
   diameter: number;
   marginRef: any;
+  onResize: Subject<any> = new Subject();
 
   constructor(public element: HTMLElement) {
     this.borderRadius = getComputedStyle(this.element).borderRadius;
@@ -25,20 +30,13 @@ export class RippleHost {
   }
 
   calculateProperties() {
-    const rect = this.element.getBoundingClientRect();
-    const { width, height, top, left } = rect;
-
-    if(this.rect && width === this.rect.width && height === this.rect.height &&
-      top === this.rect.top && left === this.rect.left) {
-      return;
-    }
-
-    this.rect = rect;
+    this.rect = this.element.getBoundingClientRect();
     this.radius = this.getRadius();
     this.radiusSquare = this.radius*this.radius;
     this.diameter = this.getDiameter();
     this.center = this.getCenter();
     this.marginRef = this.getMarginRef();
+    this.onResize.next();
   }
 
   getDiameter(): number {
@@ -46,15 +44,13 @@ export class RippleHost {
   }
 
   get isRound(): boolean {
-    const rect = this.rect;
-    return this.borderRadius === '50%' && rect.width === rect.height;
+    return this.borderRadius === '50%' && this.rect.width === this.rect.height;
   }
 
   getCenter(): Coordinate {
-    const rect = this.rect;
     return {
-      x: rect.left + (0.5*rect.width),
-      y: rect.top + (0.5*rect.height),
+      x: this.rect.left + (0.5*this.rect.width),
+      y: this.rect.top + (0.5*this.rect.height),
     };
   }
 

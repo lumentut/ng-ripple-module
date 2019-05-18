@@ -8,26 +8,22 @@
 
 import {
   NgZone,
-  Injector,
-  ComponentRef,
   ApplicationRef,
   ComponentFactoryResolver,
   Injectable
 } from '@angular/core';
 
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import {
   RippleConfigs,
-  RippleComponentConfigs,
-  RIPPLE_BG_CONFIGS,
-  RIPPLE_CORE_CONFIGS,
+  RippleComponentConfigs
 } from './ripple.configs';
 
 import { RippleHost } from './ripple.host';
-import { BackgroundComponent } from './ripple-bg.component';
-import { CoreComponent } from './ripple-core.component';
 import { RippleListener } from './ripple.strategy';
+import { RipplePublisher } from './ripple.event';
+import { RippleCmpRef } from './ripple.cmpref';
 
 export interface Coordinate {
   x: number;
@@ -49,29 +45,20 @@ export interface RippleStyle {
   background?: string;
 }
 
-export enum ComponentReference {
-  BACKGROUND = 'backgroundCmpRef',
-  CORE = 'coreCmpRef'
-}
-
 @Injectable()
 export class Ripple {
 
   host: RippleHost;
-  coreCmpRef: ComponentRef<any>;
-  backgroundCmpRef: ComponentRef<any>;
   configs: RippleComponentConfigs;
+  publisher: RipplePublisher;
   listener: RippleListener;
-  componentRefs = [];
+  componentRef: RippleCmpRef;
 
   pointer: string;
   trigger: string;
   dismountTimeout: any;
 
-  pressPublisher = new Subject<any>();
-  pressupPublisher = new Subject<any>();
-  tapPublisher = new Subject<any>();
-  clickPublisher = new Subject<any>();
+  subscriptions = new Subscription();
 
   constructor(
     public ngZone: NgZone,
@@ -85,52 +72,22 @@ export class Ripple {
     this.host = new RippleHost(element);
     this.configs = new RippleComponentConfigs(configs);
     this.listener = new RippleListener(this);
-    this.createComponentRefs();
+    this.componentRef = new RippleCmpRef(this);
   }
 
-  get haveBackground(): boolean {
-    return this.configs.base.backgroundIncluded;
-  }
-
-  private createComponentRef(cmpRef: string, component: any, injector: Injector) {
-    this[cmpRef] = this.cfr.resolveComponentFactory(component).create(injector);
-    this.appRef.attachView(this[cmpRef].hostView);
-    this[cmpRef].changeDetectorRef.detach();
-    this.componentRefs.push(this[cmpRef]);
-  }
-
-  private createComponentRefs() {
-    if(this.haveBackground) {
-      this.createComponentRef(ComponentReference.BACKGROUND, BackgroundComponent, this.backgroundInjector);
+  subscribeEmitter(context: any) {
+    if(!this.publisher) {
+      this.publisher = new RipplePublisher(this);
     }
-    this.createComponentRef(ComponentReference.CORE, CoreComponent, this.coreInjector);
-  }
-
-  private get backgroundInjector(): Injector {
-    return Injector.create({
-      providers: [{ provide: RIPPLE_BG_CONFIGS, useValue: this.configs.rippleBackground }]
-    });
+    this.publisher.subscribeEmitter(context);
   }
 
   get background() {
-    return this.backgroundCmpRef.instance;
-  }
-
-  private get coreInjector(): Injector {
-    const providers = [
-      { provide: RIPPLE_CORE_CONFIGS, useValue: this.configs.rippleCore },
-      { provide: RippleHost, useValue: this.host },
-    ];
-
-    const backgroundProvider = [];
-    if(this.haveBackground) {
-      backgroundProvider.push({ provide: BackgroundComponent, useValue: this.background });
-    }
-    return Injector.create({ providers: [...providers, ...backgroundProvider] });
+    return this.componentRef.background.instance;
   }
 
   get core() {
-    return this.coreCmpRef.instance;
+    return this.componentRef.core.instance;
   }
 
   get isMounted(): boolean {
@@ -140,8 +97,7 @@ export class Ripple {
   mountElement() {
     if(!this.isMounted) {
       clearTimeout(this.dismountTimeout);
-      this.coreCmpRef.instance.resize();
-      this.componentRefs.forEach(cmpRef => {
+      this.componentRef.references.forEach(cmpRef => {
         this.host.element.appendChild(cmpRef.instance.element);
       });
       this.activate();
@@ -149,7 +105,7 @@ export class Ripple {
   }
 
   dismountElement() {
-    this.componentRefs.forEach(cmpRef => {
+    this.componentRef.references.forEach(cmpRef => {
       if(cmpRef.instance.element.parentNode === this.host.element) {
         this.host.element.removeChild(cmpRef.instance.element);
       }
@@ -163,10 +119,10 @@ export class Ripple {
     }, this.configs.dismountTimeoutDuration);
   }
 
-  onDestroy() {
+  destroy() {
     clearTimeout(this.dismountTimeout);
-    this.coreCmpRef.destroy();
-    if(this.haveBackground) { this.backgroundCmpRef.destroy(); }
+    this.componentRef.destroy();
+    this.subscriptions.unsubscribe();
     this.listener.destroy();
   }
 
