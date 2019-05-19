@@ -1,6 +1,6 @@
 {
   "name": "ng-ripple-module",
-  "version": "0.0.19",
+  "version": "0.0.21",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -11,17 +11,22 @@
   },
   "private": true,
   "dependencies": {
-    "@angular-mdl/core": "^6.0.1",
     "@angular/animations": "~7.2.0",
+    "@angular/cdk": "^7.3.7",
     "@angular/common": "~7.2.0",
     "@angular/compiler": "~7.2.0",
     "@angular/core": "~7.2.0",
     "@angular/forms": "~7.2.0",
+    "@angular/material": "^7.3.7",
     "@angular/platform-browser": "~7.2.0",
     "@angular/platform-browser-dynamic": "~7.2.0",
     "@angular/router": "~7.2.0",
     "core-js": "^2.5.4",
     "material-design-lite": "^1.3.0",
+    "material-icons": "^0.3.1",
+    "ngx-subscriptions": "^1.0.0",
+    "ngx-window-resize": "^1.0.1",
+    "ngx-window-sensor": "^1.0.0",
     "rxjs": "~6.3.3",
     "tslib": "^1.9.0",
     "zone.js": "~0.8.26"
@@ -50,5 +55,6 @@
     "tslib": "^1.9.0",
     "tslint": "~5.11.0",
     "typescript": "~3.2.2"
-  }
+  },
+  "homepage": "https://github.com/yohaneslumentut/ng-ripple-module/tree/master/projects/ng-ripple-module"
 }

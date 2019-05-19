@@ -1,33 +1,21 @@
 ## Ng-Ripple-Module
 
-An Angular ripple module as an alternative of available material design ripple.
+An Angular ripple module project as an alternative of available material design ripple.
 
-### Installation
-1. Install this module by running the following command:
+### Test
 ```shell
-npm i ng-ripple-module
+ng test ng-ripple-module-test
 ```
 
-2. Import `NgRippleModule` in your application's main `@NgModule` and `BrowserAnimationsModule` (if not imported yet) at your `project_root/src/app/app.modules.ts`. 
-```ts
-...
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgRippleModule } from 'ng-ripple-module';
-...
+### Deploy Demo
+```shell
+ng build ng-ripple-module-demo --prod --base-href "https://<your.name>.github.io/ng-ripple-module/"
+ngh --dir dist/ng-ripple-module-demo
+```
 
-@NgModule({
-   ...
-   imports: [
-      ...
-      BrowserModule,
-      BrowserAnimationsModule,
-      NgRippleModule
-      ...
-   ],
-   ...
-})
-export class MyModule { ... }
+### Run Demo Locally
+```shell
+ng serve ng-ripple-module-demo
 ```
 
 ### Demo
