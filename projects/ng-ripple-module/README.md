@@ -1,24 +1,49 @@
 # NgRippleModule
 
+[![Build Status](https://travis-ci.org/yohaneslumentut/ng-ripple-module.svg?branch=master)](https://travis-ci.org/yohaneslumentut/ng-ripple-module)
+
 This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.2.0.
 
-## Code scaffolding
+### Installation
+1. Install this module by running the following command:
+```shell
+npm i ng-ripple-module
+```
 
-Run `ng generate component component-name --project ng-ripple-module` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module --project ng-ripple-module`.
-> Note: Don't forget to add `--project ng-ripple-module` or else it will be added to the default project in your `angular.json` file. 
+2. Import `NgRippleModule` in your application's main `@NgModule` and `BrowserAnimationsModule` (if not imported yet) at your `project_root/src/app/app.modules.ts`. 
+```ts
+...
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgRippleModule } from 'ng-ripple-module';
+...
 
-## Build
+@NgModule({
+   ...
+   imports: [
+      ...
+      BrowserModule,
+      BrowserAnimationsModule,
+      NgRippleModule
+      ...
+   ],
+   ...
+})
+export class MyModule { ... }
+```
 
-Run `ng build ng-ripple-module` to build the project. The build artifacts will be stored in the `dist/` directory.
+### Demo
+Please visit the demo page [here](https://yohaneslumentut.github.io/ng-ripple-module-demo/)
 
-## Publishing
+### Wiki
+Now you're ready to spread the ripple easily in your angular app.<br>
+For more detail information, please read the [wiki](https://github.com/yohaneslumentut/ng-ripple-module/wiki). 
 
-After building your library with `ng build ng-ripple-module`, go to the dist folder `cd dist/ng-ripple-module` and run `npm publish`.
+<br>
+It works! God Bless You :)
+<br>
 
-## Running unit tests
-
-Run `ng test ng-ripple-module` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+<br>
+Thank You. <br>
+INDNJC,<br>
+Kota Wisata, October 2018.
