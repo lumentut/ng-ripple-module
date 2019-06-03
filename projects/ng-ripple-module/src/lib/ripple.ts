@@ -1,136 +1,108 @@
-/**
- * @license
- * Copyright (c) 2019 Yohanes Oktavianus Lumentut All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
- */
-
-import {
-  NgZone,
-  ApplicationRef,
-  ComponentFactoryResolver,
-  Injectable
-} from '@angular/core';
-
+import { NgZone, ComponentRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-import {
-  RippleConfigs,
-  RippleComponentConfigs
-} from './ripple.configs';
-
-import { RippleHost } from './ripple.host';
-import { RippleListener } from './ripple.strategy';
+import { RippleAnimation } from './ripple.animation';
+import { RippleConfigs } from './ripple.configs';
+import { RippleComponent } from './ripple.component';
+import { RippleCoordinate } from './ripple.coordinate';
+import { RippleEvent } from './ripple.event';
+import { RippleListener, PointerListener, Events } from './ripple.listener';
 import { RipplePublisher } from './ripple.event';
-import { RippleCmpRef } from './ripple.cmpref';
 
-export interface Coordinate {
-  x: number;
-  y: number;
+export function getContact(event: any) {
+  const evt = event.changedTouches ? event.changedTouches[0] : event;
+  return {
+    point: { x: evt.clientX, y: evt.clientY },
+    input: (event.pointerType || event.type).slice(0, 5)
+  };
 }
 
-export interface Margin {
-  top?: number;
-  left?: number;
-  right?: number;
-  bottom?: number;
-}
-
-export interface RippleStyle {
-  width?: number;
-  height?: number;
-  marginLeft?: number;
-  marginTop?: number;
-  background?: string;
-}
-
-@Injectable()
 export class Ripple {
 
-  host: RippleHost;
-  configs: RippleComponentConfigs;
-  publisher: RipplePublisher;
-  listener: RippleListener;
-  componentRef: RippleCmpRef;
-
-  pointer: string;
-  trigger: string;
-  dismountTimeout: any;
-
+  animation: RippleAnimation;
+  coordinate: RippleCoordinate;
+  component: RippleComponent;
+  contact: any;
+  eventTrigger = [];
+  publisher = new RipplePublisher();
+  pointer: any;
+  pointerListeners: any;
   subscriptions = new Subscription();
+  trigger: string[];
+
+  readonly pointerdownEvent = ['pointerdown'];
+  readonly fallbackEvent = ['touchstart', 'mousedown'];
 
   constructor(
+    public componentRef: ComponentRef<any>,
+    public configs: RippleConfigs,
+    public hostElement: HTMLElement,
+    public listener: RippleListener,
     public ngZone: NgZone,
-    private cfr: ComponentFactoryResolver,
-    private appRef: ApplicationRef
   ) {
-    this.trigger = 'onpointerdown' in window ? 'pointerdown' : 'fallback';
+    const { fallbackEvent, pointerdownEvent } = this;
+    this.trigger = 'onpointerdown' in window ? pointerdownEvent : fallbackEvent;
+    this.initialize();
   }
 
-  initialize(element: HTMLElement, configs: RippleConfigs) {
-    this.host = new RippleHost(element);
-    this.configs = new RippleComponentConfigs(configs);
-    this.listener = new RippleListener(this);
-    this.componentRef = new RippleCmpRef(this);
-  }
+  initialize() {
+    this.trigger.forEach(eventName => {
+      this.eventTrigger.push([eventName, this.onPointerDown]);
+    });
 
-  subscribeEmitter(context: any) {
-    if(!this.publisher) {
-      this.publisher = new RipplePublisher(this);
-    }
-    this.publisher.subscribeEmitter(context);
-  }
-
-  get background() {
-    return this.componentRef.background.instance;
-  }
-
-  get core() {
-    return this.componentRef.core.instance;
-  }
-
-  get isMounted(): boolean {
-    return this.host.element.contains(this.core.element);
-  }
-
-  mountElement() {
-    if(!this.isMounted) {
-      clearTimeout(this.dismountTimeout);
-      this.componentRef.references.forEach(cmpRef => {
-        this.host.element.appendChild(cmpRef.instance.element);
-      });
-      this.activate();
-    }
-  }
-
-  dismountElement() {
-    this.componentRef.references.forEach(cmpRef => {
-      if(cmpRef.instance.element.parentNode === this.host.element) {
-        this.host.element.removeChild(cmpRef.instance.element);
-      }
+    const { hostElement, eventTrigger } = this;
+    this.ngZone.runOutsideAngular(() => {
+      this.listener.startListening(hostElement, eventTrigger);
     });
   }
 
-  prepareForDismounting() {
-    this.deactivate();
-    this.dismountTimeout = setTimeout(() => {
-      this.dismountElement();
-    }, this.configs.dismountTimeoutDuration);
+  subscribeEmitter(context: any) {
+    this.publisher.subscribeEmitter(context);
+  }
+
+  get core() {
+    return this.componentRef.instance;
+  }
+
+  private delay(name: Events): number {
+    return name === Events.PRESS ? 0 : this.configs.delayValue;
+  }
+
+  private event = (name: Events) => {
+    const { core, hostElement } = this;
+    return new RippleEvent( hostElement, core.host.center, this.delay(name), name);
+  }
+
+  private onPointerDown = (event: PointerEvent | MouseEvent | TouchEvent) => {
+    this.contact = getContact(event);
+    this.pointer = new PointerListener(this);
+    this.core.fillAt(this.contact.point);
+  }
+
+  onPointerMove = (event: MouseEvent | TouchEvent) => {
+    const contact = getContact(event);
+    const { core } = this;
+    if (!core.coordinate.centerStillIsInHostArea(contact.point)
+      || core.configs.fixed) {
+      return this.onPointerEnd();
+    }
+    if (core.coordinate.outerPointStillInHostRadius(contact.point)) {
+      return core.translateTo(contact.point);
+    }
+  }
+
+  onPointerEnd = () => {
+    const { hostElement, pointer } = this;
+    this.listener.stopListening(hostElement, pointer.listeners);
+    this.core.splash();
   }
 
   destroy() {
-    clearTimeout(this.dismountTimeout);
-    this.componentRef.destroy();
+    const { eventTrigger, hostElement, pointer } = this;
+    this.listener.stopListening(hostElement, eventTrigger);
+    if (pointer) {
+      this.listener.stopListening(hostElement, pointer.listeners);
+    }
     this.subscriptions.unsubscribe();
-    this.listener.destroy();
-  }
-
-  activate() {
-    this.host.element.classList.add(this.core.configs.activeClass);
-  }
-
-  deactivate() {
-    this.host.element.classList.remove(this.core.configs.activeClass);
   }
 }

@@ -3,33 +3,37 @@
   <h3 class="title" style="text-align:center">
     {{title}}
   </h3>
-  <h5 class="version" style="text-align:center">
-    {{version}} - <iframe src="https://ghbtns.com/github-btn.html?user=yohaneslumentut&repo=ng-ripple-module&type=star&count=true" frameborder="0" scrolling="0" width="90px" height="20px" allign="middle"></iframe>
-  </h5>
   <br>
   <div class="demo-card-square mdl-card mdl-shadow--2dp">
-    <div ripple class="relative mdl-card__title mdl-card--expand"
+    <div ripple class="noselection relative mdl-card__title mdl-card--expand"
       (rpress)="onPress($event)"
       (rpressup)="onPressup($event)"
       (rclick)="onClick($event)"
       (rtap)="onTap($event)">
       <h2 class="mdl-card__title-text">{{cardTitle}}</h2>
     </div>
-    <div ripple fixed-ripple class="relative mdl-card__supporting-text">
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-      Aenan convallis.
+    <div ripple fixed class="relative mdl-card__supporting-text">
+      An alternative of Angular material design ripple effect.
     </div>
     <div class="mdl-card__actions mdl-card--border">
-      <mdl-flat-btn>button</mdl-flat-btn>
+      <app-mdl-flat-btn></app-mdl-flat-btn>
     </div>
   </div>
   <br>
   <div class="row">
     <div class="cell">
-      <mdl-raised-btn>left</mdl-raised-btn>
+      <app-mdl-raised-btn>left</app-mdl-raised-btn>
     </div>
     <div class="cell">
-      <mdl-colored-btn>right</mdl-colored-btn>
+      <app-mdl-colored-btn
+        (rclick)="onClick($event)"
+        [splashOpacity]=0.7
+        [rippleColor]="'rgba(255,255,255,0.25)'">
+        right
+      </app-mdl-colored-btn>
     </div>
+    <button class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored">
+      <i class="material-icons">github</i>
+    </button>
   </div>
 </div>

@@ -1,0 +1,21 @@
+language: node_js
+addons:
+  chrome: stable
+branches:
+  only:
+    - master
+cache:
+  directories:
+    - node_modules
+notifications:
+  email: false
+node_js:
+  - '10.4.1'
+before_script:
+  - npm prune
+script:
+  - npm run test-ci
+  - npm run build-ci
+branches:
+  except:
+    - /^v\d+\.\d+\.\d+$/

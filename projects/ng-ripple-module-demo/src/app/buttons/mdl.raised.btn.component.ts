@@ -1,35 +1,38 @@
-import { Component, ViewChild } from '@angular/core';
-import { RippleDirective } from '@ng-ripple-module/ripple.directive';
-import { RippleConfigs, GLOBAL_RIPPLE_CONFIGS } from '@ng-ripple-module/ripple.configs';
-
-const configs: RippleConfigs = {
-  rippleDefaultBgColor: 'rgba(0,0,0,0.07)',
-  activeDefaultBgColor: 'rgba(0,0,0,0.03)',
-  splashOpacity: 0.9
-};
+import { AfterViewInit, Component, ElementRef, HostBinding, OnDestroy } from '@angular/core';
+import { Ripple } from '@ng-ripple-module/ripple';
+import { RippleEffect } from '@ng-ripple-module/ripple.effect';
+import { RippleFactory } from '@ng-ripple-module/ripple.factory';
 
 @Component({
-  selector: 'mdl-raised-btn',
-  template: `
-    <button ripple class="mdl-button mdl-button--raised">
-      <ng-content></ng-content>
-    </button>`
-  ,
+  selector: 'app-mdl-raised-btn',
+  template: `<ng-content></ng-content>`,
   styles: [
-    `:host button {
+    `:host {
+      color: black;
       font-weight: bold;
-      width: 90px;
     }`
-  ],
-  providers: [
-    {provide: GLOBAL_RIPPLE_CONFIGS, useValue: configs}
   ]
 })
-export class MdlRaisedBtnComponent {
+export class MdlRaisedBtnComponent extends RippleEffect implements AfterViewInit, OnDestroy {
 
-  @ViewChild(RippleDirective) rippleDirective: RippleDirective;
+  @HostBinding('class.mdl-button') button = true;
+  @HostBinding('class.mdl-button--raised') raisedBtn = true;
 
-  constructor(){
-    console.log(this)
+  ripple: Ripple;
+
+  constructor(
+    elRef: ElementRef,
+    rippleFactory: RippleFactory
+  ) {
+    super(elRef, rippleFactory);
+  }
+
+  ngAfterViewInit() {
+    super.initialize();
+    super.subscribe();
+  }
+
+  ngOnDestroy() {
+    super.destroy();
   }
 }

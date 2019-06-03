@@ -1,9 +1,8 @@
 {
   "name": "ng-ripple-module",
-  "version": "0.0.21",
-  "description": "An Agular Ripple Module",
-  "author": "Yohanes O.Lumentut <yohanes.lumentut@yahoo.com>",
-  "license": "MIT",
+  "version": "1.0.0-rc.0",
+  "description": "An Angular ripple module project as an alternative of available material design ripple.",
+  "homepage": "https://github.com/yohaneslumentut/ng-ripple-module/tree/master/projects/ng-ripple-module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yohaneslumentut/ng-ripple-module.git"

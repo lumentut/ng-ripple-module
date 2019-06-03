@@ -1,19 +1,6 @@
-import {
-  Component,
-  ElementRef,
-  DebugElement
-} from '@angular/core';
-
-import {
-  BrowserAnimationsModule
-} from '@angular/platform-browser/animations';
-
-import {
-  async,
-  TestBed ,
-  ComponentFixture
-} from '@angular/core/testing';
-
+import { Component, DebugElement, ElementRef } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { async, TestBed , ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { NgRippleModule } from '@ng-ripple-module/ng-ripple.module';
@@ -35,12 +22,12 @@ class RippleTestComponent {
   constructor(public elRef: ElementRef) {}
 }
 
-describe('T06 - Core & Background Component have required animation test', () => {
+describe('RippleAnimation', () => {
 
   let fixture: ComponentFixture<RippleTestComponent>;
   let directiveEl: DebugElement;
   let directive: RippleDirective;
-  let coreAnimation: RippleAnimation;
+  let animation: RippleAnimation;
 
   beforeEach(async(() => {
 
@@ -59,30 +46,22 @@ describe('T06 - Core & Background Component have required animation test', () =>
     directiveEl = fixture.debugElement.query(By.directive(RippleDirective));
     directive = directiveEl.injector.get(RippleDirective);
     fixture.detectChanges();
-    coreAnimation = directive.ripple.core.animation;
+    animation = directive.ripple.core.animation;
   }));
 
   it('have fill animation', () => {
-    expect(coreAnimation.fill(100, 100)).toBeTruthy();
+    expect(animation.fill(100, 100)).toBeTruthy();
   });
 
   it('have translate animation', () => {
-    expect(coreAnimation.translate(10, 10, 0.5)).toBeTruthy();
+    expect(animation.translate(10, 10, 0.5)).toBeTruthy();
   });
 
   it('have splash animation', () => {
-    expect(coreAnimation.splash).toBeTruthy();
+    expect(animation.splash).toBeTruthy();
   });
 
-  it('have fadeout animation', () => {
-    expect(coreAnimation.fadeout).toBeTruthy();
-  });
-
-  it('have background fadein animation', () => {
-    expect(directive.ripple.core.background.fadeinAnimationPlayer).toBeTruthy();
-  });
-
-  it('have background fadeout animation', () => {
-    expect(directive.ripple.core.background.fadeoutAnimationPlayer).toBeTruthy();
+  it('have fade animation', () => {
+    expect(animation.fade).toBeTruthy();
   });
 });

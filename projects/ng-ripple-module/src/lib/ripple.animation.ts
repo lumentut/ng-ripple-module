@@ -1,54 +1,31 @@
-/**
- * @license
- * Copyright (c) 2019 Yohanes Oktavianus Lumentut All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
- */
-
 import {
-  style,
   animate,
+  AnimationAnimateMetadata,
   AnimationBuilder,
   AnimationPlayer,
-  AnimationAnimateMetadata
+  style
 } from '@angular/animations';
 
 import {
-  RIPPLE_TO_CENTER_TRANSFORM
-} from './ripple.constants';
-
-import {
-  RippleCoreConfigs
+  RIPPLE_TO_CENTER_TRANSFORM,
+  RippleConfigs
 } from './ripple.configs';
 
-export interface RippleTransition {
-  fill: string;
-  splash: string;
-  fade: string;
+export function getDuration(transition: string) {
+  return transition.replace(/ .*/, '').match(/\d+/g).map(Number)[0];
 }
 
 export class RippleAnimation {
 
   constructor(
-    private element: HTMLElement,
     private builder: AnimationBuilder,
-    private configs: RippleCoreConfigs
+    private configs: RippleConfigs,
+    private element: HTMLElement,
   ) {}
 
-  animationPlayerFactory(animation: any[]) {
-    return this.builder.build(animation).create(this.element);
-  }
-
-  get fade(): AnimationAnimateMetadata {
-    return animate(this.configs.fadeTransition, style({ opacity: 0 }));
-  }
-
-  splashToCenter(transition: string): AnimationAnimateMetadata {
-    return animate( transition, style({
-      opacity: this.configs.splashOpacity,
-      transform: RIPPLE_TO_CENTER_TRANSFORM
-    }));
+  animationPlayerFactory(animation: any[]): AnimationPlayer {
+    const { builder, element } = this;
+    return builder.build(animation).create(element);
   }
 
   fill(tx: number, ty: number): AnimationPlayer {
@@ -80,11 +57,15 @@ export class RippleAnimation {
   }
 
   get splash(): AnimationPlayer {
-    const splashToCenter = this.splashToCenter(this.configs.splashTransition);
+    const { splashOpacity, splashTransition } = this.configs;
+    const splashToCenter = animate( splashTransition, style({
+      opacity: splashOpacity,
+      transform: RIPPLE_TO_CENTER_TRANSFORM
+    }));
     return this.animationPlayerFactory([splashToCenter, this.fade]);
   }
 
-  get fadeout(): AnimationPlayer {
-    return this.animationPlayerFactory([this.fade]);
+  get fade(): AnimationAnimateMetadata {
+    return animate(this.configs.fadeTransition, style({ opacity: 0 }));
   }
 }

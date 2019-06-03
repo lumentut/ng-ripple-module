@@ -1,11 +1,138 @@
-/* You can add global styles to this file, and also import other style files */
+$material-icons-font-path: '~material-icons/iconfont/';
+ 
+@import '~material-icons/iconfont/material-icons.scss';
 @import "node_modules/material-design-lite/src/material-design-lite.scss";
 
-button.mdl-button--raised:focus:not(:active) {
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12) !important;
-}
+$primary-color: #007bff;
+$button-primary-color: darken($primary-color, 6%);
+$button-primary-text-color: #fff;
+$button-primary-hover-color: darken($primary-color, 4%);;
+$button-primary-active-color:$primary-color;
 
-.mdl-button--accent.mdl-button--accent.mdl-button--raised {
-  color: rgb(255,255,255);
-  background-color: #4a8bfc;
+$secondary-color: #6c757d;
+$button-secondary-color: darken($secondary-color, 6%);
+$button-secondary-text-color: #fff;
+$button-secondary-hover-color: darken($secondary-color, 4%);
+$button-secondary-active-color: $secondary-color;
+
+$success-color: #28a745;
+$button-success-color: darken($success-color, 6%);
+$button-success-text-color: #fff;
+$button-success-hover-color: darken($success-color, 4%);
+$button-success-active-color: $success-color;
+
+$warning-color: #ffc107;
+$button-warning-color: darken($warning-color, 6%);
+$button-warning-text-color: #212529;
+$button-warning-hover-color: darken($warning-color, 4%);
+$button-warning-active-color: $warning-color;
+
+$danger-color: #dc3545;
+$button-danger-color: darken($danger-color, 6%);
+$button-danger-text-color: #fff;
+$button-danger-hover-color: darken($danger-color, 4%);
+$button-danger-active-color: $danger-color;
+
+$dark-color: #343a40;
+$button-dark-color: darken($dark-color, 6%);
+$button-dark-text-color: #fff;
+$button-dark-hover-color: darken($dark-color, 4%);
+$button-dark-active-color: $dark-color;
+
+.mdl-button {
+  &.mdl-button-primary {
+    background: $button-primary-color;
+    color: $button-primary-text-color;
+    &:hover {
+      background-color: $button-primary-hover-color;
+    }
+
+    &:focus:not(:active) {
+      background-color: $button-primary-active-color;
+    }
+
+    &:active {
+      background-color: $button-primary-active-color;
+    }
+  }
+
+  &.mdl-button-secondary {
+    background: $button-secondary-color;
+    color: $button-secondary-text-color;
+    &:hover {
+      background-color: $button-secondary-hover-color;
+    }
+
+    &:focus:not(:active) {
+      background-color: $button-secondary-active-color;
+    }
+
+    &:active {
+      background-color: $button-secondary-active-color;
+    }
+  }
+
+  &.mdl-button-success {
+    background: $button-success-color;
+    color: $button-success-text-color;
+    &:hover {
+      background-color: $button-success-hover-color;
+    }
+
+    &:focus:not(:active) {
+      background-color: $button-success-active-color;
+    }
+
+    &:active {
+      background-color: $button-success-active-color;
+    }
+  }
+
+  &.mdl-button-warning {
+    background: $button-warning-color;
+    color: $button-warning-text-color;
+    &:hover {
+      background-color: $button-warning-hover-color;
+    }
+
+    &:focus:not(:active) {
+      background-color: $button-warning-active-color;
+    }
+
+    &:active {
+      background-color: $button-warning-active-color;
+    }
+  }
+
+  &.mdl-button-danger {
+    background: $button-danger-color;
+    color: $button-danger-text-color;
+    &:hover {
+      background-color: $button-danger-hover-color;
+    }
+
+    &:focus:not(:active) {
+      background-color: $button-danger-active-color;
+    }
+
+    &:active {
+      background-color: $button-danger-active-color;
+    }
+  }
+
+  &.mdl-button-dark {
+    background: $button-dark-color;
+    color: $button-dark-text-color;
+    &:hover {
+      background-color: $button-dark-hover-color;
+    }
+
+    &:focus:not(:active) {
+      background-color: $button-dark-active-color;
+    }
+
+    &:active {
+      background-color: $button-dark-active-color;
+    }
+  }
 }

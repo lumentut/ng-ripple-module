@@ -1,22 +1,36 @@
 import { Component } from '@angular/core';
-// import { RippleConfigs, GLOBAL_RIPPLE_CONFIGS } from 'ng-ripple-module';
-import { RippleConfigs, GLOBAL_RIPPLE_CONFIGS } from '../../../../ng-ripple-module/src/lib/ripple.configs';
+import { RippleConfigs, RIPPLE_CUSTOM_CONFIGS } from '@ng-ripple-module/ripple.configs';
 
 const configs: RippleConfigs = {
-  rippleDefaultBgColor: 'rgba(0,0,0,0.05)',
-  activeDefaultBgColor: 'rgba(0,0,0,0.07)',
-  splashOpacity: 0.9
+  backgroundColor: 'rgba(0,0,0,0.05)',
+  splashOpacity: 0.8
 };
 
 @Component({
-  selector: 'mdl-flat-btn',
+  selector: 'app-mdl-flat-btn',
   template: `
-    <button ripple class="mdl-button">
+    <button ripple class="mdl-button"
+      navlink="https://github.com/yohaneslumentut/ng-ripple-module"
+      (rtap)="onClick($event)"
+      (rclick)="onClick($event)">
+      <img src="assets/GitHub-Mark-32px.png"> GitHub
       <ng-content></ng-content>
-    </button>`
-  ,
+    </button>`,
+  styles: [
+    `:host img {
+      width: 20px;
+    }`,
+    `:host button {
+      text-transform: none;
+      font-size: 12px;
+    }`
+  ],
   providers: [
-    {provide: GLOBAL_RIPPLE_CONFIGS, useValue: configs}
+    {provide: RIPPLE_CUSTOM_CONFIGS, useValue: configs}
   ]
 })
-export class MdlFlatBtnComponent {}
+export class MdlFlatBtnComponent {
+  onClick(event: any) {
+    window.location.href = event.navLink;
+  }
+}

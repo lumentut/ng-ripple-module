@@ -12,22 +12,22 @@ export class AppComponent {
   version = 'v.0.0.21';
 
   constructor() {
-    console.log(this)
+    console.log(this);
   }
 
   onTap(event: any) {
-    console.log(event)
+    console.log(event);
   }
 
   onPress(event: any) {
-    console.log(event)
+    console.log(event);
   }
 
   onPressup(event: any) {
-    console.log(event)
+    console.log(event);
   }
 
   onClick(event: any) {
-    console.log(event)
+    console.log(event);
   }
 }
