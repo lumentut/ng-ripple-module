@@ -8,7 +8,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "test-ci": "ng lint && ng test --watch=false --browsers=ChromeHeadless",
-    "build-ci": "ng build ngx-ripple"
+    "build-ci": "ng build ng-ripple-module"
   },
   "private": true,
   "dependencies": {
