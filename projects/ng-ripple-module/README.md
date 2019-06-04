@@ -1,8 +1,7 @@
 # NgRippleModule
 
 [![Build Status](https://travis-ci.org/yohaneslumentut/ng-ripple-module.svg?branch=master)](https://travis-ci.org/yohaneslumentut/ng-ripple-module)
-
-This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.2.0.
+[![npm version](https://badge.fury.io/js/ng-ripple-module.svg)](https://badge.fury.io/js/ng-ripple-module)
 
 ### Installation
 1. Install this module by running the following command:

@@ -1,6 +1,7 @@
 ## Ng-Ripple-Module
 
 [![Build Status](https://travis-ci.org/yohaneslumentut/ng-ripple-module.svg?branch=master)](https://travis-ci.org/yohaneslumentut/ng-ripple-module)
+[![npm version](https://badge.fury.io/js/ng-ripple-module.svg)](https://badge.fury.io/js/ng-ripple-module)
 
 An Angular ripple module project as an alternative of available material design ripple.
 
