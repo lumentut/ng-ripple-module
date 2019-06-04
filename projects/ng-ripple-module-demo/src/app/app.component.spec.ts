@@ -5,6 +5,7 @@ import { NgRippleModule } from '@ng-ripple-module/ng-ripple.module';
 import { MdlFlatBtnComponent } from './buttons/mdl.flat.btn.component';
 import { MdlRaisedBtnComponent } from './buttons/mdl.raised.btn.component';
 import { MdlColoredBtnComponent } from './buttons/mdl.colored.btn.component';
+import { MdlTitleCardComponent } from './cards/mdl.title.card';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -17,7 +18,8 @@ describe('AppComponent', () => {
         AppComponent,
         MdlFlatBtnComponent,
         MdlRaisedBtnComponent,
-        MdlColoredBtnComponent
+        MdlColoredBtnComponent,
+        MdlTitleCardComponent
       ],
     }).compileComponents();
   }));
