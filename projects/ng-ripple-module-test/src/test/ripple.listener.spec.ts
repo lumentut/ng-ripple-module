@@ -7,7 +7,7 @@ import { Ripple } from '@ng-ripple-module/ripple';
 import { RippleDirective } from '@ng-ripple-module/ripple.directive';
 import { RippleHost } from '@ng-ripple-module/ripple.host';
 import { RippleListener } from '@ng-ripple-module/ripple.listener';
-import { RippleConfigs } from 'ng-ripple-module/public-api';
+import { RippleConfigs } from '@ng-ripple-module/ripple.configs';
 
 const TEST_COLOR = 'rgba(0,0,0,0.08)';
 const TEST_OPACITY = 0.5;
