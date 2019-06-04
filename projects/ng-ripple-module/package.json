@@ -1,7 +1,16 @@
 {
   "name": "ng-ripple-module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An Angular ripple module as an alternative of available material design ripple.",
+  "keywords": [
+    "angular",
+    "ripple",
+    "material",
+    "ng-ripple",
+    "ripple-effect",
+    "material-design",
+    "ng-ripple-module"
+  ],
   "homepage": "https://github.com/yohaneslumentut/ng-ripple-module/tree/master/projects/ng-ripple-module",
   "repository": {
     "type": "git",
