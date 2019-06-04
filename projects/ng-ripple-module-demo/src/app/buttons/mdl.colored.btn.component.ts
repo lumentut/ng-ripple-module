@@ -4,7 +4,7 @@ import { RippleEffect } from '@ng-ripple-module/ripple.effect';
 import { RippleFactory } from '@ng-ripple-module/ripple.factory';
 
 @Component({
-  selector: 'app-mdl-colored-btn',
+  selector: 'mdl-colored-btn',
   template: `<ng-content></ng-content>`,
   styles: [
     `:host {

@@ -7,13 +7,15 @@ import { AppComponent } from './app.component';
 import { MdlFlatBtnComponent } from './buttons/mdl.flat.btn.component';
 import { MdlRaisedBtnComponent } from './buttons/mdl.raised.btn.component';
 import { MdlColoredBtnComponent } from './buttons/mdl.colored.btn.component';
+import { MdlTitleCardComponent } from './cards/mdl.title.card';
 
 @NgModule({
   declarations: [
     AppComponent,
+    MdlColoredBtnComponent,
     MdlFlatBtnComponent,
     MdlRaisedBtnComponent,
-    MdlColoredBtnComponent
+    MdlTitleCardComponent
   ],
   imports: [
     BrowserModule,
@@ -21,9 +23,10 @@ import { MdlColoredBtnComponent } from './buttons/mdl.colored.btn.component';
     NgRippleModule
   ],
   exports: [
+    MdlColoredBtnComponent,
     MdlFlatBtnComponent,
     MdlRaisedBtnComponent,
-    MdlColoredBtnComponent
+    MdlTitleCardComponent
   ],
   bootstrap: [AppComponent]
 })

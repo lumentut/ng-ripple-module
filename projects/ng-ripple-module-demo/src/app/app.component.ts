@@ -9,9 +9,15 @@ export class AppComponent {
 
   title = 'ng-ripple-module';
   cardTitle = 'Angular';
-  version = 'v.0.0.21';
+  version = 'v.1.0.1';
 
-  constructor() {}
+  constructor() {
+    console.log(this);
+  }
+
+  goTo(event: any) {
+    window.location.href = event.navLink;
+  }
 
   onTap(event: any) {
     console.log(event);

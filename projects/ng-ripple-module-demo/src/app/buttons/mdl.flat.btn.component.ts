@@ -7,7 +7,7 @@ const configs: RippleConfigs = {
 };
 
 @Component({
-  selector: 'app-mdl-flat-btn',
+  selector: 'mdl-flat-btn',
   template: `
     <button ripple class="mdl-button"
       navlink="https://github.com/yohaneslumentut/ng-ripple-module"

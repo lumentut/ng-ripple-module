@@ -3,34 +3,46 @@
   <h3 class="title" style="text-align:center">
     {{title}}
   </h3>
+  <div class="title" style="text-align:center">
+    <a href="https://badge.fury.io/js/ng-ripple-module">
+      <img src="https://badge.fury.io/js/ng-ripple-module.svg" alt="NPM Version">
+    </a>
+  </div>
   <br>
   <div class="demo-card-square mdl-card mdl-shadow--2dp">
-    <div ripple class="noselection relative mdl-card__title mdl-card--expand"
+    <mdl-card-title
       (rpress)="onPress($event)"
       (rpressup)="onPressup($event)"
       (rclick)="onClick($event)"
       (rtap)="onTap($event)">
       <h2 class="mdl-card__title-text">{{cardTitle}}</h2>
-    </div>
-    <div ripple fixed class="relative mdl-card__supporting-text">
+    </mdl-card-title>
+    <div ripple fixed 
+      class="relative mdl-card__supporting-text"
+      [splashOpacity]=0.4>
       An alternative of Angular material design ripple effect.
     </div>
     <div class="mdl-card__actions mdl-card--border">
-      <app-mdl-flat-btn></app-mdl-flat-btn>
+      <mdl-flat-btn></mdl-flat-btn>
     </div>
   </div>
   <br>
   <div class="row">
     <div class="cell">
-      <app-mdl-raised-btn>left</app-mdl-raised-btn>
+      <mdl-raised-btn
+      navLink="https://github.com/yohaneslumentut/ng-ripple-module/wiki"
+      (rpressup)="goTo($event)"
+      (rclick)="goTo($event)"
+      (rtap)="goTo($event)">WIKI</mdl-raised-btn>
     </div>
     <div class="cell">
-      <app-mdl-colored-btn
-        (rclick)="onClick($event)"
+      <mdl-colored-btn
         [splashOpacity]=0.7
-        [rippleColor]="'rgba(255,255,255,0.25)'">
-        right
-      </app-mdl-colored-btn>
+        [rippleColor]="'rgba(255,255,255,0.25)'"
+        navLink="https://www.npmjs.com/package/ng-ripple-module"
+        (rpressup)="goTo($event)"
+        (rclick)="goTo($event)"
+        (rtap)="goTo($event)">NPM</mdl-colored-btn>
     </div>
   </div>
 </div>
