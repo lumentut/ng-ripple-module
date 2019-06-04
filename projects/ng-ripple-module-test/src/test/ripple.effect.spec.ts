@@ -113,9 +113,9 @@ describe('RippleEffect:', () => {
 
   it('should have custom configs and have attribute and input binding', () => {
     expect(decoratorCmp.configs).not.toBeUndefined();
-    // const configs: any = decoratorCmp.configs;
-    // expect(configs.backgroundColor).toEqual(TEST_COLOR);
-    // expect(configs.splashOpacity).toEqual(TEST_OPACITY);
-    // expect(configs.fixed).toBeTruthy();
+    const configs: any = decoratorCmp.configs;
+    expect(configs.backgroundColor).toEqual(TEST_COLOR);
+    expect(configs.splashOpacity).toEqual(TEST_OPACITY);
+    expect(configs.fixed).toBeTruthy();
   });
 });

@@ -1,5 +1,6 @@
 import { Coordinate } from './ripple.coordinate';
 import { Subject } from 'rxjs';
+import { NgZone, Injectable } from '@angular/core';
 
 export class RippleEvent {
 
@@ -31,14 +32,14 @@ export class RippleEvent {
 
 export class RipplePublisher extends Subject<RippleEvent> {
 
-  constructor() {
+  constructor(private ngZone: NgZone) {
     super();
   }
 
   delay: any = (ms: number) => new Promise(_ => setTimeout(_, ms));
 
   dispatch(event: RippleEvent) {
-    this.delay(event.delay).then(() => this.next(event));
+    this.delay(event.delay).then(() => this.ngZone.run(() => this.next(event)));
   }
 
   subscribeEmitter(context: any) {

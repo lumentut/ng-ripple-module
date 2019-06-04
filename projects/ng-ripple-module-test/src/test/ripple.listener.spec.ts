@@ -7,6 +7,7 @@ import { Ripple } from '@ng-ripple-module/ripple';
 import { RippleDirective } from '@ng-ripple-module/ripple.directive';
 import { RippleHost } from '@ng-ripple-module/ripple.host';
 import { RippleListener } from '@ng-ripple-module/ripple.listener';
+import { RippleConfigs } from 'ng-ripple-module/public-api';
 
 const TEST_COLOR = 'rgba(0,0,0,0.08)';
 const TEST_OPACITY = 0.5;
@@ -48,6 +49,8 @@ class TestRippleListenerComponent {
 
 describe('RippleListener:', () => {
   let component: TestRippleListenerComponent;
+  let configs: RippleConfigs;
+  let delay: number;
   let directiveEl: DebugElement;
   let directive: any;
   let fixture: ComponentFixture<TestRippleListenerComponent>;
@@ -75,6 +78,8 @@ describe('RippleListener:', () => {
     ripple = directive.ripple;
     host = ripple.core.host;
     listener = ripple.listener;
+    configs = ripple.configs;
+    delay = configs.splashTransition.match(/\d+/g).map(Number)[0];
   });
 
   it('should available', () => {
@@ -186,7 +191,7 @@ describe('RippleListener:', () => {
     host.element.dispatchEvent(touchStart);
     tick(ripple.pointer.tapLimit - 1);
     host.element.dispatchEvent(touchEnd);
-    tick();
+    tick(delay);
     expect(directive.rtap.emit).toHaveBeenCalled();
   }));
 
@@ -237,7 +242,7 @@ describe('RippleListener:', () => {
     host.element.dispatchEvent(touchStart);
     tick(ripple.pointer.tapLimit);
     host.element.dispatchEvent(touchEnd);
-    tick();
+    tick(delay);
     expect(directive.rpressup.emit).toHaveBeenCalled();
   }));
 
@@ -254,8 +259,7 @@ describe('RippleListener:', () => {
     host.element.dispatchEvent(mouseDown);
     tick(300);
     host.element.dispatchEvent(mouseUp);
-    tick();
-
+    tick(delay);
     expect(directive.rclick.emit).toHaveBeenCalled();
   }));
 });

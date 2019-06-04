@@ -24,7 +24,6 @@ export class Ripple {
   component: RippleComponent;
   contact: any;
   eventTrigger = [];
-  publisher = new RipplePublisher();
   pointer: any;
   pointerListeners: any;
   subscriptions = new Subscription();
@@ -38,6 +37,7 @@ export class Ripple {
     public configs: RippleConfigs,
     public hostElement: HTMLElement,
     public listener: RippleListener,
+    public publisher: RipplePublisher,
     public ngZone: NgZone,
   ) {
     const { fallbackEvent, pointerdownEvent } = this;
@@ -64,13 +64,14 @@ export class Ripple {
     return this.componentRef.instance;
   }
 
-  private delay(name: Events): number {
-    return name === Events.PRESS ? 0 : this.configs.delayValue;
+  private delay(eventName: Events): number {
+    const { splashTransition } = this.configs;
+    return eventName === Events.PRESS ? 0 : splashTransition.match(/\d+/g).map(Number)[0];
   }
 
-  private event = (name: Events) => {
+  private event = (eventName: Events) => {
     const { core, hostElement } = this;
-    return new RippleEvent( hostElement, core.host.center, this.delay(name), name);
+    return new RippleEvent( hostElement, core.host.center, this.delay(eventName), eventName);
   }
 
   private onPointerDown = (event: PointerEvent | MouseEvent | TouchEvent) => {

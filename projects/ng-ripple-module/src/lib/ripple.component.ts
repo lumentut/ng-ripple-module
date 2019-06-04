@@ -1,9 +1,9 @@
-import { AfterViewInit, Component, ElementRef, Inject, Renderer2 } from '@angular/core';
+import { Component, ElementRef, Inject, Renderer2 } from '@angular/core';
 import { AnimationBuilder, AnimationPlayer } from '@angular/animations';
-import { RippleHost } from './ripple.host';
 import { RippleAnimation } from './ripple.animation';
 import { RippleConfigs, RIPPLE_SCALE_INCREASER, RIPPLE_CONFIGS, RIPPLE_CORE_CONFIGS } from './ripple.configs';
 import { RippleCoordinate, Coordinate } from './ripple.coordinate';
+import { RippleHost } from './ripple.host';
 
 export interface RippleStyle {
   width?: number;
@@ -34,7 +34,7 @@ export interface RippleStyle {
     }`
   ]
 })
-export class RippleComponent implements AfterViewInit {
+export class RippleComponent  {
 
   animation: RippleAnimation;
   animationPlayer: AnimationPlayer;
@@ -55,14 +55,17 @@ export class RippleComponent implements AfterViewInit {
     this.element = this.elRef.nativeElement;
     this.configs = { ...RIPPLE_CONFIGS, ...this.coreConfigs };
     this.renderer.setStyle(this.element, 'background', this.configs.backgroundColor);
+    this.initialize();
   }
 
-  ngAfterViewInit() {
-    const { animationBuilder, configs, element, host } = this;
-    this.coordinate = new RippleCoordinate(element, host);
-    this.animation = new RippleAnimation(animationBuilder, configs, element);
-    this.host.element.appendChild(element);
-    this.resizeAndReposition();
+  private initialize(): Promise<void> {
+    return new Promise(() => {
+      const { animationBuilder, configs, element, host } = this;
+      this.coordinate = new RippleCoordinate(element, host);
+      this.animation = new RippleAnimation(animationBuilder, configs, element);
+      this.host.element.appendChild(element);
+      this.resizeAndReposition();
+    });
   }
 
   get styles(): RippleStyle {

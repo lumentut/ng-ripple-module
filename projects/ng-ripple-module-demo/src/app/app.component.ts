@@ -11,9 +11,7 @@ export class AppComponent {
   cardTitle = 'Angular';
   version = 'v.0.0.21';
 
-  constructor() {
-    console.log(this);
-  }
+  constructor() {}
 
   onTap(event: any) {
     console.log(event);

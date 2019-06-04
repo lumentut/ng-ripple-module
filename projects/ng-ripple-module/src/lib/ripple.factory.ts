@@ -14,6 +14,7 @@ import { RippleComponent } from './ripple.component';
 import { RippleConfigs, RIPPLE_CONFIGS, RIPPLE_CORE_CONFIGS, RIPPLE_GLOBAL_CONFIGS } from './ripple.configs';
 import { RippleHost } from './ripple.host';
 import { RippleListener } from './ripple.listener';
+import { RipplePublisher } from './ripple.event';
 
 @Injectable()
 export class RippleFactory {
@@ -28,7 +29,7 @@ export class RippleFactory {
     @Optional() @Inject(RIPPLE_GLOBAL_CONFIGS) private globalConfigs: RippleConfigs
   ) {}
 
-  private componentRef(configs: RippleConfigs, host: RippleHost ): ComponentRef<any> {
+  private createComponentRef(host: RippleHost, configs: RippleConfigs ): ComponentRef<any> {
     const injector = Injector.create({ providers: [
       { provide: RIPPLE_CORE_CONFIGS, useValue: configs },
       { provide: RippleHost, useValue: host }
@@ -42,16 +43,18 @@ export class RippleFactory {
   }
 
   create(hostElement: HTMLElement, inputConfigs?: RippleConfigs): Ripple {
+    const { ngZone, listener } = this;
     const configs = { ...RIPPLE_CONFIGS, ...this.globalConfigs, ...inputConfigs };
     const host = new RippleHost(hostElement);
-    const componentRef = this.componentRef(configs, host);
-    const { ngZone, listener } = this;
+    const publisher = new RipplePublisher(ngZone);
+    const componentRef = this.createComponentRef(host, configs);
 
     return new Ripple(
       componentRef,
       configs,
       hostElement,
       listener,
+      publisher,
       ngZone,
     );
   }
