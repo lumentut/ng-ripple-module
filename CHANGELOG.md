@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Default attribute: `fixed`
 - Default input: `rippleColor` & `splashOpacity`
-- No more mount & dismount ripple since it'is an expensive operation.
+- No more mount & dismount ripple element to reduce expensive operation.
 - Default `RippleConfigs` :
   ```ts
   interface RippleConfigs {
