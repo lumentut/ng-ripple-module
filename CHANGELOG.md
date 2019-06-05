@@ -1,10 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## 1.0.1
+## [1.0.1] - 2019-06-05
 ### Changed
 - Default attribute: `fixed`
 - Default input: `rippleColor` & `splashOpacity`
+- No more mount & dismount ripple since it'is an expensive operation.
 - Default `RippleConfigs` :
   ```ts
   interface RippleConfigs {
@@ -20,6 +21,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Base Class: `RippleEffect`
+- Factory Class: `RippleFactory`
 
 ### Removed
 - Background element (`ripple-bg`)
