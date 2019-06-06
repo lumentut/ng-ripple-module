@@ -1,31 +1,54 @@
+/**
+ * @license
+ * Copyright (c) 2018 Yohanes Oktavianus Lumentut All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
+ */
+
 import {
+  style,
   animate,
-  AnimationAnimateMetadata,
   AnimationBuilder,
   AnimationPlayer,
-  style
+  AnimationAnimateMetadata
 } from '@angular/animations';
 
 import {
-  RIPPLE_TO_CENTER_TRANSFORM,
-  RippleConfigs
+  RIPPLE_TO_CENTER_TRANSFORM
+} from './ripple.constants';
+
+import {
+  RippleCoreConfigs
 } from './ripple.configs';
 
-export function getDuration(transition: string) {
-  return transition.replace(/ .*/, '').match(/\d+/g).map(Number)[0];
+export interface RippleTransition {
+  fill: string;
+  splash: string;
+  fade: string;
 }
 
 export class RippleAnimation {
 
   constructor(
-    private builder: AnimationBuilder,
-    private configs: RippleConfigs,
     private element: HTMLElement,
+    private builder: AnimationBuilder,
+    private configs: RippleCoreConfigs
   ) {}
 
-  animationPlayerFactory(animation: any[]): AnimationPlayer {
-    const { builder, element } = this;
-    return builder.build(animation).create(element);
+  animationPlayerFactory(animation: any[]) {
+    return this.builder.build(animation).create(this.element);
+  }
+
+  get fade(): AnimationAnimateMetadata {
+    return animate(this.configs.fadeTransition, style({ opacity: 0 }));
+  }
+
+  splashToCenter(transition: string): AnimationAnimateMetadata {
+    return animate( transition, style({
+      opacity: this.configs.splashOpacity,
+      transform: RIPPLE_TO_CENTER_TRANSFORM
+    }));
   }
 
   fill(tx: number, ty: number): AnimationPlayer {
@@ -40,7 +63,9 @@ export class RippleAnimation {
       transform: RIPPLE_TO_CENTER_TRANSFORM
     }));
 
-    return this.animationPlayerFactory([showInTouchCoordinate, centering]);
+    const player = this.animationPlayerFactory([showInTouchCoordinate, centering]);
+
+    return player;
   }
 
   translate(tx: number, ty: number, scale: number): AnimationPlayer {
@@ -53,19 +78,19 @@ export class RippleAnimation {
       transform: RIPPLE_TO_CENTER_TRANSFORM
     }));
 
-    return this.animationPlayerFactory([translation, centering]);
+    const player = this.animationPlayerFactory([translation, centering]);
+
+    return player;
   }
 
   get splash(): AnimationPlayer {
-    const { splashOpacity, splashTransition } = this.configs;
-    const splashToCenter = animate( splashTransition, style({
-      opacity: splashOpacity,
-      transform: RIPPLE_TO_CENTER_TRANSFORM
-    }));
-    return this.animationPlayerFactory([splashToCenter, this.fade]);
+    const splashToCenter = this.splashToCenter(this.configs.splashTransition);
+    const player = this.animationPlayerFactory([splashToCenter, this.fade]);
+    return player;
   }
 
-  get fade(): AnimationAnimateMetadata {
-    return animate(this.configs.fadeTransition, style({ opacity: 0 }));
+  get fadeout(): AnimationPlayer {
+    const player = this.animationPlayerFactory([this.fade]);
+    return player;
   }
 }

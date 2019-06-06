@@ -1,59 +1,77 @@
-import { InjectionToken } from '@angular/core';
+/**
+ * @license
+ * Copyright (c) 2018 Yohanes Oktavianus Lumentut All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
+ */
 
-const RIPPLE_ACTIVE_CLASS = 'activate';
-const RIPPLE_DEFAULT_ACTIVE_BGCOLOR =  'rgba(0,0,0,0.05)';
-const RIPPLE_DEFAULT_BGCOLOR = 'rgba(0,0,0,0.07)';
-const RIPPLE_FADE_TRANSITION = '90ms linear';
-const RIPPLE_FILL_TRANSITION = '750ms linear';
-const RIPPLE_LIGHT_ACTIVE_BGCOLOR = 'rgba(255,255,255,0.2)';
-const RIPPLE_LIGHT_BGCOLOR = 'rgba(255,255,255, 0.25)';
-const RIPPLE_SCALE_INCREASER = 0.01;
-const RIPPLE_SPLASH_TRANSITION = '150ms cubic-bezier(0.2,0.05,0.2,1)';
-const RIPPLE_SPLASH_OPACITY = 0.7;
-const RIPPLE_TAP_LIMIT = 600;
-const RIPPLE_TO_CENTER_TRANSFORM = 'translate3d(0px, 0px, 0) scale(1)';
-const RIPPLE_TRANSLATE_TIMEOUT = 15;
+import {
+  InjectionToken
+} from '@angular/core';
+
+import {
+  RIPPLE_DEFAULT_BGCOLOR,
+  RIPPLE_DEFAULT_ACTIVE_BGCOLOR,
+  RIPPLE_LIGHT_BGCOLOR,
+  RIPPLE_LIGHT_ACTIVE_BGCOLOR,
+  RIPPLE_FILL_TRANSITION,
+  RIPPLE_SPLASH_TRANSITION,
+  RIPPLE_FADE_TRANSITION,
+  RIPPLE_BG_FADE_TRANSITION,
+  RIPPLE_TAP_LIMIT
+} from './ripple.constants';
+
+export interface RippleCoreConfigs {
+  centered: boolean;
+  fixed: boolean;
+  rippleBgColor: string;
+  fillTransition: string;
+  splashTransition: string;
+  fadeTransition: string;
+  splashOpacity: number;
+  tapLimit: number;
+}
+
+export const RIPPLE_CORE_CONFIGS = new InjectionToken<RippleCoreConfigs>('ripple-core-configs');
+
+export interface RippleBgConfigs {
+  backgroundColor: string;
+  fadeTransition: string;
+}
+
+export const RIPPLE_BG_CONFIGS = new InjectionToken<RippleBgConfigs>('ripple-bg-configs');
 
 export interface RippleConfigs {
-  backgroundColor?: string;
-  delayValue?: number;
-  fadeTransition?: string;
-  fillTransition?: string;
   fixed?: boolean;
+  centered?: boolean;
   light?: boolean;
+  rippleDefaultBgColor?: string;
+  activeDefaultBgColor?: string;
+  rippleLightBgColor?: string;
+  activeLightBgColor?: string;
+  fillTransition?: string;
   splashTransition?: string;
+  fadeTransition?: string;
+  bgFadeTransition?: string;
   splashOpacity?: number;
   tapLimit?: number;
 }
 
-export const RIPPLE_CONFIGS: RippleConfigs = {
-  backgroundColor: RIPPLE_DEFAULT_BGCOLOR,
-  delayValue: 0,
-  fadeTransition: RIPPLE_FADE_TRANSITION,
-  fillTransition: RIPPLE_FILL_TRANSITION,
+export const DEFAULT_RIPPLE_CONFIGS = {
   fixed: false,
+  centered: false,
   light: false,
+  rippleDefaultBgColor: RIPPLE_DEFAULT_BGCOLOR,
+  activeDefaultBgColor: RIPPLE_DEFAULT_ACTIVE_BGCOLOR,
+  rippleLightBgColor: RIPPLE_LIGHT_BGCOLOR,
+  activeLightBgColor: RIPPLE_LIGHT_ACTIVE_BGCOLOR,
+  fillTransition: RIPPLE_FILL_TRANSITION,
   splashTransition: RIPPLE_SPLASH_TRANSITION,
-  splashOpacity: RIPPLE_SPLASH_OPACITY,
-  tapLimit: RIPPLE_TAP_LIMIT,
+  fadeTransition: RIPPLE_FADE_TRANSITION,
+  bgFadeTransition: RIPPLE_BG_FADE_TRANSITION,
+  splashOpacity: 1,
+  tapLimit: RIPPLE_TAP_LIMIT
 };
 
-export const RIPPLE_CORE_CONFIGS = new InjectionToken<RippleConfigs>('ripple-core-configs');
-export const RIPPLE_CUSTOM_CONFIGS = new InjectionToken<RippleConfigs>('ripple-custom-configs');
-export const RIPPLE_GLOBAL_CONFIGS = new InjectionToken<RippleConfigs>('ripple-global-configs');
-
-export {
-  RIPPLE_ACTIVE_CLASS,
-  RIPPLE_DEFAULT_ACTIVE_BGCOLOR,
-  RIPPLE_DEFAULT_BGCOLOR,
-  RIPPLE_FADE_TRANSITION,
-  RIPPLE_FILL_TRANSITION,
-  RIPPLE_LIGHT_ACTIVE_BGCOLOR,
-  RIPPLE_LIGHT_BGCOLOR,
-  RIPPLE_SCALE_INCREASER,
-  RIPPLE_SPLASH_TRANSITION,
-  RIPPLE_SPLASH_OPACITY,
-  RIPPLE_TAP_LIMIT,
-  RIPPLE_TO_CENTER_TRANSFORM,
-  RIPPLE_TRANSLATE_TIMEOUT
-};
+export const GLOBAL_RIPPLE_CONFIGS = new InjectionToken<RippleConfigs>('global-ripple-configs');

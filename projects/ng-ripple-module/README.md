@@ -1,8 +1,6 @@
-# NgRippleModule
+## Ng-Ripple-Module
 
-[![Build Status](https://travis-ci.org/yohaneslumentut/ng-ripple-module.svg?branch=master)](https://travis-ci.org/yohaneslumentut/ng-ripple-module)
-[![npm version](https://badge.fury.io/js/ng-ripple-module.svg)](https://badge.fury.io/js/ng-ripple-module)
-[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+An Angular ripple module as an alternative of available material design ripple.
 
 ### Installation
 1. Install this module by running the following command:
@@ -33,7 +31,7 @@ export class MyModule { ... }
 ```
 
 ### Demo
-Please visit the demo page [here](https://yohaneslumentut.github.io/ng-ripple-module/)
+Please visit the demo page [here](https://yohaneslumentut.github.io/ng-ripple-module-demo/)
 
 ### Wiki
 Now you're ready to spread the ripple easily in your angular app.<br>

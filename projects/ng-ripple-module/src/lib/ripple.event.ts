@@ -1,6 +1,12 @@
-import { Coordinate } from './ripple.coordinate';
-import { Subject } from 'rxjs';
-import { NgZone, Injectable } from '@angular/core';
+/**
+ * @license
+ * Copyright (c) 2018 Yohanes Oktavianus Lumentut All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://github.com/yohaneslumentut/ng-ripple-module/blob/master/LICENSE
+ */
+
+import { Coordinate } from './ripple.component';
 
 export class RippleEvent {
 
@@ -11,41 +17,18 @@ export class RippleEvent {
   clientY: number;
   clientRect: ClientRect;
   navLink: string;
-  delay: number;
 
-  constructor(
+  constructor (
     element: HTMLElement,
     coordinate: Coordinate,
-    delay: number,
-    type: string
+    eventType: string
   ) {
-    this.target = element;
-    this.type = type;
-    this.timestamp = (new Date()).getTime();
+    this.target= element;
+    this.type = eventType;
+    this.timestamp = (new Date).getTime();
     this.clientX = coordinate.x;
     this.clientY = coordinate.y;
     this.clientRect = element.getBoundingClientRect();
     this.navLink = element.getAttribute('navlink');
-    this.delay = delay;
-  }
-}
-
-export class RipplePublisher extends Subject<RippleEvent> {
-
-  constructor(private ngZone: NgZone) {
-    super();
-  }
-
-  delay: any = (ms: number) => new Promise(_ => setTimeout(_, ms));
-
-  dispatch(event: RippleEvent) {
-    this.delay(event.delay).then(() => this.ngZone.run(() => this.next(event)));
-  }
-
-  subscribeEmitter(context: any) {
-    context.ripple.subscriptions.add(this.subscribe((event: RippleEvent) => {
-      if (!context[event.type]) { return; }
-      context[event.type].emit(event);
-    }));
   }
 }
